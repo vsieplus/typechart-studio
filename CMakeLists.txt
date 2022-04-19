@@ -24,6 +24,9 @@ set(BUILD_DIRS "build/linux/Debug" "build/linux/Release" "build/windows32/Debug"
 find_package(SDL2 2.0.17 REQUIRED)
 find_package(OpenAL REQUIRED)
 
+INCLUDE(FindPkgConfig)
+PKG_SEARCH_MODULE(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
+
 set(NLOHMANN_JSON_LIBRARIES "nlohmann_json::nlohmann_json")
 set(SNDFILE_LIBRARIES "sndfile")
 
@@ -43,6 +46,7 @@ target_sources(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC ${SDL2_INCLUDE_DIRS}
+    PUBLIC ${SDL2IMAGE_INCLUDE_DIRS}
     PUBLIC ${IMGUI_DIR}
     PUBLIC ${IMGUI_DIR}/backends
     PUBLIC ${OPENAL_INCLUDE_DIR}
@@ -51,6 +55,7 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     ${SDL2_LIBRARIES}
+    ${SDL2IMAGE_LIBRARIES}
     ${OPENAL_LIBRARY}
     ${SNDFILE_LIBRARIES}
     ${NLOHMANN_JSON_LIBRARIES}

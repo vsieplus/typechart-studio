@@ -21,6 +21,8 @@ class Editor {
         void update();
         void render();
 
+        void setWindowIcon();
+
         void initFonts();
 
         void quit();

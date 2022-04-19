@@ -8,6 +8,8 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#include <SDL2/SDL_image.h>
+
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
@@ -17,6 +19,9 @@ const std::string PROGRAM_NAME = "Typechart Studio";
 
 const fs::path FONTS_DIR = fs::path("fonts");
 const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("Sen-Regular.ttf");
+
+const fs::path IMAGES_DIR = fs::path("images");
+const fs::path WINDOW_ICON_PATH = IMAGES_DIR / fs::path("windowIcon.png");
 
 SDL_Window * initWindow() {
     // Setup window
@@ -56,6 +61,7 @@ Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
 
     initImGUI(window, renderer);
     initFonts();
+    setWindowIcon();
 }
 
 void Editor::initFonts() {
@@ -65,6 +71,13 @@ void Editor::initFonts() {
     config.PixelSnapH = true;
 
     menuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.c_str(), MENU_FONT_SIZE, &config);
+}
+
+void Editor::setWindowIcon() {
+    // set window icon
+    SDL_Surface * icon = IMG_Load(WINDOW_ICON_PATH.c_str());
+    SDL_SetWindowIcon(window, icon);
+    SDL_FreeSurface(icon);
 }
 
 void Editor::quit() {

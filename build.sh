@@ -91,12 +91,12 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
     echo "-- Copying libraries"
     # copy appropriate dynamic libraries
     libs=("libsndfile" "libogg" "libvorbis" "libopus" "libFLAC")
-    winlibs=("SDL2" "OpenAL32" "zlib1" "libmpg123-0" "libmp3lame-0")
+    winlibs=("SDL2" "SDL2_image" "OpenAL32" "zlib1" "libmpg123-0" "libmp3lame-0")
     if [[ "${BUILD_SYSTEM}" == "linux" ]]; then
         LIB_DIR="/usr/local/lib"
         LIB_EXT="so"
 
-        libs+=("libSDL2" "libmpg123" "libmp3lame")
+        libs+=("libSDL2" "libSDL2_image" "libmpg123" "libmp3lame")
     elif [[ "${BUILD_SYSTEM}" == "windows32" ]]; then
         LIB_DIR="/usr/i686-w64-mingw32/bin"
         LIB_EXT="dll"
@@ -136,6 +136,7 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
         done        
 
         mv "${OUT_DIR}/libSDL2-2.0.so.0.18.2" "${OUT_DIR}/libSDL2-2.0.so.0"
+        mv "${OUT_DIR}/libSDL2_image-2.0.so.0.2.3" "${OUT_DIR}/libSDL2_image-2.0.so.0"
     fi
 
     # create a zip
