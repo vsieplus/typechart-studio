@@ -31,7 +31,6 @@ class Editor {
         ImVec4 clearColor = ImVec4(0.267f, 0.294f, 0.38f, 1.00f);
 
         ImFont * menuFont = nullptr;
-        ImFont * submenuFont = nullptr;
 
         bool running = true;
 };

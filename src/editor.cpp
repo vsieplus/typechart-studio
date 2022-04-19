@@ -11,12 +11,12 @@ namespace fs = std::filesystem;
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
-const int MENU_FONT_SIZE = 44;
+const int MENU_FONT_SIZE = 24;
 
 const std::string PROGRAM_NAME = "Typechart Studio";
 
 const fs::path FONTS_DIR = fs::path("fonts");
-const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("Dongle-Regular.ttf");
+const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("Sen-Regular.ttf");
 
 SDL_Window * initWindow() {
     // Setup window
@@ -60,8 +60,11 @@ Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
 
 void Editor::initFonts() {
     ImGuiIO & io = ImGui::GetIO(); (void)io;
-    menuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.c_str(), MENU_FONT_SIZE);
-    submenuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.c_str(), MENU_FONT_SIZE / 1.25f);
+
+    ImFontConfig config;
+    config.PixelSnapH = true;
+
+    menuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.c_str(), MENU_FONT_SIZE, &config);
 }
 
 void Editor::quit() {
@@ -101,7 +104,7 @@ void Editor::update() {
 		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 
-        showMenuBar(menuFont, submenuFont);
+        showMenuBar(menuFont);
     }
 }
 

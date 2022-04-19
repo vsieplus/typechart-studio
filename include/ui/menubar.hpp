@@ -4,8 +4,8 @@
 class ImFont;
 
 // all the imgui menubar functions
-void showMenuBar(ImFont * menuFont, ImFont * submenuFont);
-void showFileMenu(ImFont * submenuFont);
-void showEditMenu(ImFont * submenuFont);
+void showMenuBar(ImFont * menuFont);
+void showFileMenu();
+void showEditMenu();
 
 #endif // MENUBAR_HPP
