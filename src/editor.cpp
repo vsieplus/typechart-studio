@@ -5,6 +5,8 @@
 #include "imgui_impl_sdlrenderer.h"
 
 #include <stdexcept>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
@@ -12,7 +14,9 @@ const int SCREEN_HEIGHT = 720;
 const int MENU_FONT_SIZE = 44;
 
 const std::string PROGRAM_NAME = "Typechart Studio";
-const std::string MENU_FONT_PATH = "fonts/Dongle-Regular.ttf";
+
+const fs::path FONTS_DIR = fs::path("fonts");
+const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("Dongle-Regular.ttf");
 
 SDL_Window * initWindow() {
     // Setup window
