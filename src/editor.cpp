@@ -8,7 +8,11 @@
 
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
+
+const int MENU_FONT_SIZE = 44;
+
 const std::string PROGRAM_NAME = "Typechart Studio";
+const std::string MENU_FONT_PATH = "fonts/Dongle-Regular.ttf";
 
 SDL_Window * initWindow() {
     // Setup window
@@ -32,8 +36,6 @@ void initImGUI(SDL_Window * window, SDL_Renderer * renderer) {
 	// setup imgui
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO & io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard gui Controls
 
 	ImGui::StyleColorsDark();
 	//ImGui::StyleColorsLight();
@@ -49,6 +51,13 @@ Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
     }
 
     initImGUI(window, renderer);
+    initFonts();
+}
+
+void Editor::initFonts() {
+    ImGuiIO & io = ImGui::GetIO(); (void)io;
+    menuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.c_str(), MENU_FONT_SIZE);
+    submenuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.c_str(), MENU_FONT_SIZE / 1.25f);
 }
 
 void Editor::quit() {
@@ -83,16 +92,12 @@ void Editor::handleEvents() {
 
 void Editor::update() {
     if(running) {
-        lastTime = currTime;
-        currTime = SDL_GetPerformanceCounter();
-        float delta = (currTime - lastTime) * 1000.f / SDL_GetPerformanceFrequency();
-
         // new imgui frame
 		ImGui_ImplSDLRenderer_NewFrame();
 		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 
-        showMenuBar();
+        showMenuBar(menuFont, submenuFont);
     }
 }
 

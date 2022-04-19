@@ -2,15 +2,19 @@
 
 #include "imgui.h"
 
-void showMenuBar() {
+void showMenuBar(ImFont * menuFont, ImFont * submenuFont) {
+    // styling
+    if(menuFont)
+        ImGui::PushFont(menuFont);
+
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
-            showFileMenu();         
+            showFileMenu(submenuFont);         
             ImGui::EndMenu();
         }
 
         if(ImGui::BeginMenu("Edit")) {
-            showEditMenu();
+            showEditMenu(submenuFont);
             ImGui::EndMenu();
         }
 
@@ -20,10 +24,16 @@ void showMenuBar() {
 
         ImGui::EndMainMenuBar();
     }
+
+    if(menuFont)
+        ImGui::PopFont();
 }
 
-void showFileMenu() {
-    if(ImGui::MenuItem("New")) {
+void showFileMenu(ImFont * submenuFont) {
+    if(submenuFont)
+        ImGui::PushFont(submenuFont);
+
+    if(ImGui::MenuItem("New", "Ctrl+N")) {
 
     }
 
@@ -31,7 +41,7 @@ void showFileMenu() {
 
     }
 
-    if(ImGui::BeginMenu("Open Recent")) {
+    if(ImGui::BeginMenu("Recent")) {
         ImGui::MenuItem("Test1.type");
         ImGui::EndMenu();
     }
@@ -43,9 +53,15 @@ void showFileMenu() {
     if(ImGui::MenuItem("Save As..")) {
 
     }
+
+    if(submenuFont)
+        ImGui::PopFont();
 }
 
-void showEditMenu() {
+void showEditMenu(ImFont * submenuFont) {
+    if(submenuFont)
+        ImGui::PushFont(submenuFont);
+
     if(ImGui::MenuItem("Undo", "CTRL+Z")) {
 
     }
@@ -67,4 +83,7 @@ void showEditMenu() {
     if(ImGui::MenuItem("Paste", "CTRL+V")) {
 
     }
+
+    if(submenuFont)
+        ImGui::PopFont();
 }
