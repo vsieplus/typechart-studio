@@ -9,7 +9,7 @@ void showMenuBar(ImFont * menuFont, ImFont * submenuFont) {
 
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
-            showFileMenu(submenuFont);         
+            showFileMenu(submenuFont);
             ImGui::EndMenu();
         }
 
