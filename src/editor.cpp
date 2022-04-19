@@ -1,4 +1,5 @@
 #include "editor.hpp"
+#include "ui/ui.hpp"
 
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
@@ -86,13 +87,12 @@ void Editor::update() {
         currTime = SDL_GetPerformanceCounter();
         float delta = (currTime - lastTime) * 1000.f / SDL_GetPerformanceFrequency();
 
-
         // new imgui frame
 		ImGui_ImplSDLRenderer_NewFrame();
 		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 
-        showBase();
+        showMenuBar();
     }
 }
 
@@ -107,29 +107,6 @@ void Editor::render() {
 		ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
 		SDL_RenderPresent(renderer);
     }
-}
-
-void Editor::showBase() {
-    static float f = 0.f;
-    static int counter = 0;
-
-    ImGui::Begin("hello world");
-
-    ImGui::Text("useful text 1");
-
-    ImGui::SliderFloat("float", &f, 0.f, 1.f);
-    ImGui::ColorEdit3("color picker", (float*)&clearColor);
-
-    // true when clicked
-    if(ImGui::Button("button1")) {
-        counter++;
-    }
-
-    ImGui::SameLine();
-    ImGui::Text("counter  = %d", counter);
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::End();
 }
 
 bool Editor::isRunning() const {
