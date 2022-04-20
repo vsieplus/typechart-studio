@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <SDL2/SDL.h>
@@ -21,6 +22,9 @@ class Editor {
         void handleEvents();
         void update();
         void render();
+
+        void handleShortcutEvents();
+        void updateShortcuts();
 
         void setWindowIcon();
 
@@ -41,6 +45,17 @@ class Editor {
         // key states
         std::vector<bool> keysPressed;
         std::vector<bool> keysHeld;
+
+        std::unordered_map<SDL_Keycode, bool> shortcutsActivated = {
+            { SDLK_c, false },
+            { SDLK_x, false },
+            { SDLK_v, false },
+            { SDLK_n, false },
+            { SDLK_o, false },
+            { SDLK_s, false },
+            { SDLK_z, false },
+            { SDLK_y, false }
+        };
 };
 
 #endif // EDITOR_HPP

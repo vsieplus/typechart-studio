@@ -61,6 +61,7 @@ Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
 
     initImGUI(window, renderer);
     initFonts();
+    initKeys();
     setWindowIcon();
 }
 
@@ -133,6 +134,16 @@ void Editor::handleEvents() {
                 keysHeld[i] = false;
             }
         }
+
+        handleShortcutEvents();
+    }
+}
+
+void Editor::handleShortcutEvents() {
+    for(auto & [shortcutKey, activated] : shortcutsActivated) {
+        SDL_Scancode currShortcutScancode = SDL_GetScancodeFromKey(shortcutKey);
+
+        activated = ((keysHeld[SDL_SCANCODE_LCTRL] || keysHeld[SDL_SCANCODE_RCTRL]) && keysPressed[currShortcutScancode]);
     }
 }
 
@@ -144,9 +155,16 @@ void Editor::update() {
 		ImGui::NewFrame();
 
         showMenuBar(menuFont);
-
         showInitEditWindow();
         showEditWindows();
+
+        updateShortcuts();
+    }
+}
+
+void Editor::updateShortcuts() {
+    if(shortcutsActivated.at(SDLK_n)) {
+        createNewEditWindow();
     }
 }
 
