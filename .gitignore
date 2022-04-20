@@ -2,3 +2,5 @@ build/*
 charts/*
 releases/*
 .vscode/*
+
+imgui.ini
