@@ -1,6 +1,7 @@
-#include "ui/menubar.hpp"
-
 #include "imgui.h"
+
+#include "ui/editwindow.hpp"
+#include "ui/menubar.hpp"
 
 void showMenuBar(ImFont * menuFont) {
     // styling
@@ -19,6 +20,7 @@ void showMenuBar(ImFont * menuFont) {
         }
 
         if(ImGui::BeginMenu("Options")) {
+            showOptionMenu();
             ImGui::EndMenu();
         }
 
@@ -31,7 +33,7 @@ void showMenuBar(ImFont * menuFont) {
 
 void showFileMenu() {
     if(ImGui::MenuItem("New", "Ctrl+N")) {
-
+        createNewEditWindow();
     }
 
     if(ImGui::MenuItem("Open", "Ctrl+O")) {
@@ -53,7 +55,6 @@ void showFileMenu() {
 }
 
 void showEditMenu() {
-
     if(ImGui::MenuItem("Undo", "CTRL+Z")) {
 
     }
@@ -74,5 +75,23 @@ void showEditMenu() {
 
     if(ImGui::MenuItem("Paste", "CTRL+V")) {
 
+    }
+}
+
+void showOptionMenu() {
+    if(ImGui::BeginMenu("Theme")) {
+        if(ImGui::MenuItem("Dark")) {
+            ImGui::StyleColorsDark();
+        }
+
+        if(ImGui::MenuItem("Light")) {
+            ImGui::StyleColorsLight();
+        }
+
+        if(ImGui::MenuItem("Classic")) {
+            ImGui::StyleColorsClassic();
+        }
+
+        ImGui::EndMenu();
     }
 }

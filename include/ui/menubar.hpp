@@ -7,5 +7,6 @@ class ImFont;
 void showMenuBar(ImFont * menuFont);
 void showFileMenu();
 void showEditMenu();
+void showOptionMenu();
 
 #endif // MENUBAR_HPP
