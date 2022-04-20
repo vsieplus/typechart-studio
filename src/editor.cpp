@@ -118,6 +118,9 @@ void Editor::update() {
 		ImGui::NewFrame();
 
         showMenuBar(menuFont);
+
+        showInitEditWindow();
+        showEditWindows();
     }
 }
 
