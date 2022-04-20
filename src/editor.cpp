@@ -52,6 +52,9 @@ void initImGUI(SDL_Window * window, SDL_Renderer * renderer) {
 	// setup platform, rendering backends
 	ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
 	ImGui_ImplSDLRenderer_Init(renderer);
+
+    ImGuiIO & io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 }
 
 Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
