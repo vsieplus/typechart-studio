@@ -73,6 +73,15 @@ void Editor::initFonts() {
     menuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.c_str(), MENU_FONT_SIZE, &config);
 }
 
+void Editor::initKeys() {
+    int numKeys;
+    SDL_GetKeyboardState(&numKeys);
+    for(int i = 0; i < numKeys; i++) {
+        keysPressed.push_back(false);
+        keysHeld.push_back(false);
+    }
+}
+
 void Editor::setWindowIcon() {
     // set window icon
     SDL_Surface * icon = IMG_Load(WINDOW_ICON_PATH.c_str());
@@ -107,6 +116,23 @@ void Editor::handleEvents() {
 				running = false;
 			}
 		}
+
+
+        const Uint8 * keyStates = SDL_GetKeyboardState(NULL);
+        for(unsigned int i = 0; i < keysPressed.size(); i++) {
+            if(keyStates[i] && !keysHeld[i]) {
+                // if key was pressed this frame but not the last frame, mark as pressed + held
+                keysPressed[i] = true;
+                keysHeld[i] = true;
+            } else if(keyStates[i] && keysHeld[i]) {
+                // if pressed frame and last frame, mark as not pressed, but maintain held as true
+                keysPressed[i] = false;
+            } else {
+                // otherwise, keyStates[i] is false, so mark as neither held nor pressed
+                keysPressed[i] = false;
+                keysHeld[i] = false;
+            }
+        }
     }
 }
 

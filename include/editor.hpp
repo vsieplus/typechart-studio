@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 #include <SDL2/SDL.h>
 
@@ -24,6 +25,7 @@ class Editor {
         void setWindowIcon();
 
         void initFonts();
+        void initKeys();
 
         void quit();
 
@@ -35,6 +37,10 @@ class Editor {
         ImFont * menuFont = nullptr;
 
         bool running = true;
+
+        // key states
+        std::vector<bool> keysPressed;
+        std::vector<bool> keysHeld;
 };
 
 #endif // EDITOR_HPP
