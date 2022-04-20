@@ -1,1 +1,2 @@
-#include "menubar.hpp"
+#include "ui/editwindow.hpp"
+#include "ui/menubar.hpp"
