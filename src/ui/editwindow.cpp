@@ -2,9 +2,10 @@
 
 #include "ui/editwindow.hpp"
 
+bool newEditStarted = false;
+
 std::string DEFAULT_WINDOW_NAME = "Untitled";
 
-bool newEditStarted = false;
 
 void createNewEditWindow() {
     newEditStarted = true;
@@ -12,28 +13,48 @@ void createNewEditWindow() {
 
 void showInitEditWindow() {
     if(newEditStarted) {
-        ImGui::Begin("New Chart", &newEditStarted, ImGuiWindowFlags_NoResize);
-        ImGui::Text("Chart configuration settings");
+        ImGui::Begin("New Chart", &newEditStarted);
+        ImGui::Text("Chart Configuration");
+
+        static char buf1[64] = "";
+        static int level = 0;
+
+        static int keyboardLayout = 0;
+
+        ImGui::InputTextWithHint(" ", "Typist", buf1, 64);
+        ImGui::Combo("Keyboard", &keyboardLayout, "QWERTY\0DVORAK\0AZERTY\0\0");
+        ImGui::InputInt("Level", &level);
 
         if(ImGui::Button("Create")) {
             std::string windowName = DEFAULT_WINDOW_NAME;
             int windowID = 0;
 
             if(!availableWindowIDs.empty()) {
-                windowName += std::to_string(availableWindowIDs.back());
+                windowID = availableWindowIDs.back();
                 availableWindowIDs.pop();
+
+                if(windowID > 0)
+                    windowName += std::to_string(windowID);
             } else if(editWindows.size() > 0) {
-                windowName += std::to_string(editWindows.size());
+                windowID = editWindows.size();
+                windowName += std::to_string(windowID);
             }
 
             EditWindowData newWindow = EditWindowData(true, windowID, windowName);
             editWindows.push_back(newWindow);
 
             newEditStarted = false;
+
+            level = 0;
         }
 
         ImGui::End();
     }
+}
+
+void closeWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterator & iter) {
+    availableWindowIDs.push(currWindow.ID);
+    iter = editWindows.erase(iter);
 }
 
 void showEditWindows() {
@@ -62,8 +83,7 @@ void showEditWindows() {
 
                 ImGui::SameLine();
                 if(ImGui::Button("No")) {
-                    availableWindowIDs.push(currWindow.ID);
-                    iter = editWindows.erase(iter);
+                    closeWindow(currWindow, iter);
                 }
 
                 ImGui::SameLine();
@@ -73,8 +93,7 @@ void showEditWindows() {
 
                 ImGui::End();
             } else {
-                availableWindowIDs.push(currWindow.ID);
-                iter = editWindows.erase(iter);
+                closeWindow(currWindow, iter);
             }
         }
     }
