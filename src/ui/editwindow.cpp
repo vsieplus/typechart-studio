@@ -1,6 +1,8 @@
+#include <cstring>
 #include <map>
 
 #include "imgui.h"
+#include "ImGuiFileDialog.h"
 
 #include "config/chartinfo.hpp"
 #include "config/songinfo.hpp"
@@ -36,6 +38,11 @@ void startNewEditWindow() {
     newEditStarted = true;
 }
 
+// default window sizes
+ImVec2 maxFDSize = ImVec2(1920.f, 1080.f);
+ImVec2 minFDSize = ImVec2(1920.f*3/4, 1080.f*3/4);
+ImVec2 newEditWindowSize = ImVec2(500, 450);
+
 static char UImusicFilename[128] = "";
 static char UIcoverArt[128] = "";
 
@@ -43,22 +50,70 @@ static char UItitle[64] = "";
 static char UIartist[64] = "";
 static char UIbpmtext[16] = "";
 
+static std::string UImusicFilepath = "";
+static std::string UIcoverArtFilepath = "";
+
+const char * songinfoFileFilter = "(songinfo.json){songinfo.json}";
+const char * imageFileFilters = "(*.jpg *.png){.jpg,.png}";
+const char * musicFileFilters = "(*.flac *.mp3 *.ogg){.flac,.mp3,.ogg}";
+
+void loadSonginfo(std::string songinfoPath) {
+    
+}
+
 void showSongConfig() {
     // song config
     ImGui::Text("Song configuration");
-    ImGui::Button("Load from existing...");
+    if(ImGui::Button("Load from existing...")) {
+        ImGuiFileDialog::Instance()->OpenDialog("selectSonginfo", "Select songinfo.json", "songinfoFileFilter", ".");
+    }
+    
     ImGui::SameLine();
-    HelpMarker("Load a pre-existing songinfo.json file");
+    HelpMarker("Load song data from a pre-existing songinfo.json file");
+
+    // songinfo dialog
+    if(ImGuiFileDialog::Instance()->Display("selectSonginfo", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            std::string songinfoPath = ImGuiFileDialog::Instance()->GetFilePathName();
+            loadSonginfo(songinfoPath);
+        }
+
+        ImGuiFileDialog::Instance()->Close();
+    }
+
     ImGui::InputText("Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
-    if(ImGui::Button("Browse...")) {
-        // open file dialog
+    if(ImGui::Button("Browse...##music")) {
+        ImGuiFileDialog::Instance()->OpenDialog("selectMusicFile", "Select Music", musicFileFilters, ".");
+    }
+
+    // music file dialog
+    if(ImGuiFileDialog::Instance()->Display("selectMusicFile", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            UImusicFilepath = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string fileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
+
+            strcpy(UImusicFilename, fileName.c_str());
+        }
+
+        ImGuiFileDialog::Instance()->Close();
     }
 
     ImGui::InputText("Art", UIcoverArt, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
-    if(ImGui::Button("Browse...")) {
-        // open file dialog
+    if(ImGui::Button("Browse...##art")) {
+        ImGuiFileDialog::Instance()->OpenDialog("selectArt", "Select Art", imageFileFilters, ".");
+    }
+
+    // art file dialog
+    if(ImGuiFileDialog::Instance()->Display("selectArt", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            UIcoverArtFilepath = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string fileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
+            strcpy(UIcoverArt, fileName.c_str());
+        }
+
+        ImGuiFileDialog::Instance()->Close();
     }
 
     ImGui::InputText("Title", UItitle, 64);
@@ -119,6 +174,7 @@ void createNewEditWindow() {
 
 void showInitEditWindow() {
     if(newEditStarted) {
+        ImGui::SetNextWindowSize(newEditWindowSize);
         ImGui::Begin("New Chart", &newEditStarted);
 
         showSongConfig();
