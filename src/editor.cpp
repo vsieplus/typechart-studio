@@ -10,8 +10,8 @@ namespace fs = std::filesystem;
 
 #include <SDL2/SDL_image.h>
 
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
+const int SCREEN_WIDTH = 1920;
+const int SCREEN_HEIGHT = 1080;
 
 const int MENU_FONT_SIZE = 24;
 
@@ -28,6 +28,10 @@ SDL_Window * initWindow() {
     SDL_WindowFlags window_flags = (SDL_WindowFlags) (SDL_WINDOW_ALLOW_HIGHDPI);
     SDL_Window * window = SDL_CreateWindow(PROGRAM_NAME.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, window_flags);
 
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+    SDL_SetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE, "1");
+    SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_SCALING, "1");
+
     return window;
 }
 
@@ -37,6 +41,8 @@ SDL_Renderer * initRenderer(SDL_Window * window) {
     if (renderer == NULL) {
         SDL_Log("Error creating SDL_Renderer!");
     }
+
+    SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     return renderer;
 }
