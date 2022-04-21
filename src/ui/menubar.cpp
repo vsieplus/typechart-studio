@@ -2,6 +2,7 @@
 
 #include "ui/editwindow.hpp"
 #include "ui/menubar.hpp"
+#include "ui/preferences.hpp"
 
 void showMenuBar(ImFont * menuFont) {
     // styling
@@ -60,30 +61,34 @@ void showFileMenu() {
 }
 
 void showEditMenu() {
-    if(ImGui::MenuItem("Undo", "CTRL+Z")) {
+    if(ImGui::MenuItem("Undo", "Ctrl+Z")) {
 
     }
 
-    if(ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {
+    if(ImGui::MenuItem("Redo", "Ctrl+Y", false, false)) {
 
     }
 
     ImGui::Separator();
     
-    if(ImGui::MenuItem("Cut", "CTRL+X")) {
+    if(ImGui::MenuItem("Cut", "Ctrl+X")) {
 
     }
 
-    if(ImGui::MenuItem("Copy", "CTRL+C")) {
+    if(ImGui::MenuItem("Copy", "Ctrl+C")) {
 
     }
 
-    if(ImGui::MenuItem("Paste", "CTRL+V")) {
+    if(ImGui::MenuItem("Paste", "Ctrl+V")) {
 
     }
 }
 
 void showOptionMenu() {
+    if(ImGui::MenuItem("Preferences", "Ctrl+P")) {
+        setShowPreferences();
+    }
+
     if(ImGui::BeginMenu("Theme")) {
         if(ImGui::MenuItem("Dark")) {
             ImGui::StyleColorsDark();
