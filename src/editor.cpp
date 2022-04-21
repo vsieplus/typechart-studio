@@ -1,5 +1,6 @@
 #include "editor.hpp"
 #include "ui/ui.hpp"
+#include "ui/windowsizes.hpp"
 
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
@@ -9,9 +10,6 @@
 namespace fs = std::filesystem;
 
 #include <SDL2/SDL_image.h>
-
-const int SCREEN_WIDTH = 1920;
-const int SCREEN_HEIGHT = 1080;
 
 const int MENU_FONT_SIZE = 24;
 
@@ -25,12 +23,10 @@ const fs::path WINDOW_ICON_PATH = IMAGES_DIR / fs::path("windowIcon.png");
 
 SDL_Window * initWindow() {
     // Setup window
-    SDL_WindowFlags window_flags = (SDL_WindowFlags) (SDL_WINDOW_ALLOW_HIGHDPI);
+    SDL_WindowFlags window_flags = (SDL_WindowFlags) (SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     SDL_Window * window = SDL_CreateWindow(PROGRAM_NAME.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, window_flags);
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
-    SDL_SetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE, "1");
-    SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_SCALING, "1");
 
     return window;
 }
@@ -41,8 +37,6 @@ SDL_Renderer * initRenderer(SDL_Window * window) {
     if (renderer == NULL) {
         SDL_Log("Error creating SDL_Renderer!");
     }
-
-    SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     return renderer;
 }
