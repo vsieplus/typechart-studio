@@ -1,5 +1,12 @@
 #include <cstring>
+#include <filesystem>
+namespace fs = std::filesystem;
+
+#include <fstream>
 #include <map>
+
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 #include "imgui.h"
 #include "ImGuiFileDialog.h"
@@ -35,10 +42,6 @@ static void HelpMarker(const char* desc)
     }
 }
 
-void startNewEditWindow() {
-    newEditStarted = true;
-}
-
 static char UImusicFilename[128] = "";
 static char UIcoverArt[128] = "";
 
@@ -46,15 +49,71 @@ static char UItitle[64] = "";
 static char UIartist[64] = "";
 static char UIbpmtext[16] = "";
 
-static std::string UImusicFilepath = "";
-static std::string UIcoverArtFilepath = "";
-
 const char * songinfoFileFilter = "(*.json){.json}";
 const char * imageFileFilters = "(*.jpg *.png){.jpg,.png}";
 const char * musicFileFilters = "(*.flac *.mp3 *.ogg){.flac,.mp3,.ogg}";
 
-void loadSonginfo(std::string songinfoPath) {
-    
+static std::string UImusicFilepath = "";
+static std::string UIcoverArtFilepath = "";
+
+static bool popupIncomplete = true;
+static bool popupInvalidJSON = true;
+
+void loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
+    json songinfoJSON;
+
+    try {
+        std::ifstream in(songinfoPath);
+        in >> songinfoJSON;
+        popupInvalidJSON = false;
+    } catch(...) {
+        ImGui::OpenPopup("invalidJSON");
+        popupInvalidJSON = true;
+        return;
+    }
+
+    int numFound = 0;
+
+    if(songinfoJSON.contains("title")) {
+        std::string title = songinfoJSON["title"];
+        strcpy(UItitle, title.c_str());
+        numFound++;
+    }
+
+    if(songinfoJSON.contains("artist")) {
+        std::string artist = songinfoJSON["artist"];
+        strcpy(UIartist, artist.c_str());
+        numFound++;
+    }
+
+    if(songinfoJSON.contains("music")) {
+        std::string music = songinfoJSON["music"];
+        strcpy(UImusicFilename, music.c_str());
+        numFound++;
+
+        UImusicFilepath = fs::path(songinfoDir) / fs::path(music);
+    }
+
+    if(songinfoJSON.contains("coverart")) {
+        std::string coverart = songinfoJSON["coverart"];
+        strcpy(UIcoverArt, coverart.c_str());
+        numFound++;
+
+        UIcoverArtFilepath = fs::path(songinfoDir) / fs::path(coverart);
+    }
+
+    if(songinfoJSON.contains("bpmtext")) {
+        std::string bpmtext = songinfoJSON["bpmtext"];
+        strcpy(UIbpmtext, bpmtext.c_str());
+        numFound++;
+    }
+
+    if(numFound < 5) {
+        ImGui::OpenPopup("incompleteSonginfo");
+        popupIncomplete = true;
+    } else {
+        popupIncomplete = false;
+    }
 }
 
 void showSongConfig() {
@@ -71,10 +130,20 @@ void showSongConfig() {
     if(ImGuiFileDialog::Instance()->Display("selectSonginfo", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             std::string songinfoPath = ImGuiFileDialog::Instance()->GetFilePathName();
-            loadSonginfo(songinfoPath);
+            std::string songinfoDir = ImGuiFileDialog::Instance()->GetCurrentPath();
+            loadSonginfo(songinfoPath, songinfoDir);
         }
 
         ImGuiFileDialog::Instance()->Close();
+    }
+
+    if(ImGui::BeginPopupModal("incompleteSonginfo", &popupIncomplete)) {
+        ImGui::Text("The chosen song configuration file was incomplete");
+        ImGui::EndPopup();
+    }
+    if(ImGui::BeginPopupModal("invalidJSON", &popupInvalidJSON)) {
+        ImGui::Text("Unable to read the selected JSON file");
+        ImGui::EndPopup();
     }
 
     ImGui::InputText("Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
@@ -119,7 +188,6 @@ void showSongConfig() {
     HelpMarker("This value is only used as the 'displayed' BPM");
 }
 
-
 static char UItypist[64] = "";
 static int UIlevel = 1;
 static int UIkeyboardLayout = 0;
@@ -135,6 +203,23 @@ void showChartConfig() {
                 "accordingly 'translated' to other keyboard layouts\n"
                 "when loaded into Typing Tempo.");
     ImGui::InputInt("Level", &UIlevel);
+}
+
+void startNewEditWindow() {
+    if(!newEditStarted) {
+        newEditStarted = true;
+
+        // reset config;    
+        UIlevel = 1;
+        UImusicFilename[0] = '\0';
+        UIcoverArt[0] = '\0';
+        UItitle[0] = '\0';
+        UIartist[0] = '\0';
+        UIbpmtext[0] = '\0';
+        
+        UImusicFilepath = "";
+        UIcoverArtFilepath = "";
+    }
 }
 
 void createNewEditWindow() {
@@ -159,13 +244,6 @@ void createNewEditWindow() {
 
     newEditStarted = false;
 
-    // reset fields
-    UIlevel = 1;
-    UImusicFilename[0] = '\0';
-    UIcoverArt[0] = '\0';
-    UItitle[0] = '\0';
-    UIartist[0] = '\0';
-    UIbpmtext[0] = '\0';
 }
 
 void showInitEditWindow() {
