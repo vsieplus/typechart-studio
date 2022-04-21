@@ -169,7 +169,7 @@ void Editor::update() {
 
         updateShortcuts();
 
-        showPreferencesWindow();
+        Preferences::showPreferencesWindow();
     }
 }
 
@@ -179,7 +179,7 @@ void Editor::updateShortcuts() {
     }
 
     if(shortcutsActivated.at(SDLK_p)) {
-        setShowPreferences();
+        Preferences::setShowPreferences();
     }
 }
 

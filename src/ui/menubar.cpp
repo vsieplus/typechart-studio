@@ -86,7 +86,7 @@ void showEditMenu() {
 
 void showOptionMenu() {
     if(ImGui::MenuItem("Preferences", "Ctrl+P")) {
-        setShowPreferences();
+        Preferences::setShowPreferences();
     }
 
     if(ImGui::BeginMenu("Theme")) {
