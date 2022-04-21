@@ -8,6 +8,7 @@
 #include "config/songinfo.hpp"
 
 #include "ui/editwindow.hpp"
+#include "ui/windowsizes.hpp"
 
 static bool newEditStarted = false;
 
@@ -38,11 +39,6 @@ void startNewEditWindow() {
     newEditStarted = true;
 }
 
-// default window sizes
-ImVec2 maxFDSize = ImVec2(1920.f, 1080.f);
-ImVec2 minFDSize = ImVec2(1920.f*3/4, 1080.f*3/4);
-ImVec2 newEditWindowSize = ImVec2(500, 450);
-
 static char UImusicFilename[128] = "";
 static char UIcoverArt[128] = "";
 
@@ -53,7 +49,7 @@ static char UIbpmtext[16] = "";
 static std::string UImusicFilepath = "";
 static std::string UIcoverArtFilepath = "";
 
-const char * songinfoFileFilter = "(songinfo.json){songinfo.json}";
+const char * songinfoFileFilter = "(*.json){.json}";
 const char * imageFileFilters = "(*.jpg *.png){.jpg,.png}";
 const char * musicFileFilters = "(*.flac *.mp3 *.ogg){.flac,.mp3,.ogg}";
 
@@ -65,7 +61,7 @@ void showSongConfig() {
     // song config
     ImGui::Text("Song configuration");
     if(ImGui::Button("Load from existing...")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectSonginfo", "Select songinfo.json", "songinfoFileFilter", ".");
+        ImGuiFileDialog::Instance()->OpenDialog("selectSonginfo", "Select songinfo.json", songinfoFileFilter, ".");
     }
     
     ImGui::SameLine();
