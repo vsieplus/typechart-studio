@@ -23,7 +23,7 @@ const fs::path WINDOW_ICON_PATH = IMAGES_DIR / fs::path("windowIcon.png");
 
 SDL_Window * initWindow() {
     // Setup window
-    SDL_WindowFlags window_flags = (SDL_WindowFlags) (SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    SDL_WindowFlags window_flags = (SDL_WindowFlags) (SDL_WINDOW_ALLOW_HIGHDPI);
     SDL_Window * window = SDL_CreateWindow(PROGRAM_NAME.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, window_flags);
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
