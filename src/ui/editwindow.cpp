@@ -36,11 +36,12 @@ void startNewEditWindow() {
     newEditStarted = true;
 }
 
-static char musicFilename[128] = "";
+static char UImusicFilename[128] = "";
+static char UIcoverArt[128] = "";
 
-static char title[64] = "";
-static char artist[64] = "";
-static char bpmtext[16] = "";
+static char UItitle[64] = "";
+static char UIartist[64] = "";
+static char UIbpmtext[16] = "";
 
 void showSongConfig() {
     // song config
@@ -48,35 +49,41 @@ void showSongConfig() {
     ImGui::Button("Load from existing...");
     ImGui::SameLine();
     HelpMarker("Load a pre-existing songinfo.json file");
-    ImGui::InputText("Music", musicFilename, 128, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputText("Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...")) {
         // open file dialog
     }
 
-    ImGui::InputText("Title", title, 64);
-    ImGui::InputText("Artist", artist, 64);
-    ImGui::InputText("BPM", bpmtext, 64);
+    ImGui::InputText("Art", UIcoverArt, 128, ImGuiInputTextFlags_ReadOnly);
+    ImGui::SameLine();
+    if(ImGui::Button("Browse...")) {
+        // open file dialog
+    }
+
+    ImGui::InputText("Title", UItitle, 64);
+    ImGui::InputText("Artist", UIartist, 64);
+    ImGui::InputText("BPM", UIbpmtext, 64);
     ImGui::SameLine();
     HelpMarker("This value is only used as the 'displayed' BPM");
 }
 
 
-static char typist[64] = "";
-static int level = 1;
-static int keyboardLayout = 0;
+static char UItypist[64] = "";
+static int UIlevel = 1;
+static int UIkeyboardLayout = 0;
 
 void showChartConfig() {
     ImGui::Text("Chart configuration");
 
-    ImGui::InputText("Typist", typist, 64);
-    ImGui::Combo("Keyboard", &keyboardLayout, "QWERTY\0DVORAK\0AZERTY\0\0");
+    ImGui::InputText("Typist", UItypist, 64);
+    ImGui::Combo("Keyboard", &UIkeyboardLayout, "QWERTY\0DVORAK\0AZERTY\0\0");
     ImGui::SameLine();
     HelpMarker("Choose the keyboard layout that this chart is\n"
-                "intended to be played with. Charts can then be\n"
+                "intended to be played with. Charts will then be\n"
                 "accordingly 'translated' to other keyboard layouts\n"
                 "when loaded into Typing Tempo.");
-    ImGui::InputInt("Level", &level);
+    ImGui::InputInt("Level", &UIlevel);
 }
 
 void createNewEditWindow() {
@@ -94,7 +101,7 @@ void createNewEditWindow() {
         windowName += std::to_string(windowID);
     }
 
-    ChartInfo chartInfo = ChartInfo(level, typist, ID_TO_KEYBOARDLAYOUT.at(keyboardLayout));
+    ChartInfo chartInfo = ChartInfo(UIlevel, UItypist, ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout));
 
     EditWindowData newWindow = EditWindowData(true, windowID, windowName);
     editWindows.push_back(newWindow);
@@ -102,11 +109,12 @@ void createNewEditWindow() {
     newEditStarted = false;
 
     // reset fields
-    level = 1;
-    musicFilename[0] = '\0';
-    title[0] = '\0';
-    artist[0] = '\0';
-    bpmtext[0] = '\0';
+    UIlevel = 1;
+    UImusicFilename[0] = '\0';
+    UIcoverArt[0] = '\0';
+    UItitle[0] = '\0';
+    UIartist[0] = '\0';
+    UIbpmtext[0] = '\0';
 }
 
 void showInitEditWindow() {
