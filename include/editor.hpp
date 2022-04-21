@@ -54,7 +54,8 @@ class Editor {
             { SDLK_o, false },
             { SDLK_s, false },
             { SDLK_z, false },
-            { SDLK_y, false }
+            { SDLK_y, false },
+            { SDLK_p, false }
         };
 };
 

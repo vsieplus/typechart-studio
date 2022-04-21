@@ -4,4 +4,5 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/config/chartinfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/editwindow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/menubar.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui/preferences.cpp
 )

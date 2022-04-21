@@ -168,12 +168,18 @@ void Editor::update() {
         showEditWindows();
 
         updateShortcuts();
+
+        showPreferencesWindow();
     }
 }
 
 void Editor::updateShortcuts() {
     if(shortcutsActivated.at(SDLK_n)) {
         startNewEditWindow();
+    }
+
+    if(shortcutsActivated.at(SDLK_p)) {
+        setShowPreferences();
     }
 }
 
