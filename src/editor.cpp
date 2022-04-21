@@ -167,7 +167,7 @@ void Editor::update() {
 
 void Editor::updateShortcuts() {
     if(shortcutsActivated.at(SDLK_n)) {
-        createNewEditWindow();
+        startNewEditWindow();
     }
 }
 

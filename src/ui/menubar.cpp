@@ -3,8 +3,6 @@
 #include "ui/editwindow.hpp"
 #include "ui/menubar.hpp"
 
-static bool showControls = false;
-
 void showMenuBar(ImFont * menuFont) {
     // styling
     if(menuFont)
@@ -31,12 +29,6 @@ void showMenuBar(ImFont * menuFont) {
             ImGui::EndMenu();
         }
 
-        if(showControls) {
-            ImGui::Begin("Controls Overview", &showControls);
-
-            ImGui::End();
-        }
-
         ImGui::EndMainMenuBar();
     }
 
@@ -46,7 +38,7 @@ void showMenuBar(ImFont * menuFont) {
 
 void showFileMenu() {
     if(ImGui::MenuItem("New", "Ctrl+N")) {
-        createNewEditWindow();
+        startNewEditWindow();
     }
 
     if(ImGui::MenuItem("Open", "Ctrl+O")) {
@@ -113,8 +105,4 @@ void showHelpMenu() {
     if(ImGui::MenuItem("Tutorial")) {
         // open link
     }
-
-    ImGui::Separator();
-
-    ImGui::MenuItem("Controls...", NULL, &showControls);
 }
