@@ -3,7 +3,7 @@
 
 #include <string>
 
-class SongInfo {
+struct SongInfo {
     SongInfo(std::string title, std::string artist, std::string musicFilename, std::string coverartFilename, std::string bpmtext, float musicPreviewStart, float musicPreviewStop) : 
         title(title), artist(artist), musicFilename(musicFilename), coverartFilename(coverartFilename), bpmtext(bpmtext) {}
 
