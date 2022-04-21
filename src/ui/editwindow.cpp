@@ -171,7 +171,7 @@ void createNewEditWindow() {
 void showInitEditWindow() {
     if(newEditStarted) {
         ImGui::SetNextWindowSize(newEditWindowSize);
-        ImGui::Begin("New Chart", &newEditStarted);
+        ImGui::Begin("New Chart", &newEditStarted, ImGuiWindowFlags_NoResize);
 
         showSongConfig();
         ImGui::Separator();
