@@ -19,7 +19,7 @@ struct EditWindowData {
 static std::queue<int> availableWindowIDs;
 static std::list<EditWindowData> editWindows;
 
-void createNewEditWindow();
+void startNewEditWindow();
 
 void showInitEditWindow();
 void showEditWindows();
