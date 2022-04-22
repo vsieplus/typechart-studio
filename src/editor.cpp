@@ -75,7 +75,7 @@ void Editor::initFonts() {
     ImFontConfig config;
     config.PixelSnapH = true;
 
-    menuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.c_str(), MENU_FONT_SIZE, &config);
+    menuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.string().c_str(), MENU_FONT_SIZE, &config);
 }
 
 void Editor::initKeys() {
@@ -94,7 +94,7 @@ void Editor::initAudio() {
 
 void Editor::setWindowIcon() {
     // set window icon
-    SDL_Surface * icon = IMG_Load(WINDOW_ICON_PATH.c_str());
+    SDL_Surface * icon = IMG_Load(WINDOW_ICON_PATH.string().c_str());
     SDL_SetWindowIcon(window, icon);
     SDL_FreeSurface(icon);
 }
