@@ -1,7 +1,6 @@
 #ifndef EDITOR_HPP
 #define EDITOR_HPP
 
-#include "versionconfig.h"
 #include "imgui.h"
 
 #include "systems/audiosystem.hpp"

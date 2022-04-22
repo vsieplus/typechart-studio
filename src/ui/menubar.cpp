@@ -1,5 +1,7 @@
 #include "imgui.h"
 
+#include "versionconfig.h"
+
 #include "ui/editwindow.hpp"
 #include "ui/menubar.hpp"
 #include "ui/preferences.hpp"
@@ -29,6 +31,11 @@ void showMenuBar(ImFont * menuFont) {
             showHelpMenu();
             ImGui::EndMenu();
         }
+
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x *.93);
+        ImGui::BeginChild("versiontext", ImVec2(0, 0), false);
+        ImGui::Text("v%d.%d.%d", TYPECHART_STUDIO_VERSION_MAJOR, TYPECHART_STUDIO_VERSION_MINOR, TYPECHART_STUDIO_VERSION_PATCH);
+        ImGui::EndChild();
 
         ImGui::EndMainMenuBar();
     }
