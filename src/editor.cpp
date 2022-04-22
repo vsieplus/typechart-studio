@@ -65,6 +65,7 @@ Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
     initImGUI(window, renderer);
     initFonts();
     initKeys();
+    initAudio();
     setWindowIcon();
 }
 
@@ -86,6 +87,11 @@ void Editor::initKeys() {
     }
 }
 
+void Editor::initAudio() {
+    audioSystem.initAudioSystem(window);
+    audioSystem.loadSound("keypress", (fs::path("sounds") / fs::path("keypress.wav")).string());
+}
+
 void Editor::setWindowIcon() {
     // set window icon
     SDL_Surface * icon = IMG_Load(WINDOW_ICON_PATH.c_str());
@@ -95,6 +101,8 @@ void Editor::setWindowIcon() {
 
 void Editor::quit() {
     running = false;
+
+    audioSystem.quitAudioSystem();
 
 	ImGui_ImplSDLRenderer_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
@@ -152,13 +160,15 @@ void Editor::handleShortcutEvents() {
 
 void Editor::update() {
     if(running) {
+        audioSystem.update(window);
+
         // new imgui frame
 		ImGui_ImplSDLRenderer_NewFrame();
 		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 
         showMenuBar(menuFont);
-        showInitEditWindow();
+        showInitEditWindow(&audioSystem);
         showEditWindows();
 
         updateShortcuts();

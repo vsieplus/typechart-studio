@@ -4,6 +4,8 @@
 #include "versionconfig.h"
 #include "imgui.h"
 
+#include "systems/audiosystem.hpp"
+
 #include <stdio.h>
 #include <string>
 #include <unordered_map>
@@ -16,6 +18,7 @@ class Editor {
         Editor();
         
         void loop();
+        void quit();
 
         bool isRunning() const;
     private:
@@ -30,8 +33,7 @@ class Editor {
 
         void initFonts();
         void initKeys();
-
-        void quit();
+        void initAudio();
 
         SDL_Window * window;
         SDL_Renderer * renderer;
@@ -57,6 +59,8 @@ class Editor {
             { SDLK_y, false },
             { SDLK_p, false }
         };
+
+        AudioSystem audioSystem;
 };
 
 #endif // EDITOR_HPP

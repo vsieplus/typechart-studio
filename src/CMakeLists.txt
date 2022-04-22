@@ -5,4 +5,5 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/editwindow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/menubar.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/preferences.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/systems/audiosystem.cpp
 )

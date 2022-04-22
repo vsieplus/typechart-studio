@@ -23,6 +23,7 @@ int main(int agrc, char * argv[]) {
         editor.loop();
     }
 
+    editor.quit();
 
     return 0;
 }
