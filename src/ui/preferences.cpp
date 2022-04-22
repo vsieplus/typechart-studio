@@ -26,7 +26,7 @@ void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
         ImGui::InputText("Default Input Directory", Preferences::inputDir, 256, ImGuiInputTextFlags_ReadOnly);
         ImGui::SameLine();
         if(ImGui::Button("Browse...##inputdir")) {
-            ImGuiFileDialog::Instance()->OpenDialog("chooseInputDir", "Choose Default Input Directory", nullptr, ".");
+            ImGuiFileDialog::Instance()->OpenDialog("chooseInputDir", "Choose Default Input Directory", nullptr, Preferences::inputDir);
         }
 
         if(ImGuiFileDialog::Instance()->Display("chooseInputDir", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
@@ -40,7 +40,7 @@ void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
         ImGui::InputText("Default Save Directory", Preferences::outputDir, 256, ImGuiInputTextFlags_ReadOnly);
         ImGui::SameLine();
         if(ImGui::Button("Browse...##outputdir")) {
-            ImGuiFileDialog::Instance()->OpenDialog("chooseOutputDir", "Choose Default Output Directory", nullptr, ".");
+            ImGuiFileDialog::Instance()->OpenDialog("chooseOutputDir", "Choose Default Output Directory", nullptr, Preferences::outputDir);
         }
 
         if(ImGuiFileDialog::Instance()->Display("chooseOutputDir", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {

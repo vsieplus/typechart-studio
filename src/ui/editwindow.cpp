@@ -7,6 +7,8 @@
 
 #include "imgui.h"
 #include "ImGuiFileDialog.h"
+
+#include "ui/preferences.hpp"
 #include "ui/editwindow.hpp"
 #include "ui/windowsizes.hpp"
 
@@ -132,7 +134,7 @@ void showSongConfig() {
     // song config
     ImGui::Text("Song configuration");
     if(ImGui::Button("Load from existing...")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectSonginfo", "Select songinfo.json", songinfoFileFilter, ".");
+        ImGuiFileDialog::Instance()->OpenDialog("selectSonginfo", "Select songinfo.json", songinfoFileFilter, Preferences::inputDir);
     }
     
     ImGui::SameLine();
@@ -165,7 +167,7 @@ void showSongConfig() {
     ImGui::InputText("Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##music")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectMusicFile", "Select Music", musicFileFilters, ".");
+        ImGuiFileDialog::Instance()->OpenDialog("selectMusicFile", "Select Music", musicFileFilters, Preferences::inputDir);
     }
 
     // music file dialog
@@ -183,7 +185,7 @@ void showSongConfig() {
     ImGui::InputText("Art", UIcoverArtFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##art")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectArt", "Select Art", imageFileFilters, ".");
+        ImGuiFileDialog::Instance()->OpenDialog("selectArt", "Select Art", imageFileFilters, Preferences::inputDir);
     }
 
     // art file dialog
@@ -405,7 +407,7 @@ void showEditWindows(AudioSystem * audioSystem) {
         showEditToolbar(audioSystem);
         ImGui::Separator();
 
-        
+
 
         ImGui::End();
 
