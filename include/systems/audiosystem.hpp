@@ -33,6 +33,7 @@ class AudioSystem {
         void stopMusic();
 
         void setMusicVolume(float gain);
+        void setSoundVolume(float gain);
 
         // calculate song pos, length in seconds
         float getMusicLength();

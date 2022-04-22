@@ -173,7 +173,7 @@ void Editor::update() {
 
         updateShortcuts();
 
-        Preferences::showPreferencesWindow();
+        Preferences::showPreferencesWindow(&audioSystem);
     }
 }
 

@@ -386,4 +386,11 @@ void AudioSystem::setMusicVolume(float gain) {
     }
 
     alSourcef(musicSource, AL_GAIN, gain);
-} 
+}
+
+void AudioSystem::setSoundVolume(float gain) {
+    for(int i = 0; i < NUM_SOUND_SOURCES; i++) {
+        auto source = soundSources[i];
+        alSourcef(source, AL_GAIN, gain);
+    }
+}
