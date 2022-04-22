@@ -4,14 +4,22 @@
 #include <string>
 
 struct SongInfo {
-    SongInfo(std::string title, std::string artist, std::string musicFilename, std::string coverartFilename, std::string bpmtext, float musicPreviewStart, float musicPreviewStop) : 
-        title(title), artist(artist), musicFilename(musicFilename), coverartFilename(coverartFilename), bpmtext(bpmtext) {}
+    SongInfo(std::string title, std::string artist, std::string bpmtext, std::string musicFilename, 
+        std::string coverartFilename, std::string musicFilepath, std::string coverartFilepath, float musicPreviewStart, float musicPreviewStop) : 
+        title(title), artist(artist), bpmtext(bpmtext), musicFilename(musicFilename), coverartFilename(coverartFilename),
+        musicFilepath(musicFilepath), coverartFilepath(coverartFilepath),
+        musicPreviewStart(musicPreviewStart), musicPreviewStop(musicPreviewStop) {}
 
     std::string title;
     std::string artist;
+    std::string bpmtext;
+
     std::string musicFilename;
     std::string coverartFilename;
-    std::string bpmtext;
+
+    // if user wishes to copy files when saving config
+    std::string musicFilepath;
+    std::string coverartFilepath;
 
     float musicPreviewStart = 0.f;
     float musicPreviewStop = 0.f;
