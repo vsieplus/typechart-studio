@@ -241,6 +241,7 @@ void AudioSystem::playSound(std::string soundID) {
                 }
 
                 alSourcePlay(soundSources[i]);
+                return;
             }
         }
     }
