@@ -1,21 +1,19 @@
 #include <cstring>
 #include <filesystem>
-namespace fs = std::filesystem;
-
 #include <fstream>
 #include <map>
 
 #include <nlohmann/json.hpp>
-using json = nlohmann::json;
 
 #include "imgui.h"
 #include "ImGuiFileDialog.h"
-
-#include "config/chartinfo.hpp"
-#include "config/songinfo.hpp"
-
 #include "ui/editwindow.hpp"
 #include "ui/windowsizes.hpp"
+
+#include "systems/audiosystem.hpp"
+
+namespace fs = std::filesystem;
+using json = nlohmann::json;
 
 static bool newEditStarted = false;
 
@@ -43,7 +41,7 @@ static void HelpMarker(const char* desc)
 }
 
 static char UImusicFilename[128] = "";
-static char UIcoverArt[128] = "";
+static char UIcoverArtFilename[128] = "";
 
 static char UItitle[64] = "";
 static char UIartist[64] = "";
@@ -58,6 +56,10 @@ static std::string UIcoverArtFilepath = "";
 
 static bool popupIncomplete = true;
 static bool popupInvalidJSON = true;
+static bool popupFailedToLoadMusic = false;
+
+static float UImusicPreviewStart = 0;
+static float UImusicPreviewStop = 15;
 
 void loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
     json songinfoJSON;
@@ -91,20 +93,30 @@ void loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
         strcpy(UImusicFilename, music.c_str());
         numFound++;
 
-        UImusicFilepath = fs::path(songinfoDir) / fs::path(music);
+        UImusicFilepath = (fs::path(songinfoDir) / fs::path(music)).string();
     }
 
     if(songinfoJSON.contains("coverart")) {
         std::string coverart = songinfoJSON["coverart"];
-        strcpy(UIcoverArt, coverart.c_str());
+        strcpy(UIcoverArtFilename, coverart.c_str());
         numFound++;
 
-        UIcoverArtFilepath = fs::path(songinfoDir) / fs::path(coverart);
+        UIcoverArtFilepath = (fs::path(songinfoDir) / fs::path(coverart)).string();
     }
 
     if(songinfoJSON.contains("bpmtext")) {
         std::string bpmtext = songinfoJSON["bpmtext"];
         strcpy(UIbpmtext, bpmtext.c_str());
+        numFound++;
+    }
+
+    if(songinfoJSON.contains("musicPreviewStart")) {
+        UImusicPreviewStart = songinfoJSON["musicPreviewStart"];
+        numFound++;
+    }
+
+    if(songinfoJSON.contains("musicPreviewStop")) {
+        UImusicPreviewStop = songinfoJSON["musicPreviewStop"];
         numFound++;
     }
 
@@ -145,6 +157,10 @@ void showSongConfig() {
         ImGui::Text("Unable to read the selected JSON file");
         ImGui::EndPopup();
     }
+    if(ImGui::BeginPopupModal("failedToLoadMusic", &popupFailedToLoadMusic)) {
+        ImGui::Text("Unable to load the selected music");
+        ImGui::EndPopup();
+    }
 
     ImGui::InputText("Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
@@ -164,7 +180,7 @@ void showSongConfig() {
         ImGuiFileDialog::Instance()->Close();
     }
 
-    ImGui::InputText("Art", UIcoverArt, 128, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputText("Art", UIcoverArtFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##art")) {
         ImGuiFileDialog::Instance()->OpenDialog("selectArt", "Select Art", imageFileFilters, ".");
@@ -175,7 +191,7 @@ void showSongConfig() {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             UIcoverArtFilepath = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string fileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
-            strcpy(UIcoverArt, fileName.c_str());
+            strcpy(UIcoverArtFilename, fileName.c_str());
         }
 
         ImGuiFileDialog::Instance()->Close();
@@ -186,6 +202,7 @@ void showSongConfig() {
     ImGui::InputText("BPM", UIbpmtext, 64);
     ImGui::SameLine();
     HelpMarker("This value is only used as the 'displayed' BPM");
+    
 }
 
 static char UItypist[64] = "";
@@ -212,17 +229,20 @@ void startNewEditWindow() {
         // reset config;    
         UIlevel = 1;
         UImusicFilename[0] = '\0';
-        UIcoverArt[0] = '\0';
+        UIcoverArtFilename[0] = '\0';
         UItitle[0] = '\0';
         UIartist[0] = '\0';
         UIbpmtext[0] = '\0';
         
         UImusicFilepath = "";
         UIcoverArtFilepath = "";
+
+        UImusicPreviewStart = 0;
+        UImusicPreviewStop = 15;    
     }
 }
 
-void createNewEditWindow() {
+void createNewEditWindow(AudioSystem * audioSystem) {
     std::string windowName = DEFAULT_WINDOW_NAME;
     int windowID = 0;
 
@@ -237,16 +257,27 @@ void createNewEditWindow() {
         windowName += std::to_string(windowID);
     }
 
+    // populate with current song, chart info
+    SongInfo songInfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
+                                 UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
     ChartInfo chartInfo = ChartInfo(UIlevel, UItypist, ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout));
 
-    EditWindowData newWindow = EditWindowData(true, windowID, windowName);
-    editWindows.push_back(newWindow);
+    // attempt to load music
+    if(!audioSystem->loadMusic(UImusicFilepath)) {
+        ImGui::OpenPopup("failedToLoadMusic");
+        popupFailedToLoadMusic = true;
+        return;
+    } else {
+        popupFailedToLoadMusic = false;
 
-    newEditStarted = false;
-
+        EditWindowData newWindow = EditWindowData(true, windowID, windowName, chartInfo, songInfo);
+        editWindows.push_back(newWindow);
+    
+        newEditStarted = false;
+    }
 }
 
-void showInitEditWindow() {
+void showInitEditWindow(AudioSystem * audioSystem) {
     if(newEditStarted) {
         ImGui::SetNextWindowSize(newEditWindowSize);
         ImGui::Begin("New Chart", &newEditStarted, ImGuiWindowFlags_NoResize);
@@ -256,9 +287,7 @@ void showInitEditWindow() {
         showChartConfig();
 
         if(ImGui::Button("Create")) {
-            // check valid music
-
-            createNewEditWindow();
+            createNewEditWindow(audioSystem);
         }
 
         ImGui::End();
@@ -270,7 +299,43 @@ void closeWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterato
     iter = editWindows.erase(iter);
 }
 
-void showEditWindows() {
+void tryCloseEditWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterator & iter) {
+    if(currWindow.unsaved) {
+        char msg[128];
+        snprintf(msg, 128, "Unsaved work! [%s]", currWindow.name.c_str());
+        ImGui::Begin(msg);
+
+        ImGui::Text("Save before closing?");
+        if(ImGui::Button("Yes")) {
+            // save chart
+        }
+
+        ImGui::SameLine();
+        if(ImGui::Button("No")) {
+            closeWindow(currWindow, iter);
+        }
+
+        ImGui::SameLine();
+        if(ImGui::Button("Cancel")) {
+            currWindow.open = true;
+        }
+
+        ImGui::End();
+    } else {
+        closeWindow(currWindow, iter);
+    }
+}
+
+std::pair<int, float> splitSecsbyMin(float seconds) {
+    float minutes = seconds / 60;
+
+    int fullMinutes = std::floor(minutes);
+    float leftoverSecs = (minutes - fullMinutes) * 60.f;
+
+    return std::make_pair(fullMinutes, leftoverSecs);
+}
+
+void showEditWindows(AudioSystem * audioSystem) {
     for(auto iter = editWindows.begin(); iter != editWindows.end(); iter++) {
         auto & currWindow = *iter;
 
@@ -280,34 +345,36 @@ void showEditWindows() {
 
         ImGui::Begin(currWindow.name.c_str(), &(currWindow.open), windowFlags);
 
+        // toolbar info / buttons
+        auto songAudioPos = splitSecsbyMin(audioSystem->getSongPosition());
+        auto songLength = splitSecsbyMin(audioSystem->getMusicLength());
+        ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
+
+        ImGui::SameLine();
+        if(ImGui::Button("Play")) {
+            if(audioSystem->isMusicPaused()) {
+                audioSystem->resumeMusic();
+            } else {
+                audioSystem->startMusic();
+            }
+        }
+
+        ImGui::SameLine();
+        if(ImGui::Button("Pause")) {
+            audioSystem->pauseMusic();
+        }
+
+        ImGui::SameLine();
+        if(ImGui::Button("Stop")) {
+            audioSystem->stopMusic();
+        }
+
+        ImGui::Separator();
 
         ImGui::End();
 
         if(!currWindow.open) {
-            if(currWindow.unsaved) {
-                char msg[128];
-                snprintf(msg, 128, "Unsaved work! [%s]", currWindow.name.c_str());
-                ImGui::Begin(msg);
-
-                ImGui::Text("Save before closing?");
-                if(ImGui::Button("Yes")) {
-                    // save chart
-                }
-
-                ImGui::SameLine();
-                if(ImGui::Button("No")) {
-                    closeWindow(currWindow, iter);
-                }
-
-                ImGui::SameLine();
-                if(ImGui::Button("Cancel")) {
-                    currWindow.open = true;
-                }
-
-                ImGui::End();
-            } else {
-                closeWindow(currWindow, iter);
-            }
+            tryCloseEditWindow(currWindow, iter);
         }
     }
 }

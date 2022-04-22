@@ -34,19 +34,19 @@ class AudioSystem {
 
         void setMusicVolume(float gain);
 
-        // calculate song length in seconds
+        // calculate song pos, length in seconds
         float getMusicLength();
+        float getSongPosition();
+
+        bool isMusicPlaying() const;
+        bool isMusicPaused() const;
     private:
         void initSoundSource(ALuint source, float pitch, float gain, std::array<float, 3> position,
                              std::array<float, 3> velocity, bool looping);
 
         float getBufferLength(ALuint bufid) const;
 
-        bool isMusicPlaying() const;
-        bool isMusicPaused() const;
-
         void updateBufferStream(SDL_Window * window);
-        float getSongPosition();
 
         static const int BUFFER_FRAMES = 8192;
         static const int NUM_BUFFERS = 4;

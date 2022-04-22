@@ -288,6 +288,7 @@ void AudioSystem::pauseMusic() {
 }
 
 void AudioSystem::stopMusic() {
+    lastBufferPosition = 0;
     alSourceStop(musicSource);
 }
 

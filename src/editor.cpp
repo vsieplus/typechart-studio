@@ -169,7 +169,7 @@ void Editor::update() {
 
         showMenuBar(menuFont);
         showInitEditWindow(&audioSystem);
-        showEditWindows();
+        showEditWindows(&audioSystem);
 
         updateShortcuts();
 
