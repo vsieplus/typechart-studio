@@ -335,6 +335,59 @@ std::pair<int, float> splitSecsbyMin(float seconds) {
     return std::make_pair(fullMinutes, leftoverSecs);
 }
 
+void showEditWindowMetadata(EditWindowData & currWindow) {
+    // left side bar (child window) to show config info + selected entity info
+    ImGui::BeginChild("configInfo", ImVec2(ImGui::GetContentRegionAvail().x * .3f, ImGui::GetContentRegionAvail().y * .35f), true);
+
+    if(ImGui::CollapsingHeader("Song config")) {
+        ImGui::Text("Title: %s", currWindow.songinfo.title.c_str());
+        ImGui::Text("Artist: %s", currWindow.songinfo.artist.c_str());
+        ImGui::Text("BPM: %s", currWindow.songinfo.bpmtext.c_str());
+    }
+
+    if(ImGui::CollapsingHeader("Chart config")) {
+        ImGui::Text("Typist: %s", currWindow.chartinfo.typist.c_str());
+        ImGui::Text("Keyboard: %s", currWindow.chartinfo.keyboardLayout.c_str());
+        ImGui::Text("Level: %s", std::to_string(currWindow.chartinfo.level).c_str());
+    }
+
+    ImGui::EndChild();
+}
+
+void showChartData() {
+    ImGui::SameLine();
+    ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
+    
+
+    ImGui::EndChild();
+}
+
+void showEditToolbar(AudioSystem * audioSystem) {
+    // toolbar info / buttons
+    auto songAudioPos = splitSecsbyMin(audioSystem->getSongPosition());
+    auto songLength = splitSecsbyMin(audioSystem->getMusicLength());
+    ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
+
+    ImGui::SameLine();
+    if(ImGui::Button("Play")) {
+        if(audioSystem->isMusicPaused()) {
+            audioSystem->resumeMusic();
+        } else {
+            audioSystem->startMusic();
+        }
+    }
+
+    ImGui::SameLine();
+    if(ImGui::Button("Pause")) {
+        audioSystem->pauseMusic();
+    }
+
+    ImGui::SameLine();
+    if(ImGui::Button("Stop")) {
+        audioSystem->stopMusic();
+    }
+}
+
 void showEditWindows(AudioSystem * audioSystem) {
     for(auto iter = editWindows.begin(); iter != editWindows.end(); iter++) {
         auto & currWindow = *iter;
@@ -345,31 +398,14 @@ void showEditWindows(AudioSystem * audioSystem) {
 
         ImGui::Begin(currWindow.name.c_str(), &(currWindow.open), windowFlags);
 
-        // toolbar info / buttons
-        auto songAudioPos = splitSecsbyMin(audioSystem->getSongPosition());
-        auto songLength = splitSecsbyMin(audioSystem->getMusicLength());
-        ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
-
-        ImGui::SameLine();
-        if(ImGui::Button("Play")) {
-            if(audioSystem->isMusicPaused()) {
-                audioSystem->resumeMusic();
-            } else {
-                audioSystem->startMusic();
-            }
-        }
-
-        ImGui::SameLine();
-        if(ImGui::Button("Pause")) {
-            audioSystem->pauseMusic();
-        }
-
-        ImGui::SameLine();
-        if(ImGui::Button("Stop")) {
-            audioSystem->stopMusic();
-        }
+        showEditWindowMetadata(currWindow);
+        showChartData();
 
         ImGui::Separator();
+        showEditToolbar(audioSystem);
+        ImGui::Separator();
+
+        
 
         ImGui::End();
 
