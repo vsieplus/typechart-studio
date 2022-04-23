@@ -346,7 +346,7 @@ void showEditWindowMetadata(EditWindowData & currWindow) {
     // left side bar (child window) to show config info + selected entity info
     ImGui::BeginChild("configInfo", ImVec2(ImGui::GetContentRegionAvail().x * .3f, ImGui::GetContentRegionAvail().y * .35f), true);
 
-    if(ImGui::CollapsingHeader("Song config")) {
+    if(ImGui::CollapsingHeader("Song config", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Title: %s", currWindow.songinfo.title.c_str());
         ImGui::Text("Artist: %s", currWindow.songinfo.artist.c_str());
         ImGui::Text("BPM: %s", currWindow.songinfo.bpmtext.c_str());
@@ -366,6 +366,13 @@ void showEditWindowChartData(EditWindowData & currWindow) {
     
     ImGui::Image(currWindow.artTexture.get(), ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
 
+    ImGui::SameLine();
+    ImGui::BeginChild("timeAndNoteData");
+
+    ImGui::Text("Current bpm: %.1f", 170.0);
+    ImGui::Text("Current beats per measure: %d", 4);
+    
+    ImGui::EndChild();
     ImGui::EndChild();
 }
 
@@ -395,6 +402,10 @@ void showEditWindowToolbar(AudioSystem * audioSystem) {
     }
 }
 
+void showEditWindowTimeline(EditWindowData & currWindow) {
+    
+}
+
 void showEditWindows(AudioSystem * audioSystem) {
     for(auto iter = editWindows.begin(); iter != editWindows.end(); iter++) {
         auto & currWindow = *iter;
@@ -413,7 +424,7 @@ void showEditWindows(AudioSystem * audioSystem) {
         showEditWindowToolbar(audioSystem);
         ImGui::Separator();
 
-
+        showEditWindowTimeline(currWindow);
 
         ImGui::End();
 
