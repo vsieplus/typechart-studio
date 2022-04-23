@@ -51,7 +51,7 @@ static char UIbpmtext[16] = "";
 
 const char * songinfoFileFilter = "(*.json){.json}";
 const char * imageFileFilters = "(*.jpg *.png){.jpg,.png}";
-const char * musicFileFilters = "(*.flac *.mp3 *.ogg){.flac,.mp3,.ogg}";
+const char * musicFileFilters = "(*.flac *.mp3 *.ogg *.wav){.flac,.mp3,.ogg,.wav}";
 
 static std::string UImusicFilepath = "";
 static std::string UIcoverArtFilepath = "";
