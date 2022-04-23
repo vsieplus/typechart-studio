@@ -369,17 +369,23 @@ void showEditWindowChartData(EditWindowData & currWindow) {
     ImGui::SameLine();
     ImGui::BeginChild("timeAndNoteData");
 
-    ImGui::Text("Current bpm: %.1f", 170.0);
-    ImGui::Text("Current beats per measure: %d", 4);
+    ImGui::Text("Sections");
+    if(ImGui::BeginListBox("##sections", ImVec2(ImGui::GetContentRegionAvail().x * .4f, 0))) {
+        
+
+        ImGui::EndListBox();
+    }
     
     ImGui::EndChild();
     ImGui::EndChild();
 }
 
-void showEditWindowToolbar(AudioSystem * audioSystem) {
-    // toolbar info / buttons
+// toolbar info / buttons
+void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, float * previewStop) {
+    auto musicLengthSecs = audioSystem->getMusicLength();
+
     auto songAudioPos = splitSecsbyMin(audioSystem->getSongPosition());
-    auto songLength = splitSecsbyMin(audioSystem->getMusicLength());
+    auto songLength = splitSecsbyMin(musicLengthSecs);
     ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
 
     ImGui::SameLine();
@@ -389,6 +395,8 @@ void showEditWindowToolbar(AudioSystem * audioSystem) {
         } else {
             audioSystem->startMusic();
         }
+
+        audioSystem->setStopMusicEarly(false);
     }
 
     ImGui::SameLine();
@@ -400,10 +408,52 @@ void showEditWindowToolbar(AudioSystem * audioSystem) {
     if(ImGui::Button("Stop")) {
         audioSystem->stopMusic();
     }
+
+    // allow user to play / set preview
+    float sliderWidth = ImGui::GetContentRegionAvail().x * 0.25;
+
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(sliderWidth);
+    ImGui::SliderFloat("##prevstart", previewStart, 0.f, musicLengthSecs, "%05.2f");
+    if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
+        ImGui::SetTooltip("Music preview start");
+
+    // clamp to max prevStop, min 0
+    if(*previewStart > *previewStop) {
+        *previewStart = *previewStop;
+    }
+
+    if(*previewStart < 0) {
+        *previewStart = 0;
+    }
+
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(sliderWidth);
+    ImGui::SliderFloat("##prevstop", previewStop, 0.f, musicLengthSecs, "%05.2f");
+    if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
+        ImGui::SetTooltip("Music preview stop");
+    
+    // clamp to min prevStart, max song length
+    if(*previewStop < *previewStart) {
+        *previewStop = *previewStart;
+    }
+    if(*previewStop > musicLengthSecs) {
+        *previewStop = musicLengthSecs;
+    }
+
+    ImGui::SameLine();
+    if(ImGui::Button("Preview")) {
+        audioSystem->stopMusic();
+        audioSystem->startMusic(*previewStart);
+        audioSystem->setMusicStop(*previewStop);
+
+        audioSystem->setStopMusicEarly(true);
+    }
+
 }
 
 void showEditWindowTimeline(EditWindowData & currWindow) {
-    
+
 }
 
 void showEditWindows(AudioSystem * audioSystem) {
@@ -421,7 +471,7 @@ void showEditWindows(AudioSystem * audioSystem) {
         showEditWindowChartData(currWindow);
 
         ImGui::Separator();
-        showEditWindowToolbar(audioSystem);
+        showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop));
         ImGui::Separator();
 
         showEditWindowTimeline(currWindow);

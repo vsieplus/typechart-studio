@@ -41,6 +41,9 @@ class AudioSystem {
 
         bool isMusicPlaying() const;
         bool isMusicPaused() const;
+
+        void setStopMusicEarly(bool stopMusicEarly);
+        void setMusicStop(float musicStop);
     private:
         void initSoundSource(ALuint source, float pitch, float gain, std::array<float, 3> position,
                              std::array<float, 3> velocity, bool looping);
@@ -65,6 +68,9 @@ class AudioSystem {
 
         // for tracking time position of music
         float lastBufferPosition = 0.f;
+        float musicStop = 0.f;
+
+        bool stopMusicEarly = false;
 
         SNDFILE * sndfile = nullptr;
         SF_INFO sfInfo;

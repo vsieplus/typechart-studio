@@ -114,6 +114,10 @@ void AudioSystem::quitAudioSystem() {
 void AudioSystem::update(SDL_Window * window) {
     if(isMusicPlaying()) {
         updateBufferStream(window);
+
+        if(stopMusicEarly && getSongPosition() > musicStop) {
+            stopMusic();
+        }
     }
 }
 
@@ -376,6 +380,14 @@ float AudioSystem::getSongPosition() {
     alGetSourcef(musicSource, AL_SEC_OFFSET, &songPosSec);
 
     return lastBufferPosition + songPosSec;
+}
+
+void AudioSystem::setStopMusicEarly(bool stopMusicEarly) {
+    this->stopMusicEarly = stopMusicEarly;
+}
+
+void AudioSystem::setMusicStop(float musicStop) {
+    this->musicStop = musicStop;
 }
 
 void AudioSystem::setMusicVolume(float gain) {
