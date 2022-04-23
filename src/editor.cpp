@@ -15,6 +15,8 @@ const int MENU_FONT_SIZE = 24;
 
 const std::string PROGRAM_NAME = "Typechart Studio";
 
+const std::string PREFERENCES_PATH = "preferences.bin";
+
 const fs::path FONTS_DIR = fs::path("fonts");
 const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("Sen-Regular.ttf");
 
@@ -66,6 +68,8 @@ Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
     initKeys();
     initAudio();
     setWindowIcon();
+
+    Preferences::Instance().loadFromFile(PREFERENCES_PATH);
 }
 
 void Editor::initFonts() {
@@ -102,6 +106,8 @@ void Editor::quit() {
     running = false;
 
     audioSystem.quitAudioSystem();
+
+    Preferences::Instance().saveToFile(PREFERENCES_PATH);
 
 	ImGui_ImplSDLRenderer_Shutdown();
 	ImGui_ImplSDL2_Shutdown();

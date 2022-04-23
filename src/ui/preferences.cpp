@@ -1,4 +1,5 @@
 #include <cstring>
+#include <SDL2/SDL.h>
 
 #include "imgui.h"
 #include "ImGuiFileDialog.h"
@@ -9,10 +10,6 @@
 
 static ImGuiWindowFlags preferencesWindowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
 static ImVec2 preferencesWindowSize = ImVec2(1100, 500);
-
-void Preferences::setShowPreferences(bool showPreferences) {
-    this->showPreferences = showPreferences;
-}
 
 void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
     if(showPreferences) {
@@ -57,6 +54,32 @@ void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
 
         ImGui::End();
     }
+}
+
+void Preferences::loadFromFile(std::string preferencesPath) {
+	SDL_RWops * saveFile = SDL_RWFromFile(preferencesPath.c_str(), "r+b");
+    // if file exists, load data to profile, otherwise return false
+	if(saveFile) {
+        // Read from file into address of playerProfile, for its size in bytes 1x
+        SDL_RWread(saveFile, &Instance(), sizeof(Preferences), 1);
+
+		SDL_RWclose(saveFile);
+	}
+}
+
+void Preferences::saveToFile(std::string preferencesPath) {
+    // Open in write/binary mode
+	SDL_RWops * saveFile = SDL_RWFromFile(preferencesPath.c_str(), "w+b");
+	if(saveFile) {
+        // Write to file, the profile's starting address, size, and qty. (1)
+        SDL_RWwrite(saveFile, &Instance(), sizeof(Preferences), 1);
+
+		SDL_RWclose(saveFile);
+	}
+}
+
+void Preferences::setShowPreferences(bool showPreferences) {
+    this->showPreferences = showPreferences;
 }
 
 const char * Preferences::getInputDir() const {

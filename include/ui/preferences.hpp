@@ -16,6 +16,9 @@ class Preferences {
         Preferences(Preferences const&) = delete;
         void operator=(Preferences const&) = delete;
 
+        void loadFromFile(std::string preferencesPath);
+        void saveToFile(std::string preferencesPath);
+
         void setShowPreferences(bool showPreferences);
         void showPreferencesWindow(AudioSystem * audioSystem);
 
