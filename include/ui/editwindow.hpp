@@ -7,6 +7,7 @@
 
 #include "config/chartinfo.hpp"
 #include "config/songinfo.hpp"
+#include "config/songposition.hpp"
 #include "resources/texture.hpp"
 
 class AudioSystem;
@@ -22,6 +23,8 @@ struct EditWindowData {
     std::string name;
 
     std::shared_ptr<SDL_Texture> artTexture;
+
+    SongPosition songpos;
 
     ChartInfo chartinfo;
     SongInfo songinfo;
