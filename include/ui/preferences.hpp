@@ -5,17 +5,31 @@
 
 class AudioSystem;
 
-struct Preferences {
-    Preferences();
+class Preferences {
+    public:
+        // singleton
+        static Preferences & Instance() {
+            static Preferences p;
+            return p;
+        }
 
-    static void setShowPreferences();
-    static void showPreferencesWindow(AudioSystem * audioSystem);
+        Preferences(Preferences const&) = delete;
+        void operator=(Preferences const&) = delete;
 
-    inline static char inputDir[512] = ".";
-    inline static char outputDir[512] = ".";
+        void setShowPreferences(bool showPreferences);
+        void showPreferencesWindow(AudioSystem * audioSystem);
 
-    inline static float musicVolume = 1.f;
-    inline static float soundVolume = 1.f;
+        const char * getInputDir() const;
+    private:
+        Preferences() {}
+
+        char inputDir[512] = ".";
+        char outputDir[512] = ".";
+
+        float musicVolume = 1.f;
+        float soundVolume = 1.f;
+
+        bool showPreferences;
 };
 
 

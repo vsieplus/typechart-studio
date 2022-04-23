@@ -134,7 +134,8 @@ void showSongConfig() {
     // song config
     ImGui::Text("Song configuration");
     if(ImGui::Button("Load from existing...")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectSonginfo", "Select songinfo.json", songinfoFileFilter, Preferences::inputDir);
+        ImGuiFileDialog::Instance()->OpenDialog("selectSonginfo", "Select songinfo.json", songinfoFileFilter, 
+                                                Preferences::Instance().getInputDir());
     }
     
     ImGui::SameLine();
@@ -167,7 +168,8 @@ void showSongConfig() {
     ImGui::InputText("Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##music")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectMusicFile", "Select Music", musicFileFilters, Preferences::inputDir);
+        ImGuiFileDialog::Instance()->OpenDialog("selectMusicFile", "Select Music", musicFileFilters,
+                                                Preferences::Instance().getInputDir());
     }
 
     // music file dialog
@@ -185,7 +187,8 @@ void showSongConfig() {
     ImGui::InputText("Art", UIcoverArtFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##art")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectArt", "Select Art", imageFileFilters, Preferences::inputDir);
+        ImGuiFileDialog::Instance()->OpenDialog("selectArt", "Select Art", imageFileFilters,
+                                                Preferences::Instance().getInputDir());
     }
 
     // art file dialog

@@ -56,7 +56,6 @@ void initImGUI(SDL_Window * window, SDL_Renderer * renderer) {
     ImGuiIO & io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 }
-
 Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
     if(window == nullptr || renderer == nullptr ) {
         throw std::runtime_error("Failed to initialize SDL window/renderer");
@@ -173,7 +172,7 @@ void Editor::update() {
 
         updateShortcuts();
 
-        Preferences::showPreferencesWindow(&audioSystem);
+        Preferences::Instance().showPreferencesWindow(&audioSystem);
     }
 }
 
@@ -183,7 +182,7 @@ void Editor::updateShortcuts() {
     }
 
     if(shortcutsActivated.at(SDLK_p)) {
-        Preferences::setShowPreferences();
+        Preferences::Instance().setShowPreferences(true);
     }
 }
 

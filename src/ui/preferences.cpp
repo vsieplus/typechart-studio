@@ -10,12 +10,8 @@
 static ImGuiWindowFlags preferencesWindowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
 static ImVec2 preferencesWindowSize = ImVec2(1100, 500);
 
-static bool showPreferences = false;
-
-Preferences::Preferences() {}
-
-void Preferences::setShowPreferences() {
-    showPreferences = true;
+void Preferences::setShowPreferences(bool showPreferences) {
+    this->showPreferences = showPreferences;
 }
 
 void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
@@ -51,14 +47,18 @@ void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
             ImGuiFileDialog::Instance()->Close();
         }
 
-        if(ImGui::SliderFloat("Music volume", &Preferences::musicVolume, 0.f, 1.f)) {
+        if(ImGui::SliderFloat("Music volume", &musicVolume, 0.f, 1.f)) {
             audioSystem->setMusicVolume(Preferences::musicVolume);
         }
 
-        if(ImGui::SliderFloat("Sound volume", &Preferences::soundVolume, 0.f, 1.f)) {
+        if(ImGui::SliderFloat("Sound volume", &soundVolume, 0.f, 1.f)) {
             audioSystem->setSoundVolume(Preferences::soundVolume);
         }
 
         ImGui::End();
     }
+}
+
+const char * Preferences::getInputDir() const {
+    return inputDir;
 }
