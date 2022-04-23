@@ -184,7 +184,7 @@ void Editor::update() {
 		ImGui::NewFrame();
 
         showMenuBar(menuFont);
-        showInitEditWindow(&audioSystem);
+        showInitEditWindow(&audioSystem, renderer);
         showEditWindows(&audioSystem);
 
         updateShortcuts();

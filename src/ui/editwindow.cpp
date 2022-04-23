@@ -247,7 +247,7 @@ void startNewEditWindow() {
     }
 }
 
-void createNewEditWindow(AudioSystem * audioSystem) {
+void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     std::string windowName = DEFAULT_WINDOW_NAME;
     int windowID = 0;
 
@@ -275,14 +275,16 @@ void createNewEditWindow(AudioSystem * audioSystem) {
     } else {
         popupFailedToLoadMusic = false;
 
-        EditWindowData newWindow = EditWindowData(true, windowID, windowName, chartInfo, songInfo);
+        auto artTexture = Texture::loadTexture(UIcoverArtFilepath, renderer);
+
+        EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartInfo, songInfo);
         editWindows.push_back(newWindow);
     
         newEditStarted = false;
     }
 }
 
-void showInitEditWindow(AudioSystem * audioSystem) {
+void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     if(newEditStarted) {
         ImGui::SetNextWindowSize(newEditWindowSize);
         ImGui::Begin("New Chart", &newEditStarted, ImGuiWindowFlags_NoResize);
@@ -292,7 +294,7 @@ void showInitEditWindow(AudioSystem * audioSystem) {
         showChartConfig();
 
         if(ImGui::Button("Create")) {
-            createNewEditWindow(audioSystem);
+            createNewEditWindow(audioSystem, renderer);
         }
 
         ImGui::End();
@@ -359,15 +361,15 @@ void showEditWindowMetadata(EditWindowData & currWindow) {
     ImGui::EndChild();
 }
 
-void showChartData() {
-    ImGui::SameLine();
+void showEditWindowChartData(EditWindowData & currWindow) {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
+    ImGui::Image(currWindow.artTexture.get(), ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
 
     ImGui::EndChild();
 }
 
-void showEditToolbar(AudioSystem * audioSystem) {
+void showEditWindowToolbar(AudioSystem * audioSystem) {
     // toolbar info / buttons
     auto songAudioPos = splitSecsbyMin(audioSystem->getSongPosition());
     auto songLength = splitSecsbyMin(audioSystem->getMusicLength());
@@ -404,10 +406,11 @@ void showEditWindows(AudioSystem * audioSystem) {
         ImGui::Begin(currWindow.name.c_str(), &(currWindow.open), windowFlags);
 
         showEditWindowMetadata(currWindow);
-        showChartData();
+        ImGui::SameLine();
+        showEditWindowChartData(currWindow);
 
         ImGui::Separator();
-        showEditToolbar(audioSystem);
+        showEditWindowToolbar(audioSystem);
         ImGui::Separator();
 
 
