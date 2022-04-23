@@ -5,7 +5,7 @@
 #include <SDL2/SDL.h>
 
 namespace Texture {
-    std::shared_ptr<SDL_Texture> loadTexture(std::string path, SDL_Renderer * renderer, SDL_Window * window);
+    std::shared_ptr<SDL_Texture> loadTexture(std::string path, SDL_Renderer * renderer);
 };
 
 

@@ -2,7 +2,7 @@
 
 #include <SDL2/SDL_image.h>
 
-std::shared_ptr<SDL_Texture> loadTexture(std::string path, SDL_Renderer * renderer, SDL_Window * window) {
+std::shared_ptr<SDL_Texture> loadTexture(std::string path, SDL_Renderer * renderer) {
     SDL_Surface * surface = IMG_Load(path.c_str());
     if(!surface) {
         return nullptr;
