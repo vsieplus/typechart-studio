@@ -43,6 +43,15 @@ SDL_Renderer * initRenderer(SDL_Window * window) {
     return renderer;
 }
 
+void initSDLImage() {
+    int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
+    if(!(IMG_Init(imgFlags) & imgFlags)) {
+        char err[128];
+        snprintf(err, 128, "Failed to initialize SDL Image: %s\n", SDL_GetError());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL Image Error", err, NULL);
+    }
+}
+
 void initImGUI(SDL_Window * window, SDL_Renderer * renderer) {
 	// setup imgui
 	IMGUI_CHECKVERSION();
@@ -58,6 +67,7 @@ void initImGUI(SDL_Window * window, SDL_Renderer * renderer) {
     ImGuiIO & io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 }
+
 Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
     if(window == nullptr || renderer == nullptr ) {
         throw std::runtime_error("Failed to initialize SDL window/renderer");
@@ -67,8 +77,9 @@ Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
     initFonts();
     initKeys();
     initAudio();
-    setWindowIcon();
+    initSDLImage();
 
+    setWindowIcon();
     Preferences::Instance().loadFromFile(PREFERENCES_PATH);
 }
 
