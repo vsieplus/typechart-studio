@@ -391,26 +391,18 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
 
     ImGui::SameLine();
-    if(ImGui::Button(ICON_FA_PLAY)) {
+    if(ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE)) {
         if(audioSystem->isMusicPaused()) {
             audioSystem->resumeMusic();
-        } else {
-            audioSystem->startMusic();
-        }
-
-        if(songpos.paused) {
             songpos.unpause();
-        } else {
+        } else if(!songpos.started) {
+            audioSystem->startMusic();
             songpos.start();
+            audioSystem->setStopMusicEarly(false);
+        } else {
+            audioSystem->pauseMusic();
+            songpos.pause();
         }
-
-        audioSystem->setStopMusicEarly(false);
-    }
-
-    ImGui::SameLine();
-    if(ImGui::Button(ICON_FA_PAUSE)) {
-        audioSystem->pauseMusic();
-        songpos.pause();
     }
 
     ImGui::SameLine();
