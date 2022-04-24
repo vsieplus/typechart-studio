@@ -352,7 +352,7 @@ void showEditWindowMetadata(EditWindowData & currWindow) {
         ImGui::Text("BPM: %s", currWindow.songinfo.bpmtext.c_str());
     }
 
-    if(ImGui::CollapsingHeader("Chart config")) {
+    if(ImGui::CollapsingHeader("Chart config", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Typist: %s", currWindow.chartinfo.typist.c_str());
         ImGui::Text("Keyboard: %s", currWindow.chartinfo.keyboardLayout.c_str());
         ImGui::Text("Level: %s", std::to_string(currWindow.chartinfo.level).c_str());
