@@ -377,10 +377,10 @@ void showEditWindowChartData(EditWindowData & currWindow) {
 }
 
 // toolbar info / buttons
-void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, float * previewStop) {
+void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, float * previewStop, SongPosition & songpos) {
     auto musicLengthSecs = audioSystem->getMusicLength();
 
-    auto songAudioPos = splitSecsbyMin(audioSystem->getSongPosition());
+    auto songAudioPos = splitSecsbyMin(songpos.absTime);
     auto songLength = splitSecsbyMin(musicLengthSecs);
     ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
 
@@ -392,17 +392,25 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
             audioSystem->startMusic();
         }
 
+        if(songpos.paused) {
+            songpos.unpause();
+        } else {
+            songpos.start();
+        }
+
         audioSystem->setStopMusicEarly(false);
     }
 
     ImGui::SameLine();
     if(ImGui::Button("Pause")) {
         audioSystem->pauseMusic();
+        songpos.pause();
     }
 
     ImGui::SameLine();
     if(ImGui::Button("Stop")) {
         audioSystem->stopMusic();
+        songpos.stop();
     }
 
     // allow user to play / set preview
@@ -529,6 +537,8 @@ void showEditWindows(AudioSystem * audioSystem) {
     for(auto iter = editWindows.begin(); iter != editWindows.end(); iter++) {
         auto & currWindow = *iter;
 
+        currWindow.songpos.update();
+
         ImGuiWindowFlags windowFlags = 0;
         if(currWindow.unsaved)  windowFlags |= ImGuiWindowFlags_UnsavedDocument;
         if(!currWindow.open)    windowFlags |= ImGuiWindowFlags_NoInputs;
@@ -540,7 +550,7 @@ void showEditWindows(AudioSystem * audioSystem) {
         showEditWindowChartData(currWindow);
 
         ImGui::Separator();
-        showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop));
+        showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos);
         ImGui::Separator();
 
         showEditWindowTimeline(currWindow.chartinfo, currWindow.songpos);
