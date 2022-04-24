@@ -10,3 +10,6 @@
 [submodule "ImGuizmo"]
 	path = ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "IconFontCppHeaders"]
+	path = IconFontCppHeaders
+	url = https://github.com/juliettef/IconFontCppHeaders.git
