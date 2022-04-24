@@ -14,6 +14,8 @@ struct SongPosition {
     void pause();
     void unpause();
 
+    void setSongPosition(float absPosition, bool isTime);
+
     bool started = false;
     bool paused = false;
 

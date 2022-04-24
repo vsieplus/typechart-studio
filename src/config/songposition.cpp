@@ -20,6 +20,20 @@ void SongPosition::update() {
     }
 }
 
+void SongPosition::setSongPosition(float absPosition, bool isTime) {
+    if(!isTime) {
+        // treat as beat position, calculate target time
+    }
+
+    float timeDiff = absPosition - this->absTime;
+    // absTime - thisabstime = ((now - songStart_target) / sdlgpf) - ((now - songstart) / sdlgpf)
+    // timeDiff = (now - songstart_t - (now - songstart)) / sdlgpf
+    // timeDiff = (songstart - songstart_t) / sdlgpf
+    // timeDiff * sdlgpf = songstart - songstart_t
+    // songstart_t = songstart - (timeDiff * sdlgpf)
+    songStart = songStart - (timeDiff * SDL_GetPerformanceFrequency());
+}
+
 void SongPosition::pause() {
     pauseCounter = SDL_GetPerformanceCounter();
     paused = true;

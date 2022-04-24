@@ -411,6 +411,17 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         songpos.stop();
     }
 
+    // check if music finished
+    if(!audioSystem->isMusicPlaying() && songpos.started && !songpos.paused) {
+        songpos.started = false;
+        
+        if(audioSystem->getStopMusicEarly()) {
+            songpos.absTime = audioSystem->getMusicStop();
+        } else {
+            songpos.absTime = audioSystem->getMusicLength();
+        }
+    }
+
     // allow user to play / set preview
     float sliderWidth = ImGui::GetContentRegionAvail().x * 0.25;
 
@@ -450,6 +461,10 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         audioSystem->setMusicStop(*previewStop);
 
         audioSystem->setStopMusicEarly(true);
+
+        songpos.stop();
+        songpos.start();
+        songpos.setSongPosition(*previewStart, true);
     }
 
 }
