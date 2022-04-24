@@ -386,8 +386,16 @@ void AudioSystem::setStopMusicEarly(bool stopMusicEarly) {
     this->stopMusicEarly = stopMusicEarly;
 }
 
+bool AudioSystem::getStopMusicEarly() const {
+    return stopMusicEarly;
+}
+
 void AudioSystem::setMusicStop(float musicStop) {
     this->musicStop = musicStop;
+}
+
+float AudioSystem::getMusicStop() const {
+    return musicStop;
 }
 
 void AudioSystem::setMusicVolume(float gain) {

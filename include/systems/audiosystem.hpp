@@ -42,7 +42,10 @@ class AudioSystem {
         bool isMusicPlaying() const;
         bool isMusicPaused() const;
 
+        bool getStopMusicEarly() const;
         void setStopMusicEarly(bool stopMusicEarly);
+        
+        float getMusicStop() const;
         void setMusicStop(float musicStop);
     private:
         void initSoundSource(ALuint source, float pitch, float gain, std::array<float, 3> position,
