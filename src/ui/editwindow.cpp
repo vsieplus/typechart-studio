@@ -447,21 +447,44 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
 }
 
-void showEditWindowTimeline(ChartInfo & chartinfo) {
+void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
     // let's create the sequencer
     static int selectedEntry = -1;
-    static int firstFrame = -1;
+    static int currentBeatsplit = 8;
     static bool expanded = true;
-    static int currentFrame = 0;
     static float timelineZoom = 1.f;
 
     ImGui::PushItemWidth(130);
-    ImGui::InputInt("Beat ", &currentFrame);
+    ImGui::Text("Beatsplit increment: ");
     ImGui::SameLine();
-    ImGui::InputFloat("Zoom ", &timelineZoom, 0.25, 0.5, "%.2f");
+    ImGui::InputInt("##beatsplit", &currentBeatsplit, 1, 4);
+    
+    ImGui::SameLine();
+    ImGui::Text("Current beat: ");
+    ImGui::SameLine();
+
+    int fullBeats = std::floor(songpos.absBeat);
+    float fullBeatSplits = std::floor((songpos.absBeat - fullBeats) / (1.f / currentBeatsplit));
+    float origNearBeat = fullBeats + (fullBeatSplits * (1.f / currentBeatsplit));
+    float prevTargetBeat = origNearBeat;
+    float nextTargetBeat = origNearBeat + (1.f / currentBeatsplit);
+
+    if(ImGui::InputFloat("##currbeat", &songpos.absBeat, 1.f / currentBeatsplit, 2.f / currentBeatsplit)) {
+        // snap to the nearest beat split
+        if(songpos.absBeat > nextTargetBeat) {
+            songpos.absBeat = nextTargetBeat;
+        } else if(songpos.absBeat < prevTargetBeat) {
+            songpos.absBeat = prevTargetBeat;
+        }
+    }
+
+    ImGui::SameLine();
+    ImGui::Text("Zoom: ");
+    ImGui::SameLine();
+    ImGui::InputFloat("#zoom", &timelineZoom, 0.25, 0.5, "%.2f");
     ImGui::PopItemWidth();
 
-    Sequencer(&(chartinfo.notes), timelineZoom, &currentFrame, &expanded, &selectedEntry, &firstFrame, ImSequencer::SEQUENCER_CHANGE_FRAME);
+    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, &expanded, &selectedEntry, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
     // add a UI to edit that particular item
     if (selectedEntry != -1) {
         const NoteSequence::NoteSequenceItem &item = chartinfo.notes.myItems[selectedEntry];
@@ -488,7 +511,7 @@ void showEditWindows(AudioSystem * audioSystem) {
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop));
         ImGui::Separator();
 
-        showEditWindowTimeline(currWindow.chartinfo);
+        showEditWindowTimeline(currWindow.chartinfo, currWindow.songpos);
 
         ImGui::End();
 
