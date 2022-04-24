@@ -6,6 +6,10 @@ struct SongPosition {
     float absBeat = 0.f;
 
     unsigned long songStart = 0;
+
+    int currentSection = 0;
+
+    std::vector<Timeinfo> timeinfo;
 };
 
 #endif // SONGPOSITION_HPP

@@ -1,7 +1,7 @@
 #ifndef CHARTINFO_HPP
 #define CHARTINFO_HPP
 
-#include <list>
+#include <vector>
 #include <string>
 
 #include "config/note.hpp"
@@ -23,8 +23,6 @@ struct ChartInfo {
 
     std::string typist;
     std::string keyboardLayout;
-
-    std::list<Timeinfo> timeinfo;
 
     NoteSequence notes;
 };
