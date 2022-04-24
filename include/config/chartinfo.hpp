@@ -5,6 +5,7 @@
 #include <string>
 
 #include "config/note.hpp"
+#include "config/notesequence.hpp"
 #include "config/stop.hpp"
 #include "config/skip.hpp"
 #include "config/timeinfo.hpp"
@@ -25,9 +26,7 @@ struct ChartInfo {
 
     std::list<Timeinfo> timeinfo;
 
-    std::list<Stop> stops;
-    std::list<Skip> skips;
-    std::list<Note> chartNotes;
+    NoteSequence notes;
 };
 
 #endif // CHARTINFO_HPP
