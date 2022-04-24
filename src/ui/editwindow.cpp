@@ -207,7 +207,7 @@ void showSongConfig() {
     ImGui::InputText("Artist", UIartist, 64);
     ImGui::InputText("BPM", UIbpmtext, 64);
     ImGui::SameLine();
-    HelpMarker("This value is only used as the 'displayed' BPM");
+    HelpMarker("If the song has BPM changes, enter the initial BPM");
     
 }
 
@@ -264,9 +264,9 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     }
 
     // populate with current song, chart info
-    SongInfo songInfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
+    SongInfo songinfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
                                  UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
-    ChartInfo chartInfo = ChartInfo(UIlevel, UItypist, ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout));
+    ChartInfo chartinfo = ChartInfo(UIlevel, UItypist, ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout));
 
     // attempt to load music
     if(!audioSystem->loadMusic(UImusicFilepath)) {
@@ -278,8 +278,13 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
 
         auto artTexture = Texture::loadTexture(UIcoverArtFilepath, renderer);
 
-        EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartInfo, songInfo);
+        EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartinfo, songinfo);
         editWindows.push_back(newWindow);
+
+        // initial section from BPM
+        float initialBpm = ::atof(UIbpmtext);
+        BeatPos initialSectionStart = {0, 1, 0};
+        newWindow.songpos.timeinfo.push_back(Timeinfo(initialSectionStart, 4, initialBpm));
     
         newEditStarted = false;
     }
