@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -455,21 +456,22 @@ void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
     static float timelineZoom = 1.f;
 
     ImGui::PushItemWidth(130);
-    ImGui::Text("Beatsplit increment: ");
+    ImGui::Text("Beatsplit: ");
     ImGui::SameLine();
     ImGui::InputInt("##beatsplit", &currentBeatsplit, 1, 4);
+    float currentBeatsplitValue = 1.f / currentBeatsplit;
     
     ImGui::SameLine();
     ImGui::Text("Current beat: ");
     ImGui::SameLine();
 
     int fullBeats = std::floor(songpos.absBeat);
-    float fullBeatSplits = std::floor((songpos.absBeat - fullBeats) / (1.f / currentBeatsplit));
+    float fullBeatSplits = std::floor((songpos.absBeat - fullBeats) / currentBeatsplitValue);
     float origNearBeat = fullBeats + (fullBeatSplits * (1.f / currentBeatsplit));
-    float prevTargetBeat = origNearBeat;
+    float prevTargetBeat = (songpos.absBeat == origNearBeat) ? origNearBeat - currentBeatsplitValue : origNearBeat;
     float nextTargetBeat = origNearBeat + (1.f / currentBeatsplit);
 
-    if(ImGui::InputFloat("##currbeat", &songpos.absBeat, 1.f / currentBeatsplit, 2.f / currentBeatsplit)) {
+    if(ImGui::InputFloat("##currbeat", &songpos.absBeat, currentBeatsplitValue, 2.f / currentBeatsplit)) {
         // snap to the nearest beat split
         if(songpos.absBeat > nextTargetBeat) {
             songpos.absBeat = nextTargetBeat;
@@ -481,15 +483,45 @@ void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
     ImGui::SameLine();
     ImGui::Text("Zoom: ");
     ImGui::SameLine();
-    ImGui::InputFloat("#zoom", &timelineZoom, 0.25, 0.5, "%.2f");
+    ImGui::InputFloat("##zoom", &timelineZoom, 0.25, 0.5, "%.2f");
     ImGui::PopItemWidth();
 
-    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, &expanded, &selectedEntry, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
+    int beatsPerMeasure = (int)songpos.timeinfo.size() > songpos.currentSection ? songpos.timeinfo.at(songpos.currentSection).beatsPerMeasure : 4;
+    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, 
+              &expanded, &selectedEntry, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
     // add a UI to edit that particular item
     if (selectedEntry != -1) {
         const NoteSequence::NoteSequenceItem &item = chartinfo.notes.myItems[selectedEntry];
         ImGui::Text("I am a %s, please edit me", SequencerItemTypeNames[item.mType]);
         // switch (type) ....
+    }
+
+    // sideways scroll
+    auto & io = ImGui::GetIO();
+    if(io.MouseWheel != 0.f && io.KeyShift) {
+        bool decrease = io.MouseWheel > 0;
+        int beatsplitChange = std::floor(io.MouseWheel);
+        if(beatsplitChange == 0)
+            beatsplitChange = 1;
+
+        int fullBeats = std::floor(songpos.absBeat);
+        float fullBeatSplits = std::floor((songpos.absBeat - fullBeats) / currentBeatsplitValue);
+        float origNearBeat = fullBeats + (fullBeatSplits * (1.f / currentBeatsplit));
+
+        float targetBeat;
+        if(decrease && songpos.absBeat > origNearBeat) {
+            targetBeat = origNearBeat - (beatsplitChange - 1) * currentBeatsplitValue;
+        } else {
+            targetBeat = origNearBeat - beatsplitChange * currentBeatsplitValue;
+        }
+
+        // scroll up, decrease beat, scroll down increase beat
+        songpos.absBeat -= beatsplitChange * currentBeatsplitValue;
+
+        // clamp to nearest split
+        if((decrease && songpos.absBeat < targetBeat) || (!decrease && songpos.absBeat > targetBeat)) {
+            songpos.absBeat = targetBeat;
+        }
     }
 }
 
