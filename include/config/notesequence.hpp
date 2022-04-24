@@ -8,19 +8,27 @@
 #include "imgui_internal.h"
 #include "ImSequencer.h"
 
-static const char* SequencerItemTypeNames[] = { "Top", "Middle", "Bottom", "Stops", "Skips" };
+static const char* SequencerItemTypeNames[] = { "Top [#]", "Middle [A-Z,./;':]", "Bottom [Fn]", "Stops", "Skips" };
 
 struct NoteSequence : public ImSequencer::SequenceInterface {
     // my datas
-    NoteSequence() : mFrameMin(-10), mFrameMax(100) {
-        myItems.push_back(NoteSequence::NoteSequenceItem{ 0, 10, 10 });
+    NoteSequence() : mFrameMin(-10.f), mFrameMax(100.f) {
+        myItems.push_back(NoteSequence::NoteSequenceItem{ SequencerItemType::TOP_NOTE, 10, 10 });
     }
 
-    int mFrameMin, mFrameMax;
+    enum SequencerItemType {
+        TOP_NOTE,
+        MID_NOTE,
+        BOT_NOTE,
+        STOP,
+        SKIP
+    };
+
+    float mFrameMin, mFrameMax;
     struct NoteSequenceItem
     {
-        int mType;
-        int mFrameStart, mFrameEnd;
+        SequencerItemType mType;
+        float mFrameStart, mFrameEnd;
     };
 
     std::vector<NoteSequenceItem> myItems;
@@ -38,11 +46,11 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     virtual const char* GetItemLabel(int index) const
     {
         static char tmps[512];
-        snprintf(tmps, 512, "[%02d] %s", index, SequencerItemTypeNames[myItems[index].mType]);
+        snprintf(tmps, 512, "%s", SequencerItemTypeNames[myItems[index].mType]);
         return tmps;
     }
 
-    virtual void Get(int index, int** start, int** end, int* type, unsigned int* color)
+    virtual void Get(int index, float** start, float** end, int* type, unsigned int* color)
     {
         NoteSequenceItem& item = myItems[index];
         if (color)
@@ -54,7 +62,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         if (type)
             *type = item.mType;
     }
-    virtual void Add(int type) { myItems.push_back(NoteSequenceItem{ type, 0, 10 }); };
+    virtual void Add(int type) { myItems.push_back(NoteSequenceItem{ (SequencerItemType)type, 0, 10 }); };
     virtual void Del(int index) { myItems.erase(myItems.begin() + index); }
     virtual void Duplicate(int index) { myItems.push_back(myItems[index]); }
 
