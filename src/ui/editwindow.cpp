@@ -369,12 +369,7 @@ void showEditWindowChartData(EditWindowData & currWindow) {
     ImGui::SameLine();
     ImGui::BeginChild("timeAndNoteData");
 
-    ImGui::Text("Sections");
-    if(ImGui::BeginListBox("##sections", ImVec2(ImGui::GetContentRegionAvail().x * .4f, 0))) {
-        
-
-        ImGui::EndListBox();
-    }
+    ImGui::Text("Chart Sections");
     
     ImGui::EndChild();
     ImGui::EndChild();
@@ -452,8 +447,27 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
 }
 
-void showEditWindowTimeline(EditWindowData & currWindow) {
+void showEditWindowTimeline(ChartInfo & chartinfo) {
+    // let's create the sequencer
+    static int selectedEntry = -1;
+    static int firstFrame = -1;
+    static bool expanded = true;
+    static int currentFrame = 0;
+    static float timelineZoom = 1.f;
 
+    ImGui::PushItemWidth(130);
+    ImGui::InputInt("Beat ", &currentFrame);
+    ImGui::SameLine();
+    ImGui::InputFloat("Zoom ", &timelineZoom, 0.25, 0.5, "%.2f");
+    ImGui::PopItemWidth();
+
+    Sequencer(&(chartinfo.notes), timelineZoom, &currentFrame, &expanded, &selectedEntry, &firstFrame, ImSequencer::SEQUENCER_CHANGE_FRAME);
+    // add a UI to edit that particular item
+    if (selectedEntry != -1) {
+        const NoteSequence::NoteSequenceItem &item = chartinfo.notes.myItems[selectedEntry];
+        ImGui::Text("I am a %s, please edit me", SequencerItemTypeNames[item.mType]);
+        // switch (type) ....
+    }
 }
 
 void showEditWindows(AudioSystem * audioSystem) {
@@ -474,7 +488,7 @@ void showEditWindows(AudioSystem * audioSystem) {
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop));
         ImGui::Separator();
 
-        showEditWindowTimeline(currWindow);
+        showEditWindowTimeline(currWindow.chartinfo);
 
         ImGui::End();
 

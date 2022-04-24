@@ -14,7 +14,8 @@ class AudioSystem;
 
 struct EditWindowData {
     EditWindowData(bool open, int ID, std::string name, std::shared_ptr<SDL_Texture> artTexture, ChartInfo chartinfo, SongInfo songinfo) : 
-        open(open), ID(ID), name(name), artTexture(artTexture), chartinfo(chartinfo), songinfo(songinfo) {}
+        open(open), ID(ID), name(name), artTexture(artTexture), chartinfo(chartinfo), songinfo(songinfo) {
+    }
 
     bool open;
     bool unsaved = true;
