@@ -33,10 +33,10 @@ set(SNDFILE_LIBRARIES "sndfile")
 # IMGUI
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 set(IMGUI_FD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog)
+set(IMGUIZMO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ImGuizmo)
 
 target_sources(${PROJECT_NAME}
                 PRIVATE
-                    ${IMGUI_DIR}/imgui_demo.cpp
                     ${IMGUI_DIR}/imgui_draw.cpp
                     ${IMGUI_DIR}/imgui_tables.cpp
                     ${IMGUI_DIR}/imgui_widgets.cpp
@@ -45,6 +45,8 @@ target_sources(${PROJECT_NAME}
                     ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer.cpp
                 PRIVATE
                     ${IMGUI_FD_DIR}/ImGuiFileDialog.cpp
+                PRIVATE
+                    ${IMGUIZMO_DIR}/ImSequencer.cpp
                 )
 
 target_include_directories(${PROJECT_NAME}
@@ -53,6 +55,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC ${IMGUI_DIR}
     PUBLIC ${IMGUI_DIR}/backends
     PUBLIC ${IMGUI_FD_DIR}
+    PUBLIC ${IMGUIZMO_DIR}
     PUBLIC ${OPENAL_INCLUDE_DIR}
     PUBLIC ${BUILD_DIRS}
 )
