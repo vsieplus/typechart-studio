@@ -8,6 +8,7 @@
 
 #include "imgui.h"
 #include "ImGuiFileDialog.h"
+#include "IconsFontAwesome6.h"
 
 #include "ui/preferences.hpp"
 #include "ui/editwindow.hpp"
@@ -390,7 +391,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
 
     ImGui::SameLine();
-    if(ImGui::Button("Play")) {
+    if(ImGui::Button(ICON_FA_PLAY)) {
         if(audioSystem->isMusicPaused()) {
             audioSystem->resumeMusic();
         } else {
@@ -407,13 +408,13 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     }
 
     ImGui::SameLine();
-    if(ImGui::Button("Pause")) {
+    if(ImGui::Button(ICON_FA_PAUSE)) {
         audioSystem->pauseMusic();
         songpos.pause();
     }
 
     ImGui::SameLine();
-    if(ImGui::Button("Stop")) {
+    if(ImGui::Button(ICON_FA_STOP)) {
         audioSystem->stopMusic();
         songpos.stop();
     }
@@ -494,7 +495,7 @@ void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
     }
 
     ImGui::SameLine();
-    ImGui::Text("Zoom: ");
+    ImGui::Text("Zoom " ICON_FA_MAGNIFYING_GLASS ": ");
     ImGui::SameLine();
     ImGui::InputFloat("##zoom", &timelineZoom, 0.25, 0.5, "%.2f");
     ImGui::PopItemWidth();
@@ -513,7 +514,7 @@ void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
     auto & io = ImGui::GetIO();
     if(io.MouseWheel != 0.f && io.KeyShift) {
         bool decrease = io.MouseWheel > 0;
-        int beatsplitChange = std::floor(io.MouseWheel);
+        int beatsplitChange = std::floor(io.MouseWheel) * 4;
         if(beatsplitChange == 0)
             beatsplitChange = 1;
 

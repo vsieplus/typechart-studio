@@ -5,6 +5,8 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
 
+#include "IconsFontAwesome6.h"
+
 #include <stdexcept>
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -19,6 +21,7 @@ const std::string PREFERENCES_PATH = "preferences.bin";
 
 const fs::path FONTS_DIR = fs::path("fonts");
 const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("Sen-Regular.ttf");
+const fs::path ICON_FONT_PATH = FONTS_DIR / fs::path("fa-solid-900.ttf");
 
 const fs::path IMAGES_DIR = fs::path("images");
 const fs::path WINDOW_ICON_PATH = IMAGES_DIR / fs::path("windowIcon.png");
@@ -90,6 +93,12 @@ void Editor::initFonts() {
     config.PixelSnapH = true;
 
     menuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.string().c_str(), MENU_FONT_SIZE, &config);
+
+    config.MergeMode = true;
+    config.GlyphMinAdvanceX = 13.f;
+
+    static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+    io.Fonts->AddFontFromFileTTF(ICON_FONT_PATH.string().c_str(), 13.0f, &config, icon_ranges);
 }
 
 void Editor::initKeys() {

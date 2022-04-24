@@ -34,6 +34,7 @@ set(SNDFILE_LIBRARIES "sndfile")
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 set(IMGUI_FD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog)
 set(IMGUIZMO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ImGuizmo)
+set(ICNFNTCPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/IconFontCppHeaders)
 
 target_sources(${PROJECT_NAME}
                 PRIVATE
@@ -56,6 +57,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC ${IMGUI_DIR}/backends
     PUBLIC ${IMGUI_FD_DIR}
     PUBLIC ${IMGUIZMO_DIR}
+    PUBLIC ${ICNFNTCPP_DIR}
     PUBLIC ${OPENAL_INCLUDE_DIR}
     PUBLIC ${BUILD_DIRS}
 )
