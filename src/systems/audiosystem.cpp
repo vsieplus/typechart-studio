@@ -252,16 +252,24 @@ void AudioSystem::playSound(std::string soundID) {
 }
 
 void AudioSystem::startMusic(float startPosition) {
+    setMusicPosition(startPosition);
+
+    // start playback
+    alSourcePlay(musicSource);
+}
+
+void AudioSystem::setMusicPosition(float position) {
+    bool currentlyPaused = isMusicPaused();
+
     alSourceRewind(musicSource);
     alSourcei(musicSource, AL_BUFFER, 0);
 
-    ALsizei b;
-
-    sf_count_t numFramesToSeek = (sf_count_t)((startPosition / getMusicLength()) * sfInfo.frames);
+    sf_count_t numFramesToSeek = (sf_count_t)((position / getMusicLength()) * sfInfo.frames);
     sf_seek(sndfile, numFramesToSeek, SEEK_SET);
 
-    lastBufferPosition = startPosition;
+    lastBufferPosition = position;
 
+    ALsizei b;
     for(b = 0; b < NUM_BUFFERS; b++) {
         sf_count_t sndLen = sf_readf_float(sndfile, membuf, BUFFER_FRAMES);
         if(sndLen < 1) break;
@@ -270,9 +278,12 @@ void AudioSystem::startMusic(float startPosition) {
         alBufferData(musicBuffers[b], musicFormat, membuf, (ALsizei)sndLen, sfInfo.samplerate);
     }
 
-    // start playback
     alSourceQueueBuffers(musicSource, b, musicBuffers);
-    alSourcePlay(musicSource);
+    
+    if(currentlyPaused) {
+        alSourcePlay(musicSource);
+        alSourcePause(musicSource);
+    }
 }
 
 float AudioSystem::getMusicLength() {

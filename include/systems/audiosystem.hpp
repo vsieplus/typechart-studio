@@ -28,6 +28,7 @@ class AudioSystem {
         void playSound(std::string soundID);
 
         void startMusic(float startPosition = 0.f);
+        void setMusicPosition(float position);
         void resumeMusic();
         void pauseMusic();
         void stopMusic();
