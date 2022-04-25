@@ -134,7 +134,7 @@ void loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
 
 void showSongConfig() {
     // song config
-    ImGui::Text("Song configuration");
+    ImGui::Text(ICON_FA_CLIPBOARD " Song configuration");
     if(ImGui::Button("Load from existing...")) {
         ImGuiFileDialog::Instance()->OpenDialog("selectSonginfo", "Select songinfo.json", songinfoFileFilter, 
                                                 Preferences::Instance().getInputDir());
@@ -167,7 +167,7 @@ void showSongConfig() {
         ImGui::EndPopup();
     }
 
-    ImGui::InputText("Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputText(ICON_FA_MUSIC " Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##music")) {
         ImGuiFileDialog::Instance()->OpenDialog("selectMusicFile", "Select Music", musicFileFilters,
@@ -186,7 +186,7 @@ void showSongConfig() {
         ImGuiFileDialog::Instance()->Close();
     }
 
-    ImGui::InputText("Art", UIcoverArtFilename, 128, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputText(ICON_FA_PHOTO_FILM " Art", UIcoverArtFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##art")) {
         ImGuiFileDialog::Instance()->OpenDialog("selectArt", "Select Art", imageFileFilters,
@@ -204,9 +204,9 @@ void showSongConfig() {
         ImGuiFileDialog::Instance()->Close();
     }
 
-    ImGui::InputText("Title", UItitle, 64);
-    ImGui::InputText("Artist", UIartist, 64);
-    ImGui::InputText("BPM", UIbpmtext, 64);
+    ImGui::InputText(ICON_FA_HEADING " Title", UItitle, 64);
+    ImGui::InputText(ICON_FA_MICROPHONE " Artist", UIartist, 64);
+    ImGui::InputText(ICON_FA_HEART_PULSE " BPM", UIbpmtext, 64);
     ImGui::SameLine();
     HelpMarker("If the song has BPM changes, enter the initial BPM");
     
@@ -219,14 +219,14 @@ static int UIkeyboardLayout = 0;
 void showChartConfig() {
     ImGui::Text("Chart configuration");
 
-    ImGui::InputText("Typist", UItypist, 64);
-    ImGui::Combo("Keyboard", &UIkeyboardLayout, "QWERTY\0DVORAK\0AZERTY\0\0");
+    ImGui::InputText(ICON_FA_PENCIL " Typist", UItypist, 64);
+    ImGui::Combo(ICON_FA_KEYBOARD " Keyboard", &UIkeyboardLayout, "QWERTY\0DVORAK\0AZERTY\0\0");
     ImGui::SameLine();
     HelpMarker("Choose the keyboard layout that this chart is\n"
                 "intended to be played with. Charts will then be\n"
                 "accordingly 'translated' to other keyboard layouts\n"
                 "when loaded into Typing Tempo.");
-    ImGui::InputInt("Level", &UIlevel);
+    ImGui::InputInt(ICON_FA_CHESS_ROOK " Level", &UIlevel);
 }
 
 void startNewEditWindow() {
