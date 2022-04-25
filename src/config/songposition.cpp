@@ -4,17 +4,18 @@
 void SongPosition::start() {
     songStart = SDL_GetPerformanceCounter();
     currentSection = 0;
+    prevSectionBeats = 0;
+    prevSectionTime = 0;
+
     started = true;
+    paused = false;
 }
 
 void SongPosition::stop() {
     absTime = 0.f;
     absBeat = 0.f;
     started = false;
-
-    currentSection = 0;
-    prevSectionBeats = 0;
-    prevSectionTime = 0;
+    paused = false;
 }
 
 void SongPosition::update() {
@@ -52,42 +53,46 @@ void SongPosition::setSongTimePosition(float absTime) {
     // timeDiff = (songstart - songstart_t) / sdlgpf
     // timeDiff * sdlgpf = songstart - songstart_t
     // songstart_t = songstart - (timeDiff * sdlgpf)
-    songStart = songStart - (timeDiff * SDL_GetPerformanceFrequency());
+    float counterDiff = (timeDiff * SDL_GetPerformanceFrequency());
+    songStart -= counterDiff;
+
+    this->absTime = absTime;
 
     unsigned int i = 0;
     for(auto const & tInfo : timeinfo) {
-        if(absTime >= tInfo.absTimeStart) {
-            currentSection = i;
-
-            prevSectionBeats = tInfo.absBeatStart;
-            prevSectionTime = tInfo.absTimeStart;
-
+        if(i == timeinfo.size() - 1 || absTime < tInfo.absTimeStart) {
+            int prev = (int)i - 1;
+            i = std::max(0, prev);
             break;
         }
 
         i++;
     }
+
+    currentSection = i;
+    prevSectionBeats = timeinfo.at(currentSection).absBeatStart;
+    prevSectionTime = timeinfo.at(currentSection).absTimeStart;
 }
 
 void SongPosition::setSongBeatPosition(float absBeat) {
     // calculate absTime from absBeat
-    float absTime = 0.f;
+    float absBeatTime = 0.f;
     float prevAbsBeatStart = 0.f;
-    float prevSpb = 0.f;
+    float prevSpb = 60.f / timeinfo.front().bpm;
     for(auto const & tInfo : timeinfo) {
         if(absBeat >= tInfo.absBeatStart) {
-            absTime += prevSpb * (tInfo.absBeatStart - prevAbsBeatStart);
+            absBeatTime += prevSpb * (tInfo.absBeatStart - prevAbsBeatStart);
 
             prevAbsBeatStart = tInfo.absBeatStart;
             prevSpb = (60.f / tInfo.bpm);
-        } else {
-            absTime += prevSpb * (absBeat - prevAbsBeatStart);
-            break;
         }
     }
 
+    // add the remainder
+    absBeatTime += prevSpb * (absBeat - prevAbsBeatStart);
+
     this->absBeat = absBeat;
-    setSongTimePosition(absTime);
+    setSongTimePosition(absBeatTime);
 }
 
 void SongPosition::pause() {

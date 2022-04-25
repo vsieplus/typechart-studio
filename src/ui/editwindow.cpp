@@ -393,7 +393,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
     ImGui::SameLine();
     if(ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE)) {
-        if(audioSystem->isMusicPaused()) {
+        if(songpos.paused) {
             audioSystem->resumeMusic();
             songpos.unpause();
         } else if(!songpos.started) {
@@ -412,15 +412,14 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         songpos.stop();
     }
 
-    // check if music finished
-    if(!audioSystem->isMusicPlaying() && songpos.started && !songpos.paused) {
+    if(songpos.absTime > musicLengthSecs) {
+        songpos.absTime = musicLengthSecs;
         songpos.started = false;
-        
-        if(audioSystem->getStopMusicEarly()) {
-            songpos.absTime = audioSystem->getMusicStop();
-        } else {
-            songpos.absTime = audioSystem->getMusicLength();
-        }
+    }
+
+    if(audioSystem->getStopMusicEarly() && songpos.absTime > audioSystem->getMusicStop()) {
+        songpos.absTime = audioSystem->getMusicStop();
+        songpos.started = false;
     }
 
     // allow user to play / set preview
@@ -462,20 +461,38 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         audioSystem->setMusicStop(*previewStop);
 
         audioSystem->setStopMusicEarly(true);
+        
+        if(!songpos.started)
+            songpos.start();
 
-        songpos.stop();
-        songpos.start();
         songpos.setSongTimePosition(*previewStart);
+
+        if(songpos.paused)
+            songpos.unpause();
     }
 
     ImGui::SameLine();
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x / 2.f);
     ImGui::SliderInt("Offset (ms)", &songpos.offsetMS, 0, 1000);
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
         ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
 }
 
-void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
+void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos) {
+    // udpate audio position
+    if(audioSystem->isMusicPlaying()) {
+        audioSystem->startMusic(songpos.absTime);
+    } else {
+        audioSystem->setMusicPosition(songpos.absTime);
+    }
+
+    if(!songpos.started) {
+        songpos.started = true;
+        songpos.pause();
+    }
+}
+
+void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos) {
     // let's create the sequencer
     static int selectedEntry = -1;
     static int currentBeatsplit = 8;
@@ -499,12 +516,16 @@ void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
     float nextTargetBeat = origNearBeat + (1.f / currentBeatsplit);
 
     if(ImGui::InputFloat("##currbeat", &songpos.absBeat, currentBeatsplitValue, 2.f / currentBeatsplit)) {
+        songpos.setSongBeatPosition(songpos.absBeat);
+
         // snap to the nearest beat split
         if(songpos.absBeat > nextTargetBeat) {
             songpos.setSongBeatPosition(nextTargetBeat);
         } else if(songpos.absBeat < prevTargetBeat) {
             songpos.setSongBeatPosition(prevTargetBeat);
         }
+
+        updateAudioPosition(audioSystem, songpos);
     }
 
     ImGui::SameLine();
@@ -549,6 +570,8 @@ void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
         if((decrease && songpos.absBeat < targetBeat) || (!decrease && songpos.absBeat > targetBeat)) {
             songpos.setSongBeatPosition(targetBeat);
         }
+
+        updateAudioPosition(audioSystem, songpos);
     }
 }
 
@@ -572,7 +595,7 @@ void showEditWindows(AudioSystem * audioSystem) {
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos);
         ImGui::Separator();
 
-        showEditWindowTimeline(currWindow.chartinfo, currWindow.songpos);
+        showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos);
 
         ImGui::End();
 
