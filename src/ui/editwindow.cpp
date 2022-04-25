@@ -280,13 +280,14 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
         auto artTexture = Texture::loadTexture(UIcoverArtFilepath, renderer);
 
         EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartinfo, songinfo);
-        editWindows.push_back(newWindow);
 
         // initial section from BPM
         float initialBpm = ::atof(UIbpmtext);
         BeatPos initialSectionStart = {0, 1, 0};
-        newWindow.songpos.timeinfo.push_back(Timeinfo(initialSectionStart, 4, initialBpm));
+        newWindow.songpos.timeinfo.push_back(Timeinfo(initialSectionStart, nullptr, 4, initialBpm));
     
+        editWindows.push_back(newWindow);
+
         newEditStarted = false;
     }
 }
@@ -455,7 +456,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     }
 
     ImGui::SameLine();
-    if(ImGui::Button("Preview")) {
+    if(ImGui::Button("Preview " ICON_FA_TRAILER)) {
         audioSystem->stopMusic();
         audioSystem->startMusic(*previewStart);
         audioSystem->setMusicStop(*previewStop);
@@ -464,9 +465,14 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
         songpos.stop();
         songpos.start();
-        songpos.setSongPosition(*previewStart, true);
+        songpos.setSongTimePosition(*previewStart);
     }
 
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+    ImGui::SliderInt("Offset (ms)", &songpos.offsetMS, 0, 1000);
+    if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
+        ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
 }
 
 void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
@@ -495,9 +501,9 @@ void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
     if(ImGui::InputFloat("##currbeat", &songpos.absBeat, currentBeatsplitValue, 2.f / currentBeatsplit)) {
         // snap to the nearest beat split
         if(songpos.absBeat > nextTargetBeat) {
-            songpos.absBeat = nextTargetBeat;
+            songpos.setSongBeatPosition(nextTargetBeat);
         } else if(songpos.absBeat < prevTargetBeat) {
-            songpos.absBeat = prevTargetBeat;
+            songpos.setSongBeatPosition(prevTargetBeat);
         }
     }
 
@@ -507,7 +513,7 @@ void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
     ImGui::InputFloat("##zoom", &timelineZoom, 0.25, 0.5, "%.2f");
     ImGui::PopItemWidth();
 
-    int beatsPerMeasure = (int)songpos.timeinfo.size() > songpos.currentSection ? songpos.timeinfo.at(songpos.currentSection).beatsPerMeasure : 4;
+    int beatsPerMeasure = songpos.timeinfo.size() > songpos.currentSection ? songpos.timeinfo.at(songpos.currentSection).beatsPerMeasure : 4;
     Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, 
               &expanded, &selectedEntry, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
     // add a UI to edit that particular item
@@ -537,11 +543,11 @@ void showEditWindowTimeline(ChartInfo & chartinfo, SongPosition & songpos) {
         }
 
         // scroll up, decrease beat, scroll down increase beat
-        songpos.absBeat -= beatsplitChange * currentBeatsplitValue;
+        songpos.setSongBeatPosition(songpos.absBeat - (beatsplitChange * currentBeatsplitValue));
 
         // clamp to nearest split
         if((decrease && songpos.absBeat < targetBeat) || (!decrease && songpos.absBeat > targetBeat)) {
-            songpos.absBeat = targetBeat;
+            songpos.setSongBeatPosition(targetBeat);
         }
     }
 }
