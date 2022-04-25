@@ -17,8 +17,6 @@ struct ChartInfo {
 
     int level;
 
-    float offsetMS = 0.f;
-
     std::string typist;
     std::string keyboardLayout;
 
