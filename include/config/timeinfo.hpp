@@ -4,13 +4,18 @@
 #include "config/beatpos.hpp"
 
 struct Timeinfo {
-    Timeinfo(BeatPos pos, int beatsPerMeasure, float bpm) :
-        pos(pos), beatsPerMeasure(beatsPerMeasure), bpm(bpm) {}
+    Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure, float bpm);
 
-    BeatPos pos;
+    float calculateBeatStart();
+    float calculateTimeStart(Timeinfo * prevTimeinfo);
+
+    BeatPos beatpos;
     int beatsPerMeasure;
 
     float bpm;
+
+    float absBeatStart;
+    float absTimeStart;
 };
 
 
