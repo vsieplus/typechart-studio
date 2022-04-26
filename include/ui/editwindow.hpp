@@ -37,6 +37,6 @@ static std::list<EditWindowData> editWindows;
 void startNewEditWindow();
 
 void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer);
-void showEditWindows(AudioSystem * audioSystem);
+void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
 
 #endif // EDITWINDOW_HPP

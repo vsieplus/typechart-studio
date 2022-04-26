@@ -384,7 +384,7 @@ void showEditWindowChartData(EditWindowData & currWindow) {
 }
 
 // toolbar info / buttons
-void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, float * previewStop, SongPosition & songpos) {
+void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, float * previewStop, SongPosition & songpos, std::vector<bool> & keysPressed) {
     auto musicLengthSecs = audioSystem->getMusicLength();
 
     auto songAudioPos = splitSecsbyMin(songpos.absTime);
@@ -392,7 +392,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
 
     ImGui::SameLine();
-    if(ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE)) {
+    if(ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || keysPressed[SDL_SCANCODE_SPACE]) {
         if(songpos.paused) {
             audioSystem->resumeMusic();
             songpos.unpause();
@@ -405,6 +405,9 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
             songpos.pause();
         }
     }
+
+    if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
+        ImGui::SetTooltip("Press [Space] to Play/Pause");
 
     ImGui::SameLine();
     if(ImGui::Button(ICON_FA_STOP)) {
@@ -485,11 +488,6 @@ void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos) {
     } else {
         audioSystem->setMusicPosition(songpos.absTime);
     }
-
-    if(!songpos.started) {
-        songpos.started = true;
-        songpos.pause();
-    }
 }
 
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos) {
@@ -517,6 +515,11 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     float nextTargetBeat = origNearBeat + (1.f / currentBeatsplit);
 
     if(ImGui::InputFloat("##currbeat", &songpos.absBeat, currentBeatsplitValue, 2.f / currentBeatsplit)) {
+        if(!songpos.started) {
+            songpos.start();
+            songpos.pause();
+        }
+
         songpos.setSongBeatPosition(songpos.absBeat);
 
         // snap to the nearest beat split
@@ -529,16 +532,37 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         updateAudioPosition(audioSystem, songpos);
     }
 
+    static float zoomStep = 0.25f;
+
     ImGui::SameLine();
     ImGui::Text("Zoom " ICON_FA_MAGNIFYING_GLASS ": ");
     ImGui::SameLine();
-    ImGui::InputFloat("##zoom", &timelineZoom, 0.25, 0.5, "%.2f");
+    ImGui::InputFloat("##zoom", &timelineZoom, zoomStep, zoomStep * 2, "%.2f");
+    if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
+        ImGui::SetTooltip("Hold [Ctrl] while scrolling to zoom in/out");
+
     ImGui::PopItemWidth();
+
+    // ctrl + scroll to adjust zoom
+    auto & io = ImGui::GetIO();
+    if(io.MouseWheel != 0.f && io.KeyCtrl && !io.KeyShift) {
+        int multiplier = io.MouseWheel > 0 ? 1 : -1;
+
+        timelineZoom += zoomStep * multiplier;
+    }
+
+    if(timelineZoom < zoomStep * 2) {
+        timelineZoom = zoomStep * 2;
+    }
 
     int beatsPerMeasure = songpos.timeinfo.size() > songpos.currentSection ? songpos.timeinfo.at(songpos.currentSection).beatsPerMeasure : 4;
     Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, &expanded, &updatedBeat,
                 &selectedEntry, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
     if(updatedBeat) {
+        if(!songpos.started) {
+            songpos.start();
+            songpos.pause();
+        }
         songpos.setSongBeatPosition(songpos.absBeat);
         updateAudioPosition(audioSystem, songpos);
     }
@@ -551,8 +575,12 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 
     // sideways scroll
-    auto & io = ImGui::GetIO();
-    if(io.MouseWheel != 0.f && io.KeyShift) {
+    if(io.MouseWheel != 0.f && io.KeyShift && !io.KeyCtrl) {
+        if(!songpos.started) {
+            songpos.start();
+            songpos.pause();
+        }
+
         bool decrease = io.MouseWheel > 0;
         int beatsplitChange = std::floor(io.MouseWheel) * 4;
         if(beatsplitChange == 0)
@@ -581,7 +609,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 }
 
-void showEditWindows(AudioSystem * audioSystem) {
+void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed) {
     for(auto iter = editWindows.begin(); iter != editWindows.end(); iter++) {
         auto & currWindow = *iter;
 
@@ -598,7 +626,7 @@ void showEditWindows(AudioSystem * audioSystem) {
         showEditWindowChartData(currWindow);
 
         ImGui::Separator();
-        showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos);
+        showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, keysPressed);
         ImGui::Separator();
 
         showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos);
