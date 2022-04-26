@@ -7,6 +7,8 @@ void SongPosition::start() {
     prevSectionBeats = 0;
     prevSectionTime = 0;
 
+    currSpb = 60.f / timeinfo.at(currentSection).bpm;
+
     started = true;
     paused = false;
 }
@@ -29,8 +31,6 @@ void SongPosition::update() {
 }
 
 void SongPosition::updateBeatPos() {
-    auto currSpb = 60.f / timeinfo.at(currentSection).bpm;
-
     absBeat = prevSectionBeats + ((absTime - prevSectionTime) / currSpb);
 }
 
@@ -41,7 +41,9 @@ void SongPosition::updateSection() {
             currentSection = nextSection;
 
             prevSectionBeats = timeinfo.at(currentSection).absBeatStart;
-            prevSectionTime = timeinfo.at(currentSection).absTimeStart;
+            prevSectionTime = absTime;
+
+            currSpb = 60.f / timeinfo.at(currentSection).bpm;
         }
     }
 }

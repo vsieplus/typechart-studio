@@ -23,6 +23,8 @@ struct SongPosition {
     bool started = false;
     bool paused = false;
 
+    float currSpb = 0.f;
+
     float absTime = 0.f;
     float absBeat = 0.f;
 
