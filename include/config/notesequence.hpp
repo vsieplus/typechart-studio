@@ -8,21 +8,22 @@
 #include "imgui_internal.h"
 #include "ImSequencer.h"
 
-static const char* SequencerItemTypeNames[] = { "Top [#]", "Middle [A-Z,./;':]", "Bottom [Fn]", "Stops", "Skips" };
+static const char* SequencerItemTypeNames[] = { "Lane 1 [Top]", "Lane 2 [Middle]", "Lane 3 [Bottom]", "Stops", "Skips" };
 
 struct NoteSequence : public ImSequencer::SequenceInterface {
     // my datas
-    NoteSequence() : mFrameMin(0.f), mFrameMax(100.f) {
-        myItems.push_back(NoteSequence::NoteSequenceItem{ SequencerItemType::TOP_NOTE, 10, 10 });
-    }
+    NoteSequence() : mFrameMin(0.f), mFrameMax(1000.f) {}
 
     enum SequencerItemType {
         TOP_NOTE,
         MID_NOTE,
         BOT_NOTE,
         STOP,
-        SKIP
+        SKIP,
+        NUM_ITEMTYPES
     };
+
+    int numLanes = 5;
 
     float mFrameMin, mFrameMax;
     struct NoteSequenceItem
@@ -39,7 +40,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     virtual int GetFrameMax() const {
         return mFrameMax;
     }
-    virtual int GetItemCount() const { return (int)myItems.size(); }
+    virtual int GetItemCount() const { return myItems.size(); }
 
     virtual int GetItemTypeCount() const { return sizeof(SequencerItemTypeNames) / sizeof(char*); }
     virtual const char* GetItemTypeName(int typeIndex) const { return SequencerItemTypeNames[typeIndex]; }
