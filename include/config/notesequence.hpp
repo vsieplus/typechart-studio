@@ -12,7 +12,7 @@ static const char* SequencerItemTypeNames[] = { "Top [#]", "Middle [A-Z,./;':]",
 
 struct NoteSequence : public ImSequencer::SequenceInterface {
     // my datas
-    NoteSequence() : mFrameMin(-10.f), mFrameMax(100.f) {
+    NoteSequence() : mFrameMin(0.f), mFrameMax(100.f) {
         myItems.push_back(NoteSequence::NoteSequenceItem{ SequencerItemType::TOP_NOTE, 10, 10 });
     }
 
