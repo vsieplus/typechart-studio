@@ -389,7 +389,102 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     ImGui::BeginChild("timedata");
 
     ImGui::Text("Chart Sections");
+    ImGui::SameLine();
+    
+    // add a section
+    static bool newSectionWindowOpen = false;
+    if(ImGui::Button(ICON_FA_PLUS)) {
+        newSectionWindowOpen = true;
+    }
 
+    if(newSectionWindowOpen) {
+        ImGui::Begin("New Section", &newSectionWindowOpen);
+
+        auto currSection = songpos.timeinfo.at(songpos.currentSection);
+
+        static int newSectionMeasure = currSection.beatpos.measure;
+        static int newSectionBeatsplit = currSection.beatpos.beatsplit;
+        static int newSectionSplit = currSection.beatpos.split;
+        static int newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
+        static float newSectionBPM = currSection.bpm;
+
+        static bool invalidInput = false;
+
+        ImGui::Text("Section start");
+        ImGui::SameLine();
+        HelpMarker("The absolute beat start is calculated as: measure + (split / beatsplit)\n"
+                   "For example, entering [5, 8, 5] means starting on the 5th measure on the\n"
+                   "6th eighth note (values are 0-indexed), aka beat 5.625.");
+
+        ImGui::InputInt("Measure", &newSectionMeasure);
+        ImGui::InputInt("Beatsplit", &newSectionBeatsplit);
+        ImGui::InputInt("Split", &newSectionSplit);
+
+        newSectionMeasure = std::max(0, newSectionMeasure);
+        newSectionBeatsplit = std::max(0, newSectionBeatsplit);
+        newSectionSplit = std::max(0, newSectionSplit);
+
+        ImGui::Separator();
+
+        ImGui::InputFloat("BPM", &newSectionBPM, 1, 5, "%.1f");
+        ImGui::InputInt("Beats Per Measure", &newSectionBeatsPerMeasure);
+
+        newSectionBPM = std::max(0.f, newSectionBPM);
+        newSectionBeatsPerMeasure = std::max(0, newSectionBeatsPerMeasure);
+
+        if(ImGui::Button("OK")) {
+            BeatPos newBeatpos = { newSectionMeasure, newSectionBeatsplit, newSectionSplit };
+
+            Timeinfo * prevSection = nullptr;
+            bool updateSectionStart = false;
+
+            for(auto & section : songpos.timeinfo) {
+                if(!prevSection && (section.beatpos < newBeatpos || section.beatpos == songpos.timeinfo.back().beatpos)) {
+                    prevSection = &section;
+                } else if(newBeatpos == section.beatpos) {
+                    invalidInput = true;
+                    ImGui::OpenPopup("Invalid input");
+                    prevSection = nullptr;
+                    break;
+                }
+                
+                if(!updateSectionStart && prevSection) {
+                    Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM);
+                    songpos.timeinfo.push_back(newSection);
+
+                    prevSection = &songpos.timeinfo.back();
+                    updateSectionStart = true;
+                    continue;
+                } 
+                
+                if(updateSectionStart) {
+                    // update section beat/time start after adding new section
+                    section.absBeatStart = section.calculateBeatStart(prevSection);
+                    section.absTimeStart = section.calculateTimeStart(prevSection);
+                    prevSection = &section;
+                }
+            }
+
+            if(updateSectionStart) {
+                std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
+                newSectionWindowOpen = false;
+            }
+        }
+
+        ImGui::SameLine();
+        if(ImGui::Button("Cancel")) {
+            newSectionWindowOpen = false;
+        }
+
+        if(invalidInput && ImGui::BeginPopup("Invalid input")) {
+            ImGui::Text("Section already exists at the specified beat position");
+            ImGui::EndPopup();
+        }
+
+        ImGui::End();
+    }
+
+    // display section info
     if(ImGui::BeginListBox("##chartsections", ImVec2(ImGui::GetContentRegionAvail().x / 2.f, ImGui::GetContentRegionAvail().y))) {
         for(unsigned int i = 0; i < songpos.timeinfo.size(); i++) {
             Timeinfo currSection = songpos.timeinfo.at(i);
