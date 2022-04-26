@@ -194,7 +194,7 @@ void Editor::update() {
 
         showMenuBar(menuFont);
         showInitEditWindow(&audioSystem, renderer);
-        showEditWindows(&audioSystem);
+        showEditWindows(&audioSystem, keysPressed);
 
         updateShortcuts();
 
