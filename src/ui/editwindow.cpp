@@ -309,12 +309,14 @@ void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     }
 }
 
-void closeWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterator & iter) {
+void closeWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
     availableWindowIDs.push(currWindow.ID);
     iter = editWindows.erase(iter);
+
+    audioSystem->stopMusic();
 }
 
-void tryCloseEditWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterator & iter) {
+void tryCloseEditWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
     if(currWindow.unsaved) {
         char msg[128];
         snprintf(msg, 128, "Unsaved work! [%s]", currWindow.name.c_str());
@@ -327,7 +329,7 @@ void tryCloseEditWindow(EditWindowData & currWindow, std::list<EditWindowData>::
 
         ImGui::SameLine();
         if(ImGui::Button("No")) {
-            closeWindow(currWindow, iter);
+            closeWindow(currWindow, iter, audioSystem);
         }
 
         ImGui::SameLine();
@@ -337,7 +339,7 @@ void tryCloseEditWindow(EditWindowData & currWindow, std::list<EditWindowData>::
 
         ImGui::End();
     } else {
-        closeWindow(currWindow, iter);
+        closeWindow(currWindow, iter, audioSystem);
     }
 }
 
@@ -647,7 +649,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
         ImGui::End();
 
         if(!currWindow.open) {
-            tryCloseEditWindow(currWindow, iter);
+            tryCloseEditWindow(currWindow, iter, audioSystem);
         }
     }
 }
