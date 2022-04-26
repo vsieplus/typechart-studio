@@ -521,7 +521,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos) {
     // let's create the sequencer
     static int selectedEntry = -1;
-    static int currentBeatsplit = 8;
+    static int currentBeatsplit = 4;
     static bool expanded = true;
     static bool updatedBeat = false;
     static float timelineZoom = 1.f;
