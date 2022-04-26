@@ -259,8 +259,6 @@ void AudioSystem::startMusic(float startPosition) {
 }
 
 void AudioSystem::setMusicPosition(float position) {
-    bool currentlyPaused = isMusicPaused();
-
     alSourceRewind(musicSource);
     alSourcei(musicSource, AL_BUFFER, 0);
 
@@ -280,10 +278,8 @@ void AudioSystem::setMusicPosition(float position) {
 
     alSourceQueueBuffers(musicSource, b, musicBuffers);
     
-    if(currentlyPaused) {
-        alSourcePlay(musicSource);
-        alSourcePause(musicSource);
-    }
+    alSourcePlay(musicSource);
+    alSourcePause(musicSource);
 }
 
 float AudioSystem::getMusicLength() {
