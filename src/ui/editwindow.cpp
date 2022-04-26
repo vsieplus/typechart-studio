@@ -529,7 +529,11 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             songpos.setSongBeatPosition(prevTargetBeat);
         }
 
-        updateAudioPosition(audioSystem, songpos);
+        if(songpos.absTime >= 0) {
+            updateAudioPosition(audioSystem, songpos);
+        } else {
+            songpos.setSongBeatPosition(0);
+        }
     }
 
     static float zoomStep = 0.25f;
@@ -564,7 +568,12 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             songpos.pause();
         }
         songpos.setSongBeatPosition(songpos.absBeat);
-        updateAudioPosition(audioSystem, songpos);
+
+        if(songpos.absTime >= 0) {
+            updateAudioPosition(audioSystem, songpos);
+        } else {
+            songpos.setSongBeatPosition(0);
+        }
     }
 
     // add a UI to edit that particular item
@@ -605,7 +614,11 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             songpos.setSongBeatPosition(targetBeat);
         }
 
-        updateAudioPosition(audioSystem, songpos);
+        if(songpos.absTime >= 0) {
+            updateAudioPosition(audioSystem, songpos);
+        } else {
+            songpos.setSongBeatPosition(0);
+        }
     }
 }
 
