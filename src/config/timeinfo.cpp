@@ -9,7 +9,7 @@ float Timeinfo::calculateBeatStart() {
 }
 
 float Timeinfo::calculateTimeStart(Timeinfo * prevTimeinfo) {
-    if(prevTimeinfo == nullptr) {
+    if(!prevTimeinfo) {
         return 0.f;
     } else {
         auto prevSectionBeatLength = absBeatStart - prevTimeinfo->absBeatStart;
