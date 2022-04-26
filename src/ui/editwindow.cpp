@@ -427,6 +427,15 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         ImGui::Separator();
 
         ImGui::InputFloat("BPM", &newSectionBPM, 1, 5, "%.1f");
+        ImGui::SameLine();
+        if(ImGui::Button(ICON_FA_X "2")) {
+            newSectionBPM *= 2;
+        }
+        ImGui::SameLine();
+        if(ImGui::Button(ICON_FA_DIVIDE "2")) {
+            newSectionBPM /= 2;
+        }
+
         ImGui::InputInt("Beats Per Measure", &newSectionBeatsPerMeasure);
 
         newSectionBPM = std::max(0.f, newSectionBPM);
@@ -439,7 +448,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
             bool updateSectionStart = false;
 
             for(auto & section : songpos.timeinfo) {
-                if(!prevSection && (section.beatpos < newBeatpos || section.beatpos == songpos.timeinfo.back().beatpos)) {
+                if(section.beatpos < newBeatpos || section.beatpos == songpos.timeinfo.back().beatpos) {
                     prevSection = &section;
                 } else if(newBeatpos == section.beatpos) {
                     invalidInput = true;
@@ -447,26 +456,29 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
                     prevSection = nullptr;
                     break;
                 }
-                
-                if(!updateSectionStart && prevSection) {
+
+                if(prevSection) {
                     Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM);
                     songpos.timeinfo.push_back(newSection);
 
-                    prevSection = &songpos.timeinfo.back();
                     updateSectionStart = true;
-                    continue;
-                } 
-                
-                if(updateSectionStart) {
-                    // update section beat/time start after adding new section
-                    section.absBeatStart = section.calculateBeatStart(prevSection);
-                    section.absTimeStart = section.calculateTimeStart(prevSection);
-                    prevSection = &section;
+                    break;
                 }
             }
 
             if(updateSectionStart) {
                 std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
+
+                // update following section(s) time start after adding new section
+                for(auto & section : songpos.timeinfo) {
+                    if(section.beatpos == newBeatpos) {
+                        prevSection = &section;
+                    } else if(newBeatpos < section.beatpos) {
+                        section.absTimeStart = section.calculateTimeStart(prevSection);
+                        prevSection = &section;
+                    }
+                }
+                
                 newSectionWindowOpen = false;
             }
         }
