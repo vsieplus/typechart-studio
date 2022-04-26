@@ -16,3 +16,7 @@ float Timeinfo::calculateTimeStart(Timeinfo * prevTimeinfo) {
         return prevTimeinfo->absTimeStart + prevSectionBeatLength * (60.f / prevTimeinfo->bpm); 
     }
 }
+
+bool operator<(const Timeinfo & lhs, const Timeinfo & rhs) {
+    return lhs.beatpos < rhs.beatpos;
+}

@@ -19,4 +19,7 @@ struct Timeinfo {
 };
 
 
+bool operator<(const Timeinfo & lhs, const Timeinfo & rhs);
+
+
 #endif // TIMEINFO_HPP
