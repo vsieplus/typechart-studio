@@ -497,6 +497,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     static int selectedEntry = -1;
     static int currentBeatsplit = 8;
     static bool expanded = true;
+    static bool updatedBeat = false;
     static float timelineZoom = 1.f;
 
     ImGui::PushItemWidth(130);
@@ -535,8 +536,13 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     ImGui::PopItemWidth();
 
     int beatsPerMeasure = songpos.timeinfo.size() > songpos.currentSection ? songpos.timeinfo.at(songpos.currentSection).beatsPerMeasure : 4;
-    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, 
-              &expanded, &selectedEntry, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
+    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, &expanded, &updatedBeat,
+                &selectedEntry, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
+    if(updatedBeat) {
+        songpos.setSongBeatPosition(songpos.absBeat);
+        updateAudioPosition(audioSystem, songpos);
+    }
+
     // add a UI to edit that particular item
     if (selectedEntry != -1) {
         const NoteSequence::NoteSequenceItem &item = chartinfo.notes.myItems[selectedEntry];
