@@ -352,6 +352,15 @@ std::pair<int, float> splitSecsbyMin(float seconds) {
     return std::make_pair(fullMinutes, leftoverSecs);
 }
 
+void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos) {
+    // udpate audio position
+    if(audioSystem->isMusicPlaying()) {
+        audioSystem->startMusic(songpos.absTime);
+    } else {
+        audioSystem->setMusicPosition(songpos.absTime);
+    }
+}
+
 void showEditWindowMetadata(EditWindowData & currWindow) {
     // left side bar (child window) to show config info + selected entity info
     ImGui::BeginChild("configInfo", ImVec2(ImGui::GetContentRegionAvail().x * .3f, ImGui::GetContentRegionAvail().y * .35f), true);
@@ -371,17 +380,43 @@ void showEditWindowMetadata(EditWindowData & currWindow) {
     ImGui::EndChild();
 }
 
-void showEditWindowChartData(EditWindowData & currWindow) {
+void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, SongPosition & songpos) {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
-    ImGui::Image(currWindow.artTexture.get(), ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
+    ImGui::Image(artTexture, ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
 
     ImGui::SameLine();
-    ImGui::BeginChild("timeAndNoteData");
+    ImGui::BeginChild("timedata");
 
     ImGui::Text("Chart Sections");
+
+    if(ImGui::BeginListBox("##chartsections", ImVec2(ImGui::GetContentRegionAvail().x / 2.f, ImGui::GetContentRegionAvail().y))) {
+        for(unsigned int i = 0; i < songpos.timeinfo.size(); i++) {
+            Timeinfo currSection = songpos.timeinfo.at(i);
+
+            char sectionDesc[256];
+            snprintf(sectionDesc, 256, "[%d,%d,%d] : BPM: %.1f, Beats / measure: %d", currSection.beatpos.measure, currSection.beatpos.beatsplit, currSection.beatpos.split,
+                     currSection.bpm, currSection.beatsPerMeasure);
+
+            bool isSelected = i == songpos.currentSection;
+
+            if(ImGui::Selectable(sectionDesc, &isSelected, ImGuiSelectableFlags_SelectOnClick)) {
+                songpos.setSongBeatPosition(currSection.absBeatStart);
+                updateAudioPosition(audioSystem, songpos);
+            }
+        }
+
+        ImGui::EndListBox();
+    }
     
     ImGui::EndChild();
+
+    ImGui::SameLine();
+    ImGui::BeginChild("selectedData");
+    ImGui::Text("Currently Selected: ");
+
+    ImGui::EndChild();
+
     ImGui::EndChild();
 }
 
@@ -481,15 +516,6 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     ImGui::SliderInt("Offset (ms)", &songpos.offsetMS, 0, 1000);
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
         ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
-}
-
-void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos) {
-    // udpate audio position
-    if(audioSystem->isMusicPlaying()) {
-        audioSystem->startMusic(songpos.absTime);
-    } else {
-        audioSystem->setMusicPosition(songpos.absTime);
-    }
 }
 
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos) {
@@ -638,7 +664,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
         showEditWindowMetadata(currWindow);
         ImGui::SameLine();
-        showEditWindowChartData(currWindow);
+        showEditWindowChartData(currWindow.artTexture.get(), audioSystem, currWindow.songpos);
 
         ImGui::Separator();
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, keysPressed);
