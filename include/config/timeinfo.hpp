@@ -6,7 +6,7 @@
 struct Timeinfo {
     Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure, float bpm);
 
-    float calculateBeatStart();
+    float calculateBeatStart(Timeinfo * prevTimeinfo);
     float calculateTimeStart(Timeinfo * prevTimeinfo);
 
     BeatPos beatpos;
