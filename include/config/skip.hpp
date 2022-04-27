@@ -1,15 +1,15 @@
 #ifndef SKIP_HPP
 #define SKIP_HPP
 
-#include "config/beatpos.hpp"
-
 struct Skip {
-    Skip(BeatPos pos, float skipTime, float beatDuration) : pos(pos), skipTime(skipTime), beatDuration(beatDuration) {}
+    Skip(float absBeat, float skipTime, float beatDuration) : absBeat(absBeat), skipTime(skipTime), beatDuration(beatDuration), beatEnd(absBeat + beatDuration) {}
 
-    BeatPos pos;
+    float absBeat;
 
     float skipTime;
     float beatDuration;
+
+    float beatEnd;
 };
 
 #endif // STOP_HPP

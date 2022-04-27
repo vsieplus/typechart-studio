@@ -4,10 +4,12 @@
 #include "config/beatpos.hpp"
 
 struct Stop {
-    Stop(BeatPos pos, float beatDuration) : pos(pos), beatDuration(beatDuration) {}
+    Stop(float absBeat, float beatDuration) : absBeat(absBeat), beatDuration(beatDuration), beatEnd(absBeat + beatDuration) {}
 
-    BeatPos pos;
+    float absBeat;
     float beatDuration;
+
+    float beatEnd;
 };
 
 #endif // STOP_HPP
