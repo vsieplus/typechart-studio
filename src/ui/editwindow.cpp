@@ -397,6 +397,32 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         newSectionWindowOpen = true;
     }
 
+    ImGui::SameLine();
+    // remove the selected section
+    if(ImGui::Button(ICON_FA_MINUS) && songpos.timeinfo.size() > 1) {
+        auto currSectionBeatpos = songpos.timeinfo.at(songpos.currentSection).beatpos;
+
+        Timeinfo * prevSection = nullptr;
+
+        // update following section(s) time start after adding new section
+        for(auto iter = songpos.timeinfo.begin(); iter != songpos.timeinfo.end(); iter++) {
+            auto & section = *iter;
+
+            if(section.beatpos == currSectionBeatpos) {
+                iter = songpos.timeinfo.erase(iter);
+                if(iter != songpos.timeinfo.begin())
+                    iter--;
+
+                prevSection = &(*iter);
+            } else if(currSectionBeatpos < section.beatpos) {
+                section.absTimeStart = section.calculateTimeStart(prevSection);
+                prevSection = &section;
+            }
+        }
+
+        songpos.setSongBeatPosition(songpos.absBeat);
+    }
+
     if(newSectionWindowOpen) {
         ImGui::Begin("New Section", &newSectionWindowOpen);
 
@@ -474,6 +500,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
                 }
                 
                 newSectionWindowOpen = false;
+                songpos.setSongBeatPosition(songpos.absBeat);
             }
         }
 
@@ -502,6 +529,11 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
             bool isSelected = i == songpos.currentSection;
 
             if(ImGui::Selectable(sectionDesc, &isSelected, ImGuiSelectableFlags_SelectOnClick)) {
+                if(!songpos.started) {
+                    songpos.start();
+                    songpos.pause();
+                }
+
                 songpos.setSongBeatPosition(currSection.absBeatStart);
                 updateAudioPosition(audioSystem, songpos);
             }

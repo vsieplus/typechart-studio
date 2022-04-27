@@ -74,6 +74,8 @@ void SongPosition::setSongTimePosition(float absTime) {
     currentSection = i;
     prevSectionBeats = timeinfo.at(currentSection).absBeatStart;
     prevSectionTime = timeinfo.at(currentSection).absTimeStart;
+
+    currSpb = 60.f / timeinfo.at(currentSection).bpm;
 }
 
 void SongPosition::setSongBeatPosition(float absBeat) {
