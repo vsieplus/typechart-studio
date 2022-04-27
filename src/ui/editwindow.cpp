@@ -445,10 +445,9 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
             BeatPos newBeatpos = { newSectionMeasure, newSectionBeatsplit, newSectionSplit };
 
             Timeinfo * prevSection = nullptr;
-            bool updateSectionStart = false;
 
             for(auto & section : songpos.timeinfo) {
-                if(section.beatpos < newBeatpos || section.beatpos == songpos.timeinfo.back().beatpos) {
+                if(section.beatpos < newBeatpos) {
                     prevSection = &section;
                 } else if(newBeatpos == section.beatpos) {
                     invalidInput = true;
@@ -456,17 +455,12 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
                     prevSection = nullptr;
                     break;
                 }
-
-                if(prevSection) {
-                    Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM);
-                    songpos.timeinfo.push_back(newSection);
-
-                    updateSectionStart = true;
-                    break;
-                }
             }
 
-            if(updateSectionStart) {
+            if(prevSection) {
+                Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM);
+                songpos.timeinfo.push_back(newSection);
+
                 std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
 
                 // update following section(s) time start after adding new section
@@ -519,8 +513,12 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     ImGui::EndChild();
 
     ImGui::SameLine();
-    ImGui::BeginChild("selectedData");
+
+    // pane to edit the selected entity
+    ImGui::BeginChild("selectedData", ImVec2(0, 0), true);
     ImGui::Text("Currently Selected: ");
+
+    
 
     ImGui::EndChild();
 
