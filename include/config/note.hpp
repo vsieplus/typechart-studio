@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "config/beatpos.hpp"
+#include "config/notesequenceitem.hpp"
 
 enum NoteSplit {
     WHOLE,
@@ -27,13 +27,9 @@ enum NoteType {
     KEYHOLDRELEASE
 };
 
-struct Note {
-    Note(float absTime, BeatPos absBeat, NoteType noteType, NoteSplit noteSplit, std::string key) :
-        absTime(absTime), absBeat(absBeat), noteType(noteType), noteSplit(noteSplit), key(key) {}
-
-    float absTime;
-
-    BeatPos absBeat;
+struct Note : public NoteSequenceItem {
+    Note(float absBeat, float beatEnd, NoteType noteType, NoteSplit noteSplit, SequencerItemType itemType, std::string key) :
+        NoteSequenceItem(absBeat, beatEnd, itemType), noteType(noteType), noteSplit(noteSplit), key(key) {}
 
     NoteType noteType;
     NoteSplit noteSplit;

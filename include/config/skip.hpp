@@ -1,15 +1,14 @@
 #ifndef SKIP_HPP
 #define SKIP_HPP
 
-struct Skip {
-    Skip(float absBeat, float skipTime, float beatDuration) : absBeat(absBeat), skipTime(skipTime), beatDuration(beatDuration), beatEnd(absBeat + beatDuration) {}
+#include "config/notesequenceitem.hpp"
 
-    float absBeat;
+struct Skip : public NoteSequenceItem {
+    Skip(float absBeat, float skipTime, float beatDuration, SequencerItemType itemType) : 
+        NoteSequenceItem(absBeat, absBeat + beatDuration, itemType), skipTime(skipTime), beatDuration(beatDuration) {}
 
     float skipTime;
     float beatDuration;
-
-    float beatEnd;
 };
 
 #endif // STOP_HPP

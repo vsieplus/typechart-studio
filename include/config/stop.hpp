@@ -1,15 +1,13 @@
 #ifndef STOP_HPP
 #define STOP_HPP
 
-#include "config/beatpos.hpp"
+#include "config/notesequenceitem.hpp"
 
-struct Stop {
-    Stop(float absBeat, float beatDuration) : absBeat(absBeat), beatDuration(beatDuration), beatEnd(absBeat + beatDuration) {}
+struct Stop : public NoteSequenceItem {
+    Stop(float absBeat, float beatDuration, SequencerItemType itemType) :
+        NoteSequenceItem(absBeat, absBeat + beatDuration, itemType), beatDuration(beatDuration) {}
 
-    float absBeat;
     float beatDuration;
-
-    float beatEnd;
 };
 
 #endif // STOP_HPP
