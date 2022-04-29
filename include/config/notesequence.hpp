@@ -22,33 +22,11 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     float mFrameMin, mFrameMax;
 
-    std::list<Note> mNotes;
-    std::list<Stop> mStops;
-    std::list<Stop> mSkips;
-
-    std::vector<NoteSequenceItem *> myItems;
+    std::vector<NoteSequenceItem> myItems;
 
     void addNote(float absBeat, float beatDuration, SequencerItemType itemType) {
-        auto iter = mNotes.begin();
-        while(iter != mNotes.end()) {
-            auto & note = *iter;
-
-            if(absBeat < note.absBeat) {
-                break;
-            }
-
-            iter++;
-        }
-
         Note newNote = Note(absBeat, absBeat + beatDuration, NoteType::KEYPRESS, NoteSplit::EIGHTH, itemType, "A");
-
-        if(iter == mNotes.end()) {
-            mNotes.push_back(newNote);
-            myItems.push_back(&mNotes.back());
-        } else {
-            iter = mNotes.insert(iter, newNote);
-            myItems.push_back(&(*iter));
-        }
+        myItems.push_back(newNote);
     }
 
     void addStop(float absBeat, float beatDuration) {
@@ -79,11 +57,21 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     }
 
+    void deleteItem(float absBeat, int itemType) {
+        for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
+            auto seqItem = *iter;
+            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat && absBeat < seqItem.beatEnd) {
+                myItems.erase(iter);
+                break;
+            }
+        }
+    }
+
     bool containsItemAt(float absBeat, int itemType) {
         for(auto seqItem : myItems) {
-            if((int)(seqItem->itemType) == itemType && absBeat >= seqItem->absBeat && absBeat < seqItem->beatEnd) {
+            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat && absBeat < seqItem.beatEnd) {
                 return true;
-            } 
+            }
         }
 
         return false;
@@ -104,15 +92,15 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     virtual void Get(int index, float** start, float** end, int* type, unsigned int* color)
     {
-        NoteSequenceItem * item = myItems[index];
+        NoteSequenceItem & item = myItems[index];
         if (color)
             *color = 0xFFAA8080; // same color for everyone, return color based on type
         if (start)
-            *start = &(item->absBeat);
+            *start = &(item.absBeat);
         if (end)
-            *end = &(item->beatEnd);
+            *end = &(item.beatEnd);
         if(type)
-            *type = (int)(item->itemType);
+            *type = (int)(item.itemType);
     }
 
     virtual size_t GetCustomHeight(int index) { return 30; }

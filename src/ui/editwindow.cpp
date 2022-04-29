@@ -440,7 +440,8 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         ImGui::SameLine();
         HelpMarker("The absolute beat start is calculated as: measure + (split / beatsplit)\n"
                    "For example, entering [5, 8, 5] means starting on the 5th measure on the\n"
-                   "6th eighth note (values are 0-indexed), aka beat 5.625.");
+                   "6th eighth note (split values are 0-indexed). Assuming 4 beats per measure,\n"
+                   "for the previous sections, this would be equivalent to beat 22.5");
 
         ImGui::InputInt("Measure", &newSectionMeasure);
         ImGui::InputInt("Beatsplit", &newSectionBeatsplit);
@@ -657,11 +658,11 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos) {
     // let's create the sequencer
-    static int selectedEntry = -1;
     static int currentBeatsplit = 4;
-    static bool expanded = true;
+    static int clickedItemType = 0;
     static bool updatedBeat = false;
-    static float timelineZoom = 1.f;
+    static float clickedBeat = 0.f;
+    static float timelineZoom = 2.f;
 
     ImGui::PushItemWidth(130);
     ImGui::Text("Beatsplit: ");
@@ -724,9 +725,13 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         timelineZoom = zoomStep * 2;
     }
 
+    bool leftClickedEntity = false;
+    bool rightClickedEntity = false;
+
     int beatsPerMeasure = songpos.timeinfo.size() > songpos.currentSection ? songpos.timeinfo.at(songpos.currentSection).beatsPerMeasure : 4;
-    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, &expanded, &updatedBeat,
-                &selectedEntry, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
+    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, nullptr, &updatedBeat, &leftClickedEntity, &rightClickedEntity,
+              &clickedBeat, &clickedItemType, nullptr, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
+
     if(updatedBeat) {
         if(!songpos.started) {
             songpos.start();
@@ -741,11 +746,17 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
     }
 
-    // add a UI to edit that particular item
-    if (selectedEntry != -1) {
-        const NoteSequence::NoteSequenceItem &item = chartinfo.notes.myItems[selectedEntry];
-        ImGui::Text("I am a %s, please edit me", SequencerItemTypeNames[item.mType]);
-        // switch (type) ....
+    // insert or update entity at the clicked beat
+    if(leftClickedEntity) {
+        if(chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
+            chartinfo.notes.editItem(clickedBeat, clickedItemType);
+        } else {
+            chartinfo.notes.addItem(clickedBeat, currentBeatsplitValue, clickedItemType);
+        }
+    }
+
+    if(rightClickedEntity && chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
+        chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
     }
 
     // sideways scroll
