@@ -668,6 +668,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     ImGui::Text("Beatsplit: ");
     ImGui::SameLine();
     ImGui::InputInt("##beatsplit", &currentBeatsplit, 1, 4);
+    currentBeatsplit = std::max(1, currentBeatsplit);
     float currentBeatsplitValue = 1.f / currentBeatsplit;
     
     ImGui::SameLine();
