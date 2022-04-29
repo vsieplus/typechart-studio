@@ -761,14 +761,14 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 
     // sideways scroll
-    if(io.MouseWheel != 0.f && io.KeyShift && !io.KeyCtrl) {
+    if(io.MouseWheel != 0.f && !io.KeyCtrl) {
         if(!songpos.started) {
             songpos.start();
             songpos.pause();
         }
 
         bool decrease = io.MouseWheel > 0;
-        int beatsplitChange = std::floor(io.MouseWheel) * 4;
+        int beatsplitChange = std::floor(io.MouseWheel);
         if(beatsplitChange == 0)
             beatsplitChange = 1;
 
