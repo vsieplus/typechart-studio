@@ -657,6 +657,11 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
 }
 
+
+ImGuiInputTextCallback * filterMiddle(ImGuiInputTextCallbackData* data) {
+
+}
+
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos) {
     // let's create the sequencer
     static int currentBeatsplit = 4;
@@ -753,12 +758,53 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 
     // insert or update entity at the clicked beat
-    if(leftClickedEntity) {
-        if(chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
-            chartinfo.notes.editItem(clickedBeat, clickedItemType);
-        } else {
-            chartinfo.notes.addItem(clickedBeat, 0, clickedItemType);
+    static char addedItem[2];
+    static float insertBeat;
+    static int insertItemType;
+    static ImGuiInputTextFlags addItemFlags = 0;
+    static ImGuiInputTextCallbackData addItemCallbackData;
+    if(leftClickedEntity && !ImGui::IsPopupOpen("add_item")) {
+        ImGui::OpenPopup("add_item");
+        insertBeat = clickedBeat;
+        insertItemType = clickedItemType;
+        
+        addItemFlags = ImGuiInputTextFlags_CharsUppercase;
+
+        switch (insertItemType) {
+            case SequencerItemType::TOP_NOTE:
+                addItemFlags |= ImGuiInputTextFlags_CharsDecimal;
+                break;                
+            case SequencerItemType::MID_NOTE:
+                //addItemFlags |= ImGuiInputTextFlags_CallbackCharFilter;
+                break;
+            case SequencerItemType::BOT_NOTE:
+                break;
+            default:
+                break;
         }
+    }
+
+    if(ImGui::BeginPopup("add_item")) {
+        ImGui::SetNextItemWidth(32);
+        if(!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+            ImGui::SetKeyboardFocusHere(0);
+
+        ImGui::InputText("##addnote_text", addedItem, 2, addItemFlags);
+        ImGui::SameLine();
+        if(ImGui::Button("OK") && addedItem[0] != '\0') {
+            std::string keyText(addedItem);
+
+            if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
+                chartinfo.notes.editItem(insertBeat, insertItemType);
+            } else {
+                chartinfo.notes.addItem(insertBeat, 0, insertItemType, keyText);
+            }
+
+            addedItem[0] = '\0';
+            ImGui::CloseCurrentPopup();
+        }
+        
+        ImGui::EndPopup();
     }
 
     if(rightClickedEntity && chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
