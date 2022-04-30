@@ -761,6 +761,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
     }
 
+    chartinfo.notes.update(songpos.absBeat, songpos.currSpb, audioSystem);
+
     // sideways scroll
     if(io.MouseWheel != 0.f && !io.KeyCtrl) {
         if(!songpos.started) {

@@ -14,6 +14,8 @@
 #include "config/skip.hpp"
 #include "config/stop.hpp"
 
+#include "systems/audiosystem.hpp"
+
 static const char* SequencerItemTypeNames[] = { "Lane 1 [Top]", "Lane 2 [Middle]", "Lane 3 [Bottom]", "Stops", "Skips" };
 
 struct NoteSequence : public ImSequencer::SequenceInterface {
@@ -24,9 +26,34 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     std::vector<NoteSequenceItem> myItems;
 
+    void update(float songBeat, float currSpb, AudioSystem * audioSystem) {
+        float currBeatDelay = .1f / currSpb;
+        
+        for(auto & item : myItems) {
+            switch(item.itemType) {
+                case SequencerItemType::TOP_NOTE:
+                case SequencerItemType::MID_NOTE:
+                case SequencerItemType::BOT_NOTE:
+                    if(item.passed) {
+                        break;
+                    } else if(item.absBeat + currBeatDelay < songBeat) {
+                        item.passed = true;
+                        audioSystem->playSound("keypress");
+                    }
+                    break;
+                case SequencerItemType::SKIP:
+                    break;
+                case SequencerItemType::STOP:
+                    break;
+            }
+        }
+    }
+
     void addNote(float absBeat, float beatDuration, SequencerItemType itemType) {
         Note newNote = Note(absBeat, absBeat + beatDuration, NoteType::KEYPRESS, NoteSplit::EIGHTH, itemType, "A");
         myItems.push_back(newNote);
+
+        std::sort(myItems.begin(), myItems.end());
     }
 
     void addStop(float absBeat, float beatDuration) {
