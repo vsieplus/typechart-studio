@@ -569,7 +569,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
 
     ImGui::SameLine();
-    if(ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || keysPressed[SDL_SCANCODE_SPACE]) {
+    if((ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || keysPressed[SDL_SCANCODE_SPACE]) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) {
         if(songpos.paused) {
             audioSystem->resumeMusic();
             songpos.unpause();
@@ -671,6 +671,14 @@ const std::unordered_map<std::string, std::set<char>> MIDDLE_ROW_KEYS = {
     {"COLEMAK", {'Q', 'W', 'F', 'P', 'G', 'J', 'L', 'U', 'Y', ';',
                 'A', 'R', 'S', 'T', 'D', 'H', 'N', 'E', 'I', 'O',
                 'Z', 'X', 'C', 'V', 'B', 'K', 'M', ',', '.', '/'}}
+};
+
+const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
+    {0, "L" ICON_FA_ARROW_UP },
+    {1, "R" ICON_FA_ARROW_UP },
+    {2, ICON_FA_ARROW_UP },
+    {3, ICON_FA_ARROW_LEFT_LONG },
+    {4, "_" },
 };
 
 int filterInputMiddleKey(ImGuiInputTextCallbackData * data) {
@@ -792,7 +800,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         insertBeat = clickedBeat;
         insertItemType = clickedItemType;
         
-        addItemFlags = ImGuiInputTextFlags_CharsUppercase;
+        addItemFlags = ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_EnterReturnsTrue;
 
         switch (insertItemType) {
             case SequencerItemType::TOP_NOTE:
@@ -802,6 +810,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 addItemFlags |= ImGuiInputTextFlags_CallbackCharFilter;
                 break;
             case SequencerItemType::BOT_NOTE:
+                addItemFlags = 0;
                 break;
             default:
                 break;
@@ -809,23 +818,63 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 
     if(ImGui::BeginPopup("add_item")) {
-        ImGui::SetNextItemWidth(32);
-        if(!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
-            ImGui::SetKeyboardFocusHere(0);
 
-        ImGui::InputText("##addnote_text", addedItem, 2, addItemFlags, filterInputMiddleKey, (void *)chartinfo.keyboardLayout.c_str());
-        ImGui::SameLine();
-        if(ImGui::Button("OK") && addedItem[0] != '\0') {
-            std::string keyText(addedItem);
+        switch(insertItemType) {
+            case SequencerItemType::TOP_NOTE:
+            case SequencerItemType::MID_NOTE:
+                ImGui::SetNextItemWidth(32);
+                if(!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+                    ImGui::SetKeyboardFocusHere(0);
 
-            if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
-                chartinfo.notes.editItem(insertBeat, insertItemType);
-            } else {
-                chartinfo.notes.addItem(insertBeat, 0, insertItemType, keyText);
-            }
+                if(ImGui::InputText("##addnote_text", addedItem, 2, addItemFlags, filterInputMiddleKey, (void *)chartinfo.keyboardLayout.c_str())) {
+                    if(addedItem[0] != '\0') {
+                        std::string keyText(addedItem);
 
-            addedItem[0] = '\0';
-            ImGui::CloseCurrentPopup();
+                        if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
+                            chartinfo.notes.editItem(insertBeat, insertItemType, keyText);
+                        } else {
+                            chartinfo.notes.addItem(insertBeat, 0, insertItemType, keyText);
+                        }
+
+                        addedItem[0] = '\0';
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+                break;
+            case SequencerItemType::BOT_NOTE:
+                static int selectedFuncKey = 0;
+                ImGui::SetNextItemWidth(64);
+
+                if(ImGui::BeginCombo("##addfunction_key", FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey).c_str())) {
+                    for(auto & [keyIdx, keyTxt] : FUNCTION_KEY_COMBO_ITEMS) {
+                        bool keySelected = false;
+                        if(ImGui::Selectable(keyTxt.c_str(), &keySelected))
+                            selectedFuncKey = keyIdx;
+
+                        if(keySelected)
+                            ImGui::SetItemDefaultFocus();
+                    }
+
+                    ImGui::EndCombo();
+                }
+
+                ImGui::SameLine();
+                if(ImGui::Button("OK")) {
+                    std::string keyText = FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey);                
+                        if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
+                            chartinfo.notes.editItem(insertBeat, insertItemType, keyText);
+                        } else {
+                            chartinfo.notes.addItem(insertBeat, 0, insertItemType, keyText);
+                        }
+
+                        selectedFuncKey = 0;
+                        ImGui::CloseCurrentPopup();
+                }
+                break;
+            case SequencerItemType::SKIP:
+                break;
+            case SequencerItemType::STOP:
+                break;
         }
         
         ImGui::EndPopup();
