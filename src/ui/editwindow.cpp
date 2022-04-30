@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstring>
 #include <filesystem>
+#include <float.h>
 #include <fstream>
 #include <map>
 
@@ -794,7 +795,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(songpos.absTime >= 0) {
             updateAudioPosition(audioSystem, songpos);
         } else {
-            songpos.setSongBeatPosition(0);
+            songpos.setSongBeatPosition(FLT_EPSILON);
         }
     }
 }
