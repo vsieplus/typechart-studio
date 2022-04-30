@@ -3,6 +3,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/editor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/beatpos.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/chartinfo.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/notesequenceitem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/songposition.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/timeinfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/texture.cpp
