@@ -26,6 +26,24 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     std::vector<NoteSequenceItem> myItems;
 
+    void resetPassed(float songBeat, float currSpb) {
+        float currBeatDelay = .1f / currSpb;
+        
+        for(auto & item : myItems) {
+            switch(item.itemType) {
+                case SequencerItemType::TOP_NOTE:
+                case SequencerItemType::MID_NOTE:
+                case SequencerItemType::BOT_NOTE:
+                    item.passed = item.absBeat + currBeatDelay < songBeat;
+                    break;
+                case SequencerItemType::SKIP:
+                    break;
+                case SequencerItemType::STOP:
+                    break;
+            }
+        }
+    }
+
     void update(float songBeat, float currSpb, AudioSystem * audioSystem) {
         float currBeatDelay = .1f / currSpb;
         

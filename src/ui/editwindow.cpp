@@ -702,6 +702,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         } else {
             songpos.setSongBeatPosition(0);
         }
+
+        chartinfo.notes.resetPassed(songpos.absBeat, songpos.currSpb);
     }
 
     static float zoomStep = 0.25f;
@@ -746,6 +748,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         } else {
             songpos.setSongBeatPosition(0);
         }
+
+        chartinfo.notes.resetPassed(songpos.absBeat, songpos.currSpb);
     }
 
     // insert or update entity at the clicked beat
@@ -799,6 +803,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         } else {
             songpos.setSongBeatPosition(FLT_EPSILON);
         }
+
+        chartinfo.notes.resetPassed(songpos.absBeat, songpos.currSpb);
     }
 }
 
