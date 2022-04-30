@@ -1,13 +1,14 @@
 #ifndef NOTESEQUENCEITEM_HPP
 #define NOTESEQUENCEITEM_HPP
 
+#include <string>
+
 enum SequencerItemType {
     TOP_NOTE,
     MID_NOTE,
     BOT_NOTE,
     STOP,
-    SKIP,
-    NUM_ITEMTYPES
+    SKIP
 };
 
 struct NoteSequenceItem {
@@ -19,6 +20,10 @@ struct NoteSequenceItem {
     SequencerItemType itemType;
 
     std::string displayText = "";
+
+    bool passed = false;
 };
+
+bool operator<(const NoteSequenceItem & lhs, const NoteSequenceItem & rhs);
 
 #endif // NOTESEQUENCEITEM_HPP
