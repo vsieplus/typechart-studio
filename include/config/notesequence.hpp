@@ -67,8 +67,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void addNote(float absBeat, float beatDuration, SequencerItemType itemType) {
-        Note newNote = Note(absBeat, absBeat + beatDuration, NoteType::KEYPRESS, NoteSplit::EIGHTH, itemType, "A");
+    void addNote(float absBeat, float beatDuration, SequencerItemType itemType, std::string displayText) {
+        Note newNote = Note(absBeat, absBeat + beatDuration, NoteType::KEYPRESS, NoteSplit::EIGHTH, itemType, displayText);
         myItems.push_back(newNote);
 
         std::sort(myItems.begin(), myItems.end());
@@ -82,12 +82,12 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     }
 
-    void addItem(float absBeat, float beatDuration, int itemType) {
+    void addItem(float absBeat, float beatDuration, int itemType, std::string displayText) {
         switch(itemType) {
             case SequencerItemType::TOP_NOTE:
             case SequencerItemType::MID_NOTE:
             case SequencerItemType::BOT_NOTE:
-                addNote(absBeat, beatDuration, (SequencerItemType)itemType);
+                addNote(absBeat, beatDuration, (SequencerItemType)itemType, displayText);
                 break;
             case SequencerItemType::STOP:
                 addStop(absBeat, beatDuration);
