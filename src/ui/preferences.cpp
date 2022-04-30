@@ -52,6 +52,8 @@ void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
             audioSystem->setSoundVolume(Preferences::soundVolume);
         }
 
+        ImGui::Checkbox("Copy Art and Music when Saving", &copyArtAndMusic);
+
         ImGui::End();
     }
 }

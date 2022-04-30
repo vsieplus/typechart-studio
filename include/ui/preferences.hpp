@@ -32,6 +32,8 @@ class Preferences {
         float musicVolume = 1.f;
         float soundVolume = 1.f;
 
+        bool copyArtAndMusic = true;
+
         bool showPreferences;
 };
 
