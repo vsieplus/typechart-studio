@@ -382,6 +382,30 @@ void showEditWindowMetadata(EditWindowData & currWindow) {
     ImGui::EndChild();
 }
 
+void removeSection(SongPosition & songpos) {
+    auto currSectionBeatpos = songpos.timeinfo.at(songpos.currentSection).beatpos;
+
+    Timeinfo * prevSection = nullptr;
+
+    // update following section(s) time start after adding new section
+    for(auto iter = songpos.timeinfo.begin(); iter != songpos.timeinfo.end(); iter++) {
+        auto & section = *iter;
+
+        if(section.beatpos == currSectionBeatpos) {
+            iter = songpos.timeinfo.erase(iter);
+            if(iter != songpos.timeinfo.begin())
+                iter--;
+
+            prevSection = &(*iter);
+        } else if(currSectionBeatpos < section.beatpos) {
+            section.absTimeStart = section.calculateTimeStart(prevSection);
+            prevSection = &section;
+        }
+    }
+
+    songpos.setSongBeatPosition(songpos.absBeat);
+}
+
 void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, SongPosition & songpos) {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
@@ -395,46 +419,47 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     
     // add a section
     static bool newSectionWindowOpen = false;
+    static bool newSectionWindowEdit = false;
+
+    auto currSection = songpos.timeinfo.at(songpos.currentSection);
+
+    static int newSectionMeasure = currSection.beatpos.measure;
+    static int newSectionBeatsplit = currSection.beatpos.beatsplit;
+    static int newSectionSplit = currSection.beatpos.split;
+    static int newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
+    static float newSectionBPM = currSection.bpm;
+
     if(ImGui::Button(ICON_FA_PLUS)) {
         newSectionWindowOpen = true;
+        newSectionWindowEdit = false;
+
+        newSectionMeasure = currSection.beatpos.measure;
+        newSectionBeatsplit = currSection.beatpos.beatsplit;
+        newSectionSplit = currSection.beatpos.split;
+        newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
+        newSectionBPM = currSection.bpm;
     }
 
     ImGui::SameLine();
     // remove the selected section
     if(ImGui::Button(ICON_FA_MINUS) && songpos.timeinfo.size() > 1) {
-        auto currSectionBeatpos = songpos.timeinfo.at(songpos.currentSection).beatpos;
+        removeSection(songpos);
+    }
 
-        Timeinfo * prevSection = nullptr;
-
-        // update following section(s) time start after adding new section
-        for(auto iter = songpos.timeinfo.begin(); iter != songpos.timeinfo.end(); iter++) {
-            auto & section = *iter;
-
-            if(section.beatpos == currSectionBeatpos) {
-                iter = songpos.timeinfo.erase(iter);
-                if(iter != songpos.timeinfo.begin())
-                    iter--;
-
-                prevSection = &(*iter);
-            } else if(currSectionBeatpos < section.beatpos) {
-                section.absTimeStart = section.calculateTimeStart(prevSection);
-                prevSection = &section;
-            }
-        }
-
-        songpos.setSongBeatPosition(songpos.absBeat);
+    ImGui::SameLine();
+    if(ImGui::Button("Edit")) {
+        newSectionWindowOpen = true;
+        newSectionWindowEdit = true;
+        
+        newSectionMeasure = currSection.beatpos.measure;
+        newSectionBeatsplit = currSection.beatpos.beatsplit;
+        newSectionSplit = currSection.beatpos.split;
+        newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
+        newSectionBPM = currSection.bpm;
     }
 
     if(newSectionWindowOpen) {
         ImGui::Begin("New Section", &newSectionWindowOpen);
-
-        auto currSection = songpos.timeinfo.at(songpos.currentSection);
-
-        static int newSectionMeasure = currSection.beatpos.measure;
-        static int newSectionBeatsplit = currSection.beatpos.beatsplit;
-        static int newSectionSplit = currSection.beatpos.split;
-        static int newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
-        static float newSectionBPM = currSection.bpm;
 
         static bool invalidInput = false;
 
@@ -443,7 +468,8 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         HelpMarker("The absolute beat start is calculated as: measure + (split / beatsplit)\n"
                    "For example, entering [5, 8, 5] means starting on the 6th measure on the\n"
                    "6th eighth note (measure, split values are 0-indexed). Assuming 4 beats\n"
-                   "per measure, for the previous sections, this would be equivalent to beat 26.5");
+                   "per measure, for the previous sections, this would be equivalent to beat 26.5\n"
+                   "These 'absolute' beats are based off of the song's initial bpm");
 
         ImGui::InputInt("Measure", &newSectionMeasure);
         ImGui::InputInt("Beatsplit", &newSectionBeatsplit);
@@ -476,27 +502,36 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
             Timeinfo * prevSection = nullptr;
 
             for(auto & section : songpos.timeinfo) {
-                if(section.beatpos < newBeatpos) {
+                if(newBeatpos == section.beatpos && newSectionWindowEdit) {
                     prevSection = &section;
-                } else if(newBeatpos == section.beatpos) {
-                    invalidInput = true;
-                    ImGui::OpenPopup("Invalid input");
-                    prevSection = nullptr;
+                } else if(section.beatpos < newBeatpos || section.beatpos == songpos.timeinfo.back().beatpos) {
+                    prevSection = &section;
+                }
+                
+                if(newBeatpos == section.beatpos) {
+                    if(!newSectionWindowEdit) {
+                        invalidInput = true;
+                        ImGui::OpenPopup("Invalid input");
+                        prevSection = nullptr;
+                    }
                     break;
                 }
             }
 
             if(prevSection) {
                 Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM);
-                songpos.timeinfo.push_back(newSection);
+                if(newSectionWindowEdit) {
+                    *prevSection = newSection;
+                } else {
+                    songpos.timeinfo.push_back(newSection);
+                }
 
                 std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
+                prevSection = &(songpos.timeinfo.front());
 
                 // update following section(s) time start after adding new section
                 for(auto & section : songpos.timeinfo) {
-                    if(section.beatpos == newBeatpos) {
-                        prevSection = &section;
-                    } else if(newBeatpos < section.beatpos) {
+                    if(*(prevSection) < section) {
                         section.absTimeStart = section.calculateTimeStart(prevSection);
                         prevSection = &section;
                     }
@@ -537,7 +572,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
                     songpos.pause();
                 }
 
-                songpos.setSongBeatPosition(currSection.absBeatStart);
+                songpos.setSongBeatPosition(currSection.absBeatStart + FLT_EPSILON);
                 updateAudioPosition(audioSystem, songpos);
             }
         }
