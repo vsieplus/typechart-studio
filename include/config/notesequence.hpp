@@ -98,8 +98,16 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void editItem(float absBeat, int itemType) {
-
+    void editItem(float absBeat, int itemType, std::string displayText) {
+        for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
+            auto & seqItem = *iter;
+            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat &&
+                (absBeat < seqItem.beatEnd || (seqItem.absBeat == seqItem.beatEnd && absBeat <= seqItem.beatEnd))) {
+                
+                seqItem.displayText = displayText;
+                break;
+            }
+        }
     }
 
     void deleteItem(float absBeat, int itemType) {
