@@ -92,7 +92,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     virtual const char* GetItemTypeName(int typeIndex) const { return SequencerItemTypeNames[typeIndex]; }
     virtual const char* GetItemLabel(int index) const { return ""; }
 
-    virtual void Get(int index, float** start, float** end, int* type, unsigned int* color)
+    virtual void Get(int index, float** start, float** end, int* type, unsigned int* color, const char** displayText)
     {
         NoteSequenceItem & item = myItems[index];
         if (color)
@@ -103,6 +103,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             *end = &(item.beatEnd);
         if(type)
             *type = (int)(item.itemType);
+
+        if(displayText)
+            *displayText = item.displayText.c_str();
     }
 
     virtual size_t GetCustomHeight(int index) { return 30; }
