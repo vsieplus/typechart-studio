@@ -60,7 +60,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     void deleteItem(float absBeat, int itemType) {
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
             auto seqItem = *iter;
-            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat && absBeat < seqItem.beatEnd) {
+            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat &&
+                (absBeat < seqItem.beatEnd || (seqItem.absBeat == seqItem.beatEnd && absBeat <= seqItem.beatEnd))) {
                 myItems.erase(iter);
                 break;
             }
@@ -69,7 +70,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     bool containsItemAt(float absBeat, int itemType) {
         for(auto seqItem : myItems) {
-            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat && absBeat < seqItem.beatEnd) {
+            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat &&
+                (absBeat < seqItem.beatEnd || (seqItem.absBeat == seqItem.beatEnd && absBeat <= seqItem.beatEnd))) {
                 return true;
             }
         }
