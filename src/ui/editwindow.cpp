@@ -27,7 +27,8 @@ std::string DEFAULT_WINDOW_NAME = "Untitled";
 const std::map<int, std::string> ID_TO_KEYBOARDLAYOUT = {
     { 0 , "QWERTY" },
     { 1, "DVORAK" },
-    { 2, "AZERTY" }
+    { 2, "AZERTY" },
+    { 3, "COLEMAK" }
 };
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -221,7 +222,7 @@ void showChartConfig() {
     ImGui::Text("Chart configuration");
 
     ImGui::InputText(ICON_FA_PENCIL " Typist", UItypist, 64);
-    ImGui::Combo(ICON_FA_KEYBOARD " Keyboard", &UIkeyboardLayout, "QWERTY\0DVORAK\0AZERTY\0\0");
+    ImGui::Combo(ICON_FA_KEYBOARD " Keyboard", &UIkeyboardLayout, "QWERTY\0DVORAK\0AZERTY\0COLEMAK\0");
     ImGui::SameLine();
     HelpMarker("Choose the keyboard layout that this chart is\n"
                 "intended to be played with. Charts will then be\n"
@@ -657,9 +658,32 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
 }
 
+const std::unordered_map<std::string, std::set<char>> MIDDLE_ROW_KEYS = {
+    {"QWERTY", {'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
+                'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';',
+                'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/'}},
+    {"DVORAK", {'\'', ',', '.', 'P', 'Y', 'F', 'G', 'C', 'R', 'L',
+                'A', 'O', 'E', 'U', 'I', 'D', 'H', 'T', 'N', 'S',
+                ';', 'Q', 'J', 'K', 'X', 'B', 'M', 'W', 'V', 'Z'}},
+    {"AZERTY", {'A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
+                'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M',
+                'W', 'X', 'C', 'V', 'B', 'N', ',', ';', ':', '!'}},
+    {"COLEMAK", {'Q', 'W', 'F', 'P', 'G', 'J', 'L', 'U', 'Y', ';',
+                'A', 'R', 'S', 'T', 'D', 'H', 'N', 'E', 'I', 'O',
+                'Z', 'X', 'C', 'V', 'B', 'K', 'M', ',', '.', '/'}}
+};
 
-ImGuiInputTextCallback * filterMiddle(ImGuiInputTextCallbackData* data) {
+int filterInputMiddleKey(ImGuiInputTextCallbackData * data) {
+    std::string keyboardLayout;
+    if(data->UserData) {
+        keyboardLayout = static_cast<char*>(data->UserData);
+    }
 
+    auto c = data->EventChar;
+    bool validChar = MIDDLE_ROW_KEYS.find(keyboardLayout) != MIDDLE_ROW_KEYS.end() &&
+                     MIDDLE_ROW_KEYS.at(keyboardLayout).find(c) != MIDDLE_ROW_KEYS.at(keyboardLayout).end();
+
+    return validChar ? 0 : 1;
 }
 
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos) {
@@ -775,7 +799,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 addItemFlags |= ImGuiInputTextFlags_CharsDecimal;
                 break;                
             case SequencerItemType::MID_NOTE:
-                //addItemFlags |= ImGuiInputTextFlags_CallbackCharFilter;
+                addItemFlags |= ImGuiInputTextFlags_CallbackCharFilter;
                 break;
             case SequencerItemType::BOT_NOTE:
                 break;
@@ -789,7 +813,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
             ImGui::SetKeyboardFocusHere(0);
 
-        ImGui::InputText("##addnote_text", addedItem, 2, addItemFlags);
+        ImGui::InputText("##addnote_text", addedItem, 2, addItemFlags, filterInputMiddleKey, (void *)chartinfo.keyboardLayout.c_str());
         ImGui::SameLine();
         if(ImGui::Button("OK") && addedItem[0] != '\0') {
             std::string keyText(addedItem);
