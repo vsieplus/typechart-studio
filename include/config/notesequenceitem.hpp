@@ -17,6 +17,8 @@ struct NoteSequenceItem {
     float beatEnd;
 
     SequencerItemType itemType;
+
+    std::string displayText = "";
 };
 
 #endif // NOTESEQUENCEITEM_HPP

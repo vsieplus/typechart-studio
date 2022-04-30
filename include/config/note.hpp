@@ -29,7 +29,7 @@ enum NoteType {
 
 struct Note : public NoteSequenceItem {
     Note(float absBeat, float beatEnd, NoteType noteType, NoteSplit noteSplit, SequencerItemType itemType, std::string key) :
-        NoteSequenceItem(absBeat, beatEnd, itemType), noteType(noteType), noteSplit(noteSplit), key(key) {}
+        NoteSequenceItem(absBeat, beatEnd, itemType), noteType(noteType), noteSplit(noteSplit) { displayText = key; }
 
     NoteType noteType;
     NoteSplit noteSplit;
