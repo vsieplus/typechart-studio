@@ -439,9 +439,9 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         ImGui::Text("Section start");
         ImGui::SameLine();
         HelpMarker("The absolute beat start is calculated as: measure + (split / beatsplit)\n"
-                   "For example, entering [5, 8, 5] means starting on the 5th measure on the\n"
-                   "6th eighth note (split values are 0-indexed). Assuming 4 beats per measure,\n"
-                   "for the previous sections, this would be equivalent to beat 22.5");
+                   "For example, entering [5, 8, 5] means starting on the 6th measure on the\n"
+                   "6th eighth note (measure, split values are 0-indexed). Assuming 4 beats\n"
+                   "per measure, for the previous sections, this would be equivalent to beat 26.5");
 
         ImGui::InputInt("Measure", &newSectionMeasure);
         ImGui::InputInt("Beatsplit", &newSectionBeatsplit);
@@ -752,7 +752,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
             chartinfo.notes.editItem(clickedBeat, clickedItemType);
         } else {
-            chartinfo.notes.addItem(clickedBeat, currentBeatsplitValue, clickedItemType);
+            chartinfo.notes.addItem(clickedBeat, 0, clickedItemType);
         }
     }
 
