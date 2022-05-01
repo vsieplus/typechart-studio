@@ -2,8 +2,10 @@
 #define NOTESEQUENCE_HPP
 
 #include <algorithm>
+#include <float.h>
 #include <list>
 #include <vector>
+#include <unordered_map>
 
 #include "imgui.h"
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -18,6 +20,23 @@
 
 static const char* SequencerItemTypeNames[] = { "Lane 1 [Top]", "Lane 2 [Middle]", "Lane 3 [Bottom]", "Stops", "Skips" };
 
+const std::unordered_map<int, NoteSplit> DENOMINATOR_TO_NOTESPLIT = {
+    { 1, NoteSplit::WHOLE },
+    { 2, NoteSplit::HALF },
+    { 4, NoteSplit::QUARTER },
+    { 8, NoteSplit::EIGHTH },
+    { 16, NoteSplit::SIXTEENTH },
+    { 32, NoteSplit::THIRTYSECOND },
+    { 64, NoteSplit::SIXTYFOURTH },
+    { 128, NoteSplit::ONETWENTYEIGHTH },
+    { 3, NoteSplit::TWELFTH },
+    { 6, NoteSplit::TWELFTH },
+    { 12, NoteSplit::TWELFTH },
+    { 24, NoteSplit::TWENTYFOURTH },
+    { 48, NoteSplit::FORTYEIGHTH },
+    { 96, NoteSplit::NINETYSIXTH }
+};
+
 struct NoteSequence : public ImSequencer::SequenceInterface {
     // my datas
     NoteSequence() : mFrameMin(0.f), mFrameMax(1000.f) {}
@@ -25,6 +44,18 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     float mFrameMin, mFrameMax;
 
     std::vector<NoteSequenceItem> myItems;
+
+    NoteSplit computeNoteSplit(int noteSplitNumerator, int noteSplitDenominator) {
+        auto gcd = std::__gcd(noteSplitNumerator, noteSplitDenominator);
+        noteSplitNumerator /= gcd;
+        noteSplitDenominator /= gcd;
+
+        if(DENOMINATOR_TO_NOTESPLIT.find(noteSplitDenominator) != DENOMINATOR_TO_NOTESPLIT.end()) {
+            return DENOMINATOR_TO_NOTESPLIT.at(noteSplitDenominator);
+        } else {
+            return NoteSplit::WHOLE;
+        }    
+    }
 
     void resetPassed(float songBeat, float currSpb) {
         float currBeatDelay = .1f / currSpb;
@@ -68,7 +99,12 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     void addNote(float absBeat, float beatDuration, SequencerItemType itemType, std::string displayText) {
-        Note newNote = Note(absBeat, absBeat + beatDuration, NoteType::KEYPRESS, NoteSplit::EIGHTH, itemType, displayText);
+        NoteType noteType = NoteType::KEYPRESS;
+        if(beatDuration > FLT_EPSILON) {
+            noteType = NoteType::KEYHOLDSTART;
+        }
+
+        Note newNote = Note(absBeat, absBeat + beatDuration, noteType, NoteSplit::EIGHTH, itemType, displayText);
         myItems.push_back(newNote);
 
         std::sort(myItems.begin(), myItems.end());
