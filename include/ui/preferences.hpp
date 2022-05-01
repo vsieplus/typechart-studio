@@ -23,6 +23,7 @@ class Preferences {
         void showPreferencesWindow(AudioSystem * audioSystem);
 
         const char * getInputDir() const;
+        const char * getSaveDir() const;
     private:
         Preferences() {}
 

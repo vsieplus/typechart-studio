@@ -87,3 +87,7 @@ void Preferences::setShowPreferences(bool showPreferences) {
 const char * Preferences::getInputDir() const {
     return inputDir;
 }
+
+const char * Preferences::getSaveDir() const {
+    return outputDir;
+}
