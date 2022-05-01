@@ -59,11 +59,7 @@ void showFileMenu() {
     }
 
     if(ImGui::MenuItem("Save", "Ctrl+S")) {
-
-    }
-
-    if(ImGui::MenuItem("Save As..")) {
-
+        startSaveCurrentChart();
     }
 }
 
