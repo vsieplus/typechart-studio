@@ -319,6 +319,8 @@ void closeWindow(EditWindowData & currWindow, std::vector<EditWindowData>::itera
 void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePath, std::string saveDir) {
     currWindow.chartinfo.saveChart(chartSavePath);
     currWindow.songinfo.saveSonginfo(saveDir);
+    currWindow.initialSaved = true;
+    currWindow.unsaved = false;
 }
 
 void startSaveCurrentChart(bool saveAs) {
@@ -1049,9 +1051,6 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
                 std::string saveDir = ImGuiFileDialog::Instance()->GetCurrentPath();
 
                 saveCurrentChartFiles(currWindow, chartSavePath, saveDir);
-
-                currWindow.initialSaved = true;
-                currWindow.unsaved = false;
                 currWindow.name = chartSaveFilename;
 
                 updatedName = true;
