@@ -84,6 +84,10 @@ void Preferences::setShowPreferences(bool showPreferences) {
     this->showPreferences = showPreferences;
 }
 
+bool Preferences::getCopyArtAndMusic() const {
+    return copyArtAndMusic;
+}
+
 const char * Preferences::getInputDir() const {
     return inputDir;
 }

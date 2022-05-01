@@ -22,6 +22,8 @@ class Preferences {
         void setShowPreferences(bool showPreferences);
         void showPreferencesWindow(AudioSystem * audioSystem);
 
+        bool getCopyArtAndMusic() const;
+
         const char * getInputDir() const;
         const char * getSaveDir() const;
     private:
