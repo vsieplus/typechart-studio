@@ -1,7 +1,6 @@
 #include "config/chartinfo.hpp"
 
 #include <nlohmann/json.hpp>
-
 using json = nlohmann::json;
 
 // write prettified JSON to another file
@@ -9,12 +8,12 @@ using json = nlohmann::json;
 //o << std::setw(4) << j << std::endl;
 
 ChartInfo::ChartInfo(std::string chartPath) {
-
+    savePath = chartPath;
 }
 
 ChartInfo::ChartInfo(int level, std::string typist, std::string keyboardLayout) : 
         level(level), typist(typist), keyboardLayout(keyboardLayout) {}
 
 void ChartInfo::saveChart(std::string chartPath) {
-
+    savePath = chartPath;
 }

@@ -20,6 +20,8 @@ struct ChartInfo {
     std::string typist;
     std::string keyboardLayout;
 
+    std::string savePath = "";
+
     NoteSequence notes;
 };
 

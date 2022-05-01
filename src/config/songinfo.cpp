@@ -10,6 +10,7 @@ using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 void SongInfo::saveSonginfo(std::string saveDir) {
+    this->saveDir = saveDir;
     fs::path songinfoSavePath = fs::path(saveDir) / fs::path("songinfo.json");
 
     // save simple json file with songinfo metadata

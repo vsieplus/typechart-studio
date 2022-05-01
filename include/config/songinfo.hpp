@@ -23,6 +23,8 @@ struct SongInfo {
     std::string musicFilepath;
     std::string coverartFilepath;
 
+    std::string saveDir = "";
+
     float musicPreviewStart = 0.f;
     float musicPreviewStop = 0.f;
 };
