@@ -53,6 +53,7 @@ static char UItitle[64] = "";
 static char UIartist[64] = "";
 static char UIbpmtext[16] = "";
 
+const char * saveFileFilter = "(*.type){.type}";
 const char * songinfoFileFilter = "(*.json){.json}";
 const char * imageFileFilters = "(*.jpg *.png){.jpg,.png}";
 const char * musicFileFilters = "(*.flac *.mp3 *.ogg *.wav){.flac,.mp3,.ogg,.wav}";
@@ -318,6 +319,11 @@ void closeWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterato
     audioSystem->stopMusic();
 }
 
+void startSaveCurrentChart() {
+    ImGuiFileDialog::Instance()->OpenDialog("saveChart", "Save current chart", saveFileFilter, Preferences::Instance().getSaveDir(),
+                                            1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+}
+
 void tryCloseEditWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
     if(currWindow.unsaved) {
         char msg[128];
@@ -326,7 +332,7 @@ void tryCloseEditWindow(EditWindowData & currWindow, std::list<EditWindowData>::
 
         ImGui::Text("Save before closing?");
         if(ImGui::Button("Yes")) {
-            // save chart
+            startSaveCurrentChart();
         }
 
         ImGui::SameLine();
@@ -1004,6 +1010,24 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
         if(!currWindow.open) {
             tryCloseEditWindow(currWindow, iter, audioSystem);
+        }
+
+        if(ImGuiFileDialog::Instance()->Display("saveChart", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
+            if (ImGuiFileDialog::Instance()->IsOk()) {
+                std::string chartSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
+                std::string chartSaveFilename = ImGuiFileDialog::Instance()->GetCurrentFileName();
+                std::string saveDir = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+                fs::path songinfoSavePath = fs::path(saveDir) / fs::path("songinfo.json");
+
+                currWindow.chartinfo.saveChart(chartSavePath);
+                currWindow.songinfo.saveSonginfo(songinfoSavePath.string());
+
+                currWindow.unsaved = false;
+                currWindow.name = chartSaveFilename;
+            }
+
+            ImGuiFileDialog::Instance()->Close();
         }
     }
 }

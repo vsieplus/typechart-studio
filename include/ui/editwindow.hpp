@@ -35,6 +35,7 @@ static std::queue<int> availableWindowIDs;
 static std::list<EditWindowData> editWindows;
 
 void startNewEditWindow();
+void startSaveCurrentChart();
 
 void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer);
 void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed);

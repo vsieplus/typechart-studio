@@ -210,6 +210,10 @@ void Editor::updateShortcuts() {
     if(shortcutsActivated.at(SDLK_p)) {
         Preferences::Instance().setShowPreferences(true);
     }
+
+    if(shortcutsActivated.at(SDLK_s)) {
+        startSaveCurrentChart();
+    }
 }
 
 void Editor::render() {
