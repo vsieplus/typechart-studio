@@ -425,7 +425,7 @@ void removeSection(SongPosition & songpos) {
     songpos.setSongBeatPosition(songpos.absBeat);
 }
 
-void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, SongPosition & songpos) {
+void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, SongPosition & songpos, bool & unsaved) {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
     ImGui::Image(artTexture, ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
@@ -558,6 +558,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
                 
                 newSectionWindowOpen = false;
                 songpos.setSongBeatPosition(songpos.absBeat);
+                unsaved = true;
             }
         }
 
@@ -1027,7 +1028,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
         showEditWindowMetadata(currWindow);
         ImGui::SameLine();
-        showEditWindowChartData(currWindow.artTexture.get(), audioSystem, currWindow.songpos);
+        showEditWindowChartData(currWindow.artTexture.get(), audioSystem, currWindow.songpos, currWindow.unsaved);
 
         ImGui::Separator();
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, keysPressed);
