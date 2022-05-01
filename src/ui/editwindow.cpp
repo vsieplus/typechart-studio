@@ -139,8 +139,7 @@ void showSongConfig() {
     // song config
     ImGui::Text(ICON_FA_CLIPBOARD " Song configuration");
     if(ImGui::Button("Load from existing...")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectSonginfo", "Select songinfo.json", songinfoFileFilter, 
-                                                Preferences::Instance().getInputDir());
+        ImGuiFileDialog::Instance()->OpenModal("selectSonginfo", "Select songinfo.json", songinfoFileFilter, Preferences::Instance().getInputDir(), "");
     }
     
     ImGui::SameLine();
@@ -173,8 +172,7 @@ void showSongConfig() {
     ImGui::InputText(ICON_FA_MUSIC " Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##music")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectMusicFile", "Select Music", musicFileFilters,
-                                                Preferences::Instance().getInputDir());
+        ImGuiFileDialog::Instance()->OpenModal("selectMusicFile", "Select Music", musicFileFilters, Preferences::Instance().getInputDir(), "");
     }
 
     // music file dialog
@@ -192,8 +190,7 @@ void showSongConfig() {
     ImGui::InputText(ICON_FA_PHOTO_FILM " Art", UIcoverArtFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##art")) {
-        ImGuiFileDialog::Instance()->OpenDialog("selectArt", "Select Art", imageFileFilters,
-                                                Preferences::Instance().getInputDir());
+        ImGuiFileDialog::Instance()->OpenModal("selectArt", "Select Art", imageFileFilters, Preferences::Instance().getInputDir(), "");
     }
 
     // art file dialog
@@ -312,19 +309,35 @@ void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     }
 }
 
-void closeWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
+void closeWindow(EditWindowData & currWindow, std::vector<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
     availableWindowIDs.push(currWindow.ID);
     iter = editWindows.erase(iter);
 
     audioSystem->stopMusic();
 }
 
-void startSaveCurrentChart() {
-    ImGuiFileDialog::Instance()->OpenModal("saveChart", "Save current chart", saveFileFilter, Preferences::Instance().getSaveDir(),
-                                            1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePath, std::string saveDir) {
+    currWindow.chartinfo.saveChart(chartSavePath);
+    currWindow.songinfo.saveSonginfo(saveDir);
 }
 
-void tryCloseEditWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
+void startSaveCurrentChart(bool saveAs) {
+    if(currentWindow >= 0 && currentWindow < editWindows.size()) {
+        auto & editWindow = editWindows.at(currentWindow);
+        if(editWindow.unsaved) {
+            // save vs save as
+            if(saveAs || !editWindow.initialSaved) {
+                ImGuiFileDialog::Instance()->OpenModal("saveChart", "Save current chart", saveFileFilter, Preferences::Instance().getSaveDir(), "Untitled.type",
+                                                        1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+            } else {
+                saveCurrentChartFiles(editWindow, editWindow.chartinfo.savePath, editWindow.songinfo.saveDir);
+            }
+        }
+    }
+
+}
+
+void tryCloseEditWindow(EditWindowData & currWindow, std::vector<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
     if(currWindow.unsaved) {
         char msg[128];
         snprintf(msg, 128, "Unsaved work! [%s]", currWindow.name.c_str());
@@ -735,7 +748,7 @@ int filterInputMiddleKey(ImGuiInputTextCallbackData * data) {
     return validChar ? 0 : 1;
 }
 
-void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, std::vector<bool> & keysPressed) {
+void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, std::vector<bool> & keysPressed) {
     // let's create the sequencer
     static int currentBeatsplit = 4;
     static int clickedItemType = 0;
@@ -797,7 +810,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
     // ctrl + scroll to adjust zoom
     auto & io = ImGui::GetIO();
-    if(io.MouseWheel != 0.f && io.KeyCtrl && !io.KeyShift) {
+    if(!ImGuiFileDialog::Instance()->IsOpened() && io.MouseWheel != 0.f && io.KeyCtrl && !io.KeyShift) {
         int multiplier = io.MouseWheel > 0 ? 1 : -1;
 
         timelineZoom += zoomStep * multiplier;
@@ -838,7 +851,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     static bool startedNote = false;
     static ImGuiInputTextFlags addItemFlags = 0;
     static ImGuiInputTextCallbackData addItemCallbackData;
-    if(leftClickedEntity && !ImGui::IsPopupOpen("add_item")) {
+    if(!ImGuiFileDialog::Instance()->IsOpened() && leftClickedEntity && !ImGui::IsPopupOpen("add_item")) {
         insertBeat = clickedBeat;
         insertItemType = clickedItemType;
         
@@ -863,7 +876,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 
     static float endBeat;
-    if(startedNote && leftClickReleased && !ImGui::IsPopupOpen("add_item") && clickedBeat >= insertBeat) {
+    if(!ImGuiFileDialog::Instance()->IsOpened() && startedNote && leftClickReleased && !ImGui::IsPopupOpen("add_item") && clickedBeat >= insertBeat) {
         ImGui::OpenPopup("add_item");
         endBeat = clickedBeat;
 
@@ -896,6 +909,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
                         addedItem[0] = '\0';
                         ImGui::CloseCurrentPopup();
+                        unsaved = true;
                     }
                 }
                 break;
@@ -926,6 +940,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
                         selectedFuncKey = 0;
                         ImGui::CloseCurrentPopup();
+                        unsaved = true;
                 }
                 break;
             case SequencerItemType::SKIP:
@@ -937,14 +952,14 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         ImGui::EndPopup();
     }
 
-    if(rightClickedEntity && chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
+    if(!ImGuiFileDialog::Instance()->IsOpened() && rightClickedEntity && chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
         chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
     }
 
     chartinfo.notes.update(songpos.absBeat, songpos.currSpb, audioSystem);
 
     // sideways scroll
-    if(io.MouseWheel != 0.f && !io.KeyCtrl) {
+    if(!ImGuiFileDialog::Instance()->IsOpened() && io.MouseWheel != 0.f && !io.KeyCtrl) {
         if(!songpos.started) {
             songpos.start();
             songpos.pause();
@@ -985,16 +1000,30 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 }
 
 void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed) {
+    static bool updatedName = false;
+    static ImVec2 sizeBeforeUpdate;
+
+    unsigned int i = 0;
     for(auto iter = editWindows.begin(); iter != editWindows.end(); iter++) {
         auto & currWindow = *iter;
-
         currWindow.songpos.update();
+
 
         ImGuiWindowFlags windowFlags = 0;
         if(currWindow.unsaved)  windowFlags |= ImGuiWindowFlags_UnsavedDocument;
         if(!currWindow.open)    windowFlags |= ImGuiWindowFlags_NoInputs;
 
+        if(updatedName) {
+            updatedName = false;
+            ImGui::SetNextWindowSize(sizeBeforeUpdate);
+        }
+
         ImGui::Begin(currWindow.name.c_str(), &(currWindow.open), windowFlags);
+        ImVec2 currWindowSize = ImGui::GetWindowSize();
+
+        if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+            currentWindow = i;
+        }
 
         showEditWindowMetadata(currWindow);
         ImGui::SameLine();
@@ -1004,7 +1033,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, keysPressed);
         ImGui::Separator();
 
-        showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, keysPressed);
+        showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, keysPressed);
 
         ImGui::End();
 
@@ -1018,14 +1047,19 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
                 std::string chartSaveFilename = ImGuiFileDialog::Instance()->GetCurrentFileName();
                 std::string saveDir = ImGuiFileDialog::Instance()->GetCurrentPath();
 
-                currWindow.chartinfo.saveChart(chartSavePath);
-                currWindow.songinfo.saveSonginfo(saveDir);
+                saveCurrentChartFiles(currWindow, chartSavePath, saveDir);
 
+                currWindow.initialSaved = true;
                 currWindow.unsaved = false;
                 currWindow.name = chartSaveFilename;
+
+                updatedName = true;
+                sizeBeforeUpdate = currWindowSize;
             }
 
             ImGuiFileDialog::Instance()->Close();
         }
+
+        i++;
     }
 }

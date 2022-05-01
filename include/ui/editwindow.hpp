@@ -1,9 +1,9 @@
 #ifndef EDITWINDOW_HPP
 #define EDITWINDOW_HPP
 
-#include <list>
 #include <queue>
 #include <string>
+#include <vector>
 
 #include "config/chartinfo.hpp"
 #include "config/songinfo.hpp"
@@ -19,6 +19,7 @@ struct EditWindowData {
 
     bool open;
     bool unsaved = true;
+    bool initialSaved = false;
 
     int ID;
     std::string name;
@@ -32,10 +33,12 @@ struct EditWindowData {
 };
 
 static std::queue<int> availableWindowIDs;
-static std::list<EditWindowData> editWindows;
+static std::vector<EditWindowData> editWindows;
+
+static unsigned int currentWindow = 0;
 
 void startNewEditWindow();
-void startSaveCurrentChart();
+void startSaveCurrentChart(bool saveAs = false);
 
 void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer);
 void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
