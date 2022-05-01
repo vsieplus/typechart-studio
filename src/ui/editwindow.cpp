@@ -320,7 +320,7 @@ void closeWindow(EditWindowData & currWindow, std::list<EditWindowData>::iterato
 }
 
 void startSaveCurrentChart() {
-    ImGuiFileDialog::Instance()->OpenDialog("saveChart", "Save current chart", saveFileFilter, Preferences::Instance().getSaveDir(),
+    ImGuiFileDialog::Instance()->OpenModal("saveChart", "Save current chart", saveFileFilter, Preferences::Instance().getSaveDir(),
                                             1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
 }
 
@@ -1018,10 +1018,8 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
                 std::string chartSaveFilename = ImGuiFileDialog::Instance()->GetCurrentFileName();
                 std::string saveDir = ImGuiFileDialog::Instance()->GetCurrentPath();
 
-                fs::path songinfoSavePath = fs::path(saveDir) / fs::path("songinfo.json");
-
                 currWindow.chartinfo.saveChart(chartSavePath);
-                currWindow.songinfo.saveSonginfo(songinfoSavePath.string());
+                currWindow.songinfo.saveSonginfo(saveDir);
 
                 currWindow.unsaved = false;
                 currWindow.name = chartSaveFilename;
