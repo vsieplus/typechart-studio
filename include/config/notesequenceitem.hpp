@@ -13,6 +13,7 @@ enum SequencerItemType {
 
 struct NoteSequenceItem {
     NoteSequenceItem(float absBeat, float beatEnd, SequencerItemType itemType) : absBeat(absBeat), beatEnd(beatEnd), itemType(itemType) {}
+    virtual ~NoteSequenceItem() {}
 
     float absBeat;
     float beatEnd;
