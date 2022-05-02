@@ -751,9 +751,50 @@ int filterInputMiddleKey(ImGuiInputTextCallbackData * data) {
     return validChar ? 0 : 1;
 }
 
+BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<Timeinfo> & timeinfo) {
+    int measure = 0;
+    int measureSplit = 0;
+    int split = 0;
+
+    int prevBeatsPerMeasure = 0;
+    float prevSectionAbsBeat = 0.f;
+
+    unsigned int i = 0;
+    for(const auto & time : timeinfo) {
+        // track current measure
+        if(absBeat >= time.absBeatStart && i > 0) {
+            float prevSectionMeasures = (time.absBeatStart - prevSectionAbsBeat) / prevBeatsPerMeasure;
+            int prevSectionMeasuresFull = std::floor(prevSectionMeasures);
+
+            measure += prevSectionMeasuresFull;
+        }
+
+        // calculate the leftover beats
+        if (absBeat < time.absBeatStart || i == timeinfo.size() - 1) {
+            int currBeatsPerMeasure = (i == timeinfo.size() - 1) ? time.beatsPerMeasure : prevBeatsPerMeasure;
+
+            float leftoverMeasures = (absBeat - prevSectionAbsBeat) / currBeatsPerMeasure;
+            int leftoverMeasuresFull = std::floor(leftoverMeasures);
+            float leftoverBeats = (leftoverMeasures * leftoverMeasuresFull) * currBeatsPerMeasure;
+            int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit);
+
+            measure += leftoverMeasuresFull;
+            measureSplit = currentBeatsplit * currBeatsPerMeasure;
+            split = leftoverBeatsplits - 1;
+            break;            
+        }
+
+        prevSectionAbsBeat = time.absBeatStart;
+        prevBeatsPerMeasure = time.beatsPerMeasure;
+        i++;
+    }
+
+    return (BeatPos){measure, measureSplit, split};
+}
+
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, std::vector<bool> & keysPressed) {
     // let's create the sequencer
-    static int currentBeatsplit = 4;
+    static int currentBeatsplit = 2;
     static int clickedItemType = 0;
     static bool updatedBeat = false;
     static float clickedBeat = 0.f;
@@ -850,6 +891,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     // insert or update entity at the clicked beat
     static char addedItem[2];
     static float insertBeat;
+    static BeatPos insertBeatpos;
     static int insertItemType;
     static bool startedNote = false;
     static ImGuiInputTextFlags addItemFlags = 0;
@@ -857,6 +899,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     if(!ImGuiFileDialog::Instance()->IsOpened() && leftClickedEntity && !ImGui::IsPopupOpen("add_item")) {
         insertBeat = clickedBeat;
         insertItemType = clickedItemType;
+
+        insertBeatpos = calculateBeatpos(clickedBeat, currentBeatsplit, songpos.timeinfo);
         
         addItemFlags = ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_EnterReturnsTrue;
 
@@ -879,9 +923,12 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 
     static float endBeat;
+    static BeatPos endBeatpos;
     if(!ImGuiFileDialog::Instance()->IsOpened() && startedNote && leftClickReleased && !ImGui::IsPopupOpen("add_item") && clickedBeat >= insertBeat) {
         ImGui::OpenPopup("add_item");
         endBeat = clickedBeat;
+
+        endBeatpos = calculateBeatpos(endBeat, currentBeatsplit, songpos.timeinfo); 
 
         leftClickReleased = false;
         startedNote = false;
@@ -907,7 +954,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
                             chartinfo.notes.editItem(insertBeat, insertItemType, keyText);
                         } else {
-                            chartinfo.notes.addItem(insertBeat, endBeat - insertBeat, insertItemType, keyText);
+                            chartinfo.notes.addItem(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, insertItemType, keyText);
                         }
 
                         addedItem[0] = '\0';
@@ -938,7 +985,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
                             chartinfo.notes.editItem(insertBeat, insertItemType, keyText);
                         } else {
-                            chartinfo.notes.addItem(insertBeat, endBeat - insertBeat, insertItemType, keyText);
+                            chartinfo.notes.addItem(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, insertItemType, keyText);
                         }
 
                         selectedFuncKey = 0;
