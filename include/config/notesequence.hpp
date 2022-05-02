@@ -98,38 +98,38 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void addNote(float absBeat, float beatDuration, SequencerItemType itemType, std::string displayText) {
+    void addNote(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText) {
         NoteType noteType = NoteType::KEYPRESS;
         if(beatDuration > FLT_EPSILON) {
             noteType = NoteType::KEYHOLDSTART;
         }
 
-        Note newNote = Note(absBeat, absBeat + beatDuration, noteType, NoteSplit::EIGHTH, itemType, displayText);
+        Note newNote = Note(absBeat, absBeat + beatDuration, beatpos, endBeatpos, noteType, NoteSplit::EIGHTH, itemType, displayText);
         myItems.push_back(newNote);
 
         std::sort(myItems.begin(), myItems.end());
     }
 
-    void addStop(float absBeat, float beatDuration) {
+    void addStop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
 
     }
 
-    void addSkip(float absBeat, float beatDuration) {
+    void addSkip(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
 
     }
 
-    void addItem(float absBeat, float beatDuration, int itemType, std::string displayText) {
+    void addItem(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, int itemType, std::string displayText) {
         switch(itemType) {
             case SequencerItemType::TOP_NOTE:
             case SequencerItemType::MID_NOTE:
             case SequencerItemType::BOT_NOTE:
-                addNote(absBeat, beatDuration, (SequencerItemType)itemType, displayText);
+                addNote(absBeat, beatDuration, beatpos, endBeatpos, (SequencerItemType)itemType, displayText);
                 break;
             case SequencerItemType::STOP:
-                addStop(absBeat, beatDuration);
+                addStop(absBeat, beatDuration, beatpos, endBeatpos);
                 break;
             case SequencerItemType::SKIP:
-                addSkip(absBeat, beatDuration);
+                addSkip(absBeat, beatDuration, beatpos, endBeatpos);
                 break;
         }
     }

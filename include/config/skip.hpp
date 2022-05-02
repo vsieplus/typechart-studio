@@ -4,8 +4,8 @@
 #include "config/notesequenceitem.hpp"
 
 struct Skip : public NoteSequenceItem {
-    Skip(float absBeat, float skipTime, float beatDuration, SequencerItemType itemType) : 
-        NoteSequenceItem(absBeat, absBeat + beatDuration, itemType), skipTime(skipTime), beatDuration(beatDuration) {}
+    Skip(float absBeat, float skipTime, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType) : 
+        NoteSequenceItem(absBeat, absBeat + beatDuration, beatpos, endBeatpos, itemType), skipTime(skipTime), beatDuration(beatDuration) {}
 
     float skipTime;
     float beatDuration;
