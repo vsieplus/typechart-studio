@@ -8,12 +8,14 @@
 #include "config/stop.hpp"
 #include "config/skip.hpp"
 
+class SongPosition;
+
 struct ChartInfo {
     ChartInfo(std::string chartPath);
     ChartInfo(int level, std::string typist, std::string keyboardLayout);
 
-    void loadChart(std::string chartPath);
-    void saveChart(std::string chartPath);
+    void loadChart(std::string chartPath, SongPosition & songpos);
+    void saveChart(std::string chartPath, SongPosition & songpos);
 
     int level;
 
