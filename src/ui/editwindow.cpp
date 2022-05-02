@@ -317,7 +317,7 @@ void closeWindow(EditWindowData & currWindow, std::vector<EditWindowData>::itera
 }
 
 void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePath, std::string saveDir) {
-    currWindow.chartinfo.saveChart(chartSavePath);
+    currWindow.chartinfo.saveChart(chartSavePath, currWindow.songpos);
     currWindow.songinfo.saveSonginfo(saveDir);
     currWindow.initialSaved = true;
     currWindow.unsaved = false;
