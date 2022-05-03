@@ -20,7 +20,6 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
-
 const std::map<int, std::string> ID_TO_KEYBOARDLAYOUT = {
     { 0 , "QWERTY" },
     { 1, "DVORAK" },
@@ -59,11 +58,14 @@ static std::string UImusicFilepath = "";
 static std::string UIcoverArtFilepath = "";
 static std::string DEFAULT_WINDOW_NAME = "Untitled";
 
+static std::string lastOpenResourceDir = Preferences::Instance().getInputDir();
+static std::string lastChartOpenDir = Preferences::Instance().getInputDir();
+static std::string lastChartSaveDir = Preferences::Instance().getSaveDir();
+
 static bool popupIncomplete = true;
 static bool popupInvalidJSON = true;
 static bool popupFailedToLoadMusic = false;
 static bool newEditStarted = false;
-static bool newOpenChart = false;
 
 static float UImusicPreviewStart = 0;
 static float UImusicPreviewStop = 15;
@@ -139,7 +141,7 @@ void showSongConfig() {
     // song config
     ImGui::Text(ICON_FA_CLIPBOARD " Song configuration");
     if(ImGui::Button("Load from existing...")) {
-        ImGuiFileDialog::Instance()->OpenModal("selectSonginfo", "Select songinfo.json", songinfoFileFilter, Preferences::Instance().getInputDir(), "");
+        ImGuiFileDialog::Instance()->OpenModal("selectSonginfo", "Select songinfo.json", songinfoFileFilter, lastOpenResourceDir, "");
     }
     
     ImGui::SameLine();
@@ -151,6 +153,8 @@ void showSongConfig() {
             std::string songinfoPath = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string songinfoDir = ImGuiFileDialog::Instance()->GetCurrentPath();
             loadSonginfo(songinfoPath, songinfoDir);
+
+            lastOpenResourceDir = songinfoDir;
         }
 
         ImGuiFileDialog::Instance()->Close();
@@ -172,7 +176,7 @@ void showSongConfig() {
     ImGui::InputText(ICON_FA_MUSIC " Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##music")) {
-        ImGuiFileDialog::Instance()->OpenModal("selectMusicFile", "Select Music", musicFileFilters, Preferences::Instance().getInputDir(), "");
+        ImGuiFileDialog::Instance()->OpenModal("selectMusicFile", "Select Music", musicFileFilters, lastOpenResourceDir, "");
     }
 
     // music file dialog
@@ -182,6 +186,8 @@ void showSongConfig() {
             std::string fileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
 
             strcpy(UImusicFilename, fileName.c_str());
+
+            lastOpenResourceDir = ImGuiFileDialog::Instance()->GetCurrentPath();
         }
 
         ImGuiFileDialog::Instance()->Close();
@@ -190,7 +196,7 @@ void showSongConfig() {
     ImGui::InputText(ICON_FA_PHOTO_FILM " Art", UIcoverArtFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##art")) {
-        ImGuiFileDialog::Instance()->OpenModal("selectArt", "Select Art", imageFileFilters, Preferences::Instance().getInputDir(), "");
+        ImGuiFileDialog::Instance()->OpenModal("selectArt", "Select Art", imageFileFilters, lastOpenResourceDir, "");
     }
 
     // art file dialog
@@ -199,6 +205,8 @@ void showSongConfig() {
             UIcoverArtFilepath = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string fileName = ImGuiFileDialog::Instance()->GetCurrentFileName();
             strcpy(UIcoverArtFilename, fileName.c_str());
+
+            lastOpenResourceDir = ImGuiFileDialog::Instance()->GetCurrentPath();
         }
 
         ImGuiFileDialog::Instance()->Close();
@@ -230,8 +238,8 @@ void showChartConfig() {
 }
 
 void startOpenChart() {
-    if(!newOpenChart) {
-        newOpenChart = true;
+    if(!ImGuiFileDialog::Instance()->IsOpened()) {
+        ImGuiFileDialog::Instance()->OpenModal("openChart", "Open chart", saveFileFilter, lastChartOpenDir, "");
     }
 }
 
@@ -295,6 +303,57 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
         editWindows.push_back(newWindow);
 
         newEditStarted = false;
+    }
+}
+
+bool loadEditWindow(std::string songinfoPath, std::string chartPath) {
+    
+
+    return true;
+}
+
+void showOpenChartWindow() {
+    if(ImGuiFileDialog::Instance()->Display("openChart", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            std::string chartPath = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string chartDir = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+            // try to load songinfo, chart info
+            std::string songinfoPath = (fs::path(chartDir) / fs::path("songinfo.json")).string();
+            if(!fs::exists(songinfoPath)) {
+                ImGui::OpenPopup("noSonginfoFound");
+            }
+
+            if(!loadEditWindow(songinfoPath, chartPath)) {
+                ImGui::OpenPopup("failedToOpenChart");
+            }
+
+            lastChartOpenDir = chartDir;
+        }
+
+        ImGuiFileDialog::Instance()->Close();
+    }
+
+    if(ImGui::BeginPopupModal("noSonginfoFound")) {
+        ImGui::Text("No songinfo.json found in the selected chart's directory");
+        ImGui::SameLine();
+        if(ImGui::Button("OK")) {
+            startOpenChart();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if(ImGui::BeginPopupModal("failedToOpenChart")) {
+        ImGui::Text("Failed to read songinfo.json or selected chart file");
+        ImGui::SameLine();
+        if(ImGui::Button("OK")) {
+            startOpenChart();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
     }
 }
 
@@ -1108,6 +1167,8 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
                 updatedName = true;
                 sizeBeforeUpdate = currWindowSize;
+
+                lastChartSaveDir = saveDir;
             }
 
             ImGuiFileDialog::Instance()->Close();
