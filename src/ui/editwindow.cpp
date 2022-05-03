@@ -20,9 +20,6 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
-static bool newEditStarted = false;
-
-std::string DEFAULT_WINDOW_NAME = "Untitled";
 
 const std::map<int, std::string> ID_TO_KEYBOARDLAYOUT = {
     { 0 , "QWERTY" },
@@ -60,10 +57,13 @@ const char * musicFileFilters = "(*.flac *.mp3 *.ogg *.wav){.flac,.mp3,.ogg,.wav
 
 static std::string UImusicFilepath = "";
 static std::string UIcoverArtFilepath = "";
+static std::string DEFAULT_WINDOW_NAME = "Untitled";
 
 static bool popupIncomplete = true;
 static bool popupInvalidJSON = true;
 static bool popupFailedToLoadMusic = false;
+static bool newEditStarted = false;
+static bool newOpenChart = false;
 
 static float UImusicPreviewStart = 0;
 static float UImusicPreviewStop = 15;
@@ -227,6 +227,12 @@ void showChartConfig() {
                 "accordingly 'translated' to other keyboard layouts\n"
                 "when loaded into Typing Tempo.");
     ImGui::InputInt(ICON_FA_CHESS_ROOK " Level", &UIlevel);
+}
+
+void startOpenChart() {
+    if(!newOpenChart) {
+        newOpenChart = true;
+    }
 }
 
 void startNewEditWindow() {

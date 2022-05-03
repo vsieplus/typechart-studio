@@ -37,6 +37,8 @@ static std::vector<EditWindowData> editWindows;
 
 static unsigned int currentWindow = 0;
 
+void startOpenChart();
+
 void startNewEditWindow();
 void startSaveCurrentChart(bool saveAs = false);
 

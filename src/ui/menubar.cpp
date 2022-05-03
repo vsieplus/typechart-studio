@@ -50,7 +50,7 @@ void showFileMenu() {
     }
 
     if(ImGui::MenuItem("Open", "Ctrl+O")) {
-
+        startOpenChart();
     }
 
     if(ImGui::BeginMenu("Recent")) {

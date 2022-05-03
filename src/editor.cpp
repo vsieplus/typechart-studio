@@ -214,6 +214,10 @@ void Editor::updateShortcuts() {
     if(shortcutsActivated.at(SDLK_s)) {
         startSaveCurrentChart();
     }
+
+    if(shortcutsActivated.at(SDLK_o)) {
+        startOpenChart();
+    }
 }
 
 void Editor::render() {
