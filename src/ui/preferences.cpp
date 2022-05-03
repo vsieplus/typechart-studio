@@ -103,6 +103,14 @@ void Preferences::addMostRecentFile(std::string path) {
         mostRecentFiles.pop_back();
     }
 
+    // check if already exists, erase if so
+    for(auto iter = mostRecentFiles.begin(); iter != mostRecentFiles.end(); iter++) {
+        if(path == *iter) {
+            mostRecentFiles.erase(iter);
+            break;
+        }
+    }
+
     mostRecentFiles.push_front(path);
 }
 
