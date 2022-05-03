@@ -4,8 +4,13 @@
 #include "config/notesequenceitem.hpp"
 
 struct Stop : public NoteSequenceItem {
-    Stop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType) :
-        NoteSequenceItem(absBeat, absBeat + beatDuration, beatpos, endBeatpos, itemType), beatDuration(beatDuration) {}
+    public:
+    Stop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) :
+        NoteSequenceItem(absBeat, absBeat + beatDuration, beatpos, endBeatpos), beatDuration(beatDuration) {}
+
+    virtual SequencerItemType getItemType() const override {
+        return SequencerItemType::STOP;
+    }
 
     float beatDuration;
 };

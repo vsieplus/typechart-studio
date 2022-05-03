@@ -14,17 +14,16 @@ enum SequencerItemType {
 };
 
 struct NoteSequenceItem {
-    NoteSequenceItem(float absBeat, float beatEnd, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType) :
-        absBeat(absBeat), beatEnd(beatEnd), beatpos(beatpos), endBeatpos(endBeatpos), itemType(itemType) {}
-    virtual ~NoteSequenceItem() {}
+    NoteSequenceItem(float absBeat, float beatEnd, BeatPos beatpos, BeatPos endBeatpos) :
+        absBeat(absBeat), beatEnd(beatEnd), beatpos(beatpos), endBeatpos(endBeatpos) {}
+
+    virtual SequencerItemType getItemType() const = 0;
 
     float absBeat;
     float beatEnd;
 
     BeatPos beatpos;
     BeatPos endBeatpos;
-
-    SequencerItemType itemType;
 
     std::string displayText = "";
 

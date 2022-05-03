@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <float.h>
 #include <list>
+#include <memory>
 #include <vector>
 #include <unordered_map>
 
@@ -43,7 +44,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     float mFrameMin, mFrameMax;
 
-    std::vector<NoteSequenceItem> myItems;
+    std::vector<std::shared_ptr<NoteSequenceItem>> myItems;
 
     NoteSplit computeNoteSplit(int noteSplitNumerator, int noteSplitDenominator) {
         auto gcd = std::__gcd(noteSplitNumerator, noteSplitDenominator);
@@ -61,11 +62,11 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         float currBeatDelay = .1f / currSpb;
         
         for(auto & item : myItems) {
-            switch(item.itemType) {
+            switch(item->getItemType()) {
                 case SequencerItemType::TOP_NOTE:
                 case SequencerItemType::MID_NOTE:
                 case SequencerItemType::BOT_NOTE:
-                    item.passed = item.absBeat + currBeatDelay < songBeat;
+                    item->passed = item->absBeat + currBeatDelay < songBeat;
                     break;
                 case SequencerItemType::SKIP:
                     break;
@@ -79,14 +80,14 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         float currBeatDelay = .1f / currSpb;
         
         for(auto & item : myItems) {
-            switch(item.itemType) {
+            switch(item->getItemType()) {
                 case SequencerItemType::TOP_NOTE:
                 case SequencerItemType::MID_NOTE:
                 case SequencerItemType::BOT_NOTE:
-                    if(item.passed) {
+                    if(item->passed) {
                         break;
-                    } else if(item.absBeat + currBeatDelay < songBeat) {
-                        item.passed = true;
+                    } else if(item->absBeat + currBeatDelay < songBeat) {
+                        item->passed = true;
                         audioSystem->playSound("keypress");
                     }
                     break;
@@ -104,7 +105,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             noteType = NoteType::KEYHOLDSTART;
         }
 
-        Note newNote = Note(absBeat, absBeat + beatDuration, beatpos, endBeatpos, noteType, NoteSplit::EIGHTH, itemType, displayText);
+        std::shared_ptr<NoteSequenceItem> newNote = std::make_shared<Note>(absBeat, absBeat + beatDuration, beatpos, endBeatpos, noteType, NoteSplit::EIGHTH, itemType, displayText);
         myItems.push_back(newNote);
 
         std::sort(myItems.begin(), myItems.end());
@@ -137,10 +138,10 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     void editItem(float absBeat, int itemType, std::string displayText) {
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
             auto & seqItem = *iter;
-            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat &&
-                (absBeat < seqItem.beatEnd || (seqItem.absBeat == seqItem.beatEnd && absBeat <= seqItem.beatEnd))) {
+            if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
+                (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
                 
-                seqItem.displayText = displayText;
+                seqItem->displayText = displayText;
                 break;
             }
         }
@@ -148,9 +149,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     void deleteItem(float absBeat, int itemType) {
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
-            auto seqItem = *iter;
-            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat &&
-                (absBeat < seqItem.beatEnd || (seqItem.absBeat == seqItem.beatEnd && absBeat <= seqItem.beatEnd))) {
+            auto & seqItem = *iter;
+            if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
+                (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
                 myItems.erase(iter);
                 break;
             }
@@ -158,9 +159,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     bool containsItemAt(float absBeat, int itemType) {
-        for(auto seqItem : myItems) {
-            if((int)(seqItem.itemType) == itemType && absBeat >= seqItem.absBeat &&
-                (absBeat < seqItem.beatEnd || (seqItem.absBeat == seqItem.beatEnd && absBeat <= seqItem.beatEnd))) {
+        for(auto & seqItem : myItems) {
+            if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
+                (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
                 return true;
             }
         }
@@ -183,18 +184,18 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
     virtual void Get(int index, float** start, float** end, int* type, unsigned int* color, const char** displayText)
     {
-        NoteSequenceItem & item = myItems[index];
+        auto & item = myItems[index];
         if (color)
             *color = 0xFFAA8080; // same color for everyone, return color based on type
         if (start)
-            *start = &(item.absBeat);
+            *start = &(item->absBeat);
         if (end)
-            *end = &(item.beatEnd);
+            *end = &(item->beatEnd);
         if(type)
-            *type = (int)(item.itemType);
+            *type = (int)(item->getItemType());
 
         if(displayText)
-            *displayText = item.displayText.c_str();
+            *displayText = item->displayText.c_str();
     }
 
     virtual size_t GetCustomHeight(int index) { return 30; }
