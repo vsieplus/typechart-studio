@@ -27,7 +27,7 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
     ordered_json timeinfo;
 
     for(auto & section : songpos.timeinfo) {
-        json sectionJSON;
+        ordered_json sectionJSON;
         sectionJSON["pos"] = { section.beatpos.measure, section.beatpos.beatsplit, section.beatpos.split };
         sectionJSON["bpm"] = section.bpm;
         sectionJSON["beatsPerMeasure"] = section.beatsPerMeasure;
