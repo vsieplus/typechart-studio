@@ -1,3 +1,6 @@
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #include "imgui.h"
 
 #include "versionconfig.h"
@@ -54,8 +57,11 @@ void showFileMenu() {
     }
 
     if(ImGui::BeginMenu("Recent")) {
-        ImGui::MenuItem("Test1.type");
-        ImGui::EndMenu();
+        for(auto & recentPath : Preferences::Instance().getMostRecentFiles()) {
+            if(ImGui::MenuItem(fs::path(recentPath.c_str()).stem().c_str())) {
+                loadEditWindow(recentPath);
+            }
+        }
     }
 
     if(ImGui::MenuItem("Save", "Ctrl+S")) {

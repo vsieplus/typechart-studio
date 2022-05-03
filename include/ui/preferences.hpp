@@ -1,6 +1,7 @@
 #ifndef PREFERENCES_HPP
 #define PREFERENCES_HPP
 
+#include <list>
 #include <string>
 
 class AudioSystem;
@@ -22,10 +23,14 @@ class Preferences {
         void setShowPreferences(bool showPreferences);
         void showPreferencesWindow(AudioSystem * audioSystem);
 
+        void addMostRecentFile(std::string path);
+
         bool getCopyArtAndMusic() const;
 
         const char * getInputDir() const;
         const char * getSaveDir() const;
+
+        const std::list<std::string> & getMostRecentFiles() const;
     private:
         Preferences() {}
 
@@ -38,6 +43,8 @@ class Preferences {
         bool copyArtAndMusic = true;
 
         bool showPreferences;
+
+        std::list<std::string> mostRecentFiles;
 };
 
 

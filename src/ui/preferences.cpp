@@ -11,6 +11,8 @@
 static ImGuiWindowFlags preferencesWindowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
 static ImVec2 preferencesWindowSize = ImVec2(1100, 500);
 
+const static int MAX_MOST_RECENT = 5;
+
 void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
     if(showPreferences) {
         ImGui::SetNextWindowSize(preferencesWindowSize);
@@ -94,4 +96,16 @@ const char * Preferences::getInputDir() const {
 
 const char * Preferences::getSaveDir() const {
     return outputDir;
+}
+
+void Preferences::addMostRecentFile(std::string path) {
+    if(mostRecentFiles.size() == MAX_MOST_RECENT) {
+        mostRecentFiles.pop_back();
+    }
+
+    mostRecentFiles.push_front(path);
+}
+
+const std::list<std::string> & Preferences::getMostRecentFiles() const {
+    return mostRecentFiles;
 }
