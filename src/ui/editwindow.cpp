@@ -775,12 +775,12 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
 
             float leftoverMeasures = (absBeat - prevSectionAbsBeat) / currBeatsPerMeasure;
             int leftoverMeasuresFull = std::floor(leftoverMeasures);
-            float leftoverBeats = (leftoverMeasures * leftoverMeasuresFull) * currBeatsPerMeasure;
+            float leftoverBeats = (leftoverMeasures - leftoverMeasuresFull) * currBeatsPerMeasure;
             int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit);
 
             measure += leftoverMeasuresFull;
             measureSplit = currentBeatsplit * currBeatsPerMeasure;
-            split = leftoverBeatsplits - 1;
+            split = leftoverBeatsplits;
             break;            
         }
 
@@ -794,7 +794,7 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
 
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, std::vector<bool> & keysPressed) {
     // let's create the sequencer
-    static int currentBeatsplit = 2;
+    static int currentBeatsplit = 4;
     static int clickedItemType = 0;
     static bool updatedBeat = false;
     static float clickedBeat = 0.f;
