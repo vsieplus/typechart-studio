@@ -7,12 +7,42 @@
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
 
-ChartInfo::ChartInfo(std::string chartPath) {
-    savePath = chartPath;
-}
+ChartInfo::ChartInfo() {}
 
 ChartInfo::ChartInfo(int level, std::string typist, std::string keyboardLayout) : 
         level(level), typist(typist), keyboardLayout(keyboardLayout) {}
+
+bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
+    savePath = chartPath;
+
+    ordered_json chartinfoJSON;
+
+    try {
+        std::ifstream in(chartPath);
+        in >> chartinfoJSON;
+    
+        typist = chartinfoJSON["typist"];
+        keyboardLayout = chartinfoJSON["keyboard"];
+        level = chartinfoJSON["level"];
+        songpos.offsetMS = chartinfoJSON["offsetMS"];
+
+        std::vector<ordered_json> timeinfo = chartinfoJSON["timeinfo"];
+        Timeinfo * prevTimeinfo = nullptr;
+        
+        for(auto & sectionJSON : timeinfo) {
+            std::vector<int> pos = sectionJSON["pos"];
+            float bpm = sectionJSON["bpm"];
+            int beatsPerMeasure = sectionJSON["beatsPerMeasure"];
+
+            songpos.timeinfo.push_back(Timeinfo((BeatPos){pos.at(0), pos.at(1), pos.at(2)}, prevTimeinfo, beatsPerMeasure, bpm));
+        }
+
+    } catch(...) {
+        return false;
+    }
+
+    return true;
+}
 
 void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
     savePath = chartPath;
