@@ -38,6 +38,8 @@ static std::vector<EditWindowData> editWindows;
 static unsigned int currentWindow = 0;
 
 void startOpenChart();
+void loadEditWindow(std::string chartPath, SDL_Renderer * renderer);
+void showOpenChartWindow(SDL_Renderer * renderer);
 
 void startNewEditWindow();
 void startSaveCurrentChart(bool saveAs = false);

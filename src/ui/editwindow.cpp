@@ -70,7 +70,7 @@ static bool newEditStarted = false;
 static float UImusicPreviewStart = 0;
 static float UImusicPreviewStop = 15;
 
-void loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
+bool loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
     json songinfoJSON;
 
     try {
@@ -80,7 +80,7 @@ void loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
     } catch(...) {
         ImGui::OpenPopup("invalidJSON");
         popupInvalidJSON = true;
-        return;
+        return false;
     }
 
     int numFound = 0;
@@ -132,8 +132,10 @@ void loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
     if(numFound < 5) {
         ImGui::OpenPopup("incompleteSonginfo");
         popupIncomplete = true;
+        return false;
     } else {
         popupIncomplete = false;
+        return true;
     }
 }
 
@@ -158,19 +160,6 @@ void showSongConfig() {
         }
 
         ImGuiFileDialog::Instance()->Close();
-    }
-
-    if(ImGui::BeginPopupModal("incompleteSonginfo", &popupIncomplete)) {
-        ImGui::Text("The chosen song configuration file was incomplete");
-        ImGui::EndPopup();
-    }
-    if(ImGui::BeginPopupModal("invalidJSON", &popupInvalidJSON)) {
-        ImGui::Text("Unable to read the selected JSON file");
-        ImGui::EndPopup();
-    }
-    if(ImGui::BeginPopupModal("failedToLoadMusic", &popupFailedToLoadMusic)) {
-        ImGui::Text("Unable to load the selected music");
-        ImGui::EndPopup();
     }
 
     ImGui::InputText(ICON_FA_MUSIC " Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
@@ -263,7 +252,7 @@ void startNewEditWindow() {
     }
 }
 
-void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
+std::pair<std::string, int> getNextWindowNameAndID() {
     std::string windowName = DEFAULT_WINDOW_NAME;
     int windowID = 0;
 
@@ -278,6 +267,10 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
         windowName += std::to_string(windowID);
     }
 
+    return std::make_pair(windowName, windowID);
+}
+
+void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     // populate with current song, chart info
     SongInfo songinfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
                                  UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
@@ -290,6 +283,10 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
         return;
     } else {
         popupFailedToLoadMusic = false;
+
+        auto newWindowData = getNextWindowNameAndID();
+        auto windowName = newWindowData.first;
+        auto windowID = newWindowData.second;
 
         auto artTexture = Texture::loadTexture(UIcoverArtFilepath, renderer);
 
@@ -306,29 +303,58 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     }
 }
 
-bool loadEditWindow(std::string songinfoPath, std::string chartPath) {
-    
+void loadEditWindow(std::string chartPath, SDL_Renderer * renderer) {
+    fs::path chartDir = fs::path(chartPath).parent_path();
 
-    return true;
+    // try to load songinfo, chart info
+    std::string songinfoPath = (chartDir / fs::path("songinfo.json")).string();
+    if(!fs::exists(songinfoPath)) {
+        ImGui::OpenPopup("noSonginfoFound");
+        return;
+    }
+    
+    ChartInfo chartinfo;
+    SongPosition songpos;
+
+    if(!loadSonginfo(songinfoPath, chartDir)) {
+        return;
+    }
+
+    SongInfo songinfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
+                                 UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
+
+    if(!chartinfo.loadChart(chartPath, songpos)) {
+        ImGui::OpenPopup("failedToOpenChart");
+        return;
+    }
+
+    auto newWindowData = getNextWindowNameAndID();
+    auto windowName = newWindowData.first;
+    auto windowID = newWindowData.second;
+
+    auto artTexture = Texture::loadTexture(songinfo.coverartFilepath, renderer);
+
+    EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartinfo, songinfo);
+
+    // initial section from BPM
+    float initialBpm = ::atof(songinfo.bpmtext.c_str());
+    BeatPos initialSectionStart = {0, 1, 0};
+    newWindow.songpos.timeinfo.push_back(Timeinfo(initialSectionStart, nullptr, 4, initialBpm));
+
+    editWindows.push_back(newWindow);
 }
 
-void showOpenChartWindow() {
+void showOpenChartWindow(SDL_Renderer * renderer) {
     if(ImGuiFileDialog::Instance()->Display("openChart", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             std::string chartPath = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string chartDir = ImGuiFileDialog::Instance()->GetCurrentPath();
 
-            // try to load songinfo, chart info
-            std::string songinfoPath = (fs::path(chartDir) / fs::path("songinfo.json")).string();
-            if(!fs::exists(songinfoPath)) {
-                ImGui::OpenPopup("noSonginfoFound");
-            }
-
-            if(!loadEditWindow(songinfoPath, chartPath)) {
-                ImGui::OpenPopup("failedToOpenChart");
-            }
+            loadEditWindow(chartPath, renderer);
 
             lastChartOpenDir = chartDir;
+
+            Preferences::Instance().addMostRecentFile(chartPath);
         }
 
         ImGuiFileDialog::Instance()->Close();
@@ -345,8 +371,19 @@ void showOpenChartWindow() {
         ImGui::EndPopup();
     }
 
+    if(ImGui::BeginPopupModal("failedToOpenSonginfo")) {
+        ImGui::Text("Failed to load selected songinfo.json file");
+        ImGui::SameLine();
+        if(ImGui::Button("OK")) {
+            startOpenChart();
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
     if(ImGui::BeginPopupModal("failedToOpenChart")) {
-        ImGui::Text("Failed to read songinfo.json or selected chart file");
+        ImGui::Text("Failed to load selected chart file");
         ImGui::SameLine();
         if(ImGui::Button("OK")) {
             startOpenChart();
@@ -371,6 +408,19 @@ void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
         }
 
         ImGui::End();
+    }
+
+    if(ImGui::BeginPopupModal("incompleteSonginfo", &popupIncomplete)) {
+        ImGui::Text("The chosen song configuration file was incomplete");
+        ImGui::EndPopup();
+    }
+    if(ImGui::BeginPopupModal("invalidJSON", &popupInvalidJSON)) {
+        ImGui::Text("Unable to read the selected JSON file");
+        ImGui::EndPopup();
+    }
+    if(ImGui::BeginPopupModal("failedToLoadMusic", &popupFailedToLoadMusic)) {
+        ImGui::Text("Unable to load the selected music");
+        ImGui::EndPopup();
     }
 }
 
@@ -1168,6 +1218,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
                 updatedName = true;
                 sizeBeforeUpdate = currWindowSize;
 
+                Preferences::Instance().addMostRecentFile(chartSavePath);
                 lastChartSaveDir = saveDir;
             }
 
