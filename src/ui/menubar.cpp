@@ -9,14 +9,14 @@ namespace fs = std::filesystem;
 #include "ui/menubar.hpp"
 #include "ui/preferences.hpp"
 
-void showMenuBar(ImFont * menuFont) {
+void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer) {
     // styling
     if(menuFont)
         ImGui::PushFont(menuFont);
 
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
-            showFileMenu();
+            showFileMenu(renderer);
             ImGui::EndMenu();
         }
 
@@ -47,7 +47,7 @@ void showMenuBar(ImFont * menuFont) {
         ImGui::PopFont();
 }
 
-void showFileMenu() {
+void showFileMenu(SDL_Renderer * renderer) {
     if(ImGui::MenuItem("New", "Ctrl+N")) {
         startNewEditWindow();
     }
@@ -59,7 +59,7 @@ void showFileMenu() {
     if(ImGui::BeginMenu("Recent")) {
         for(auto & recentPath : Preferences::Instance().getMostRecentFiles()) {
             if(ImGui::MenuItem(fs::path(recentPath.c_str()).stem().c_str())) {
-                loadEditWindow(recentPath);
+                loadEditWindow(recentPath, renderer);
             }
         }
     }
