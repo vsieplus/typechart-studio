@@ -35,7 +35,13 @@ struct EditWindowData {
 static std::queue<int> availableWindowIDs;
 static std::vector<EditWindowData> editWindows;
 
+static std::string lastOpenResourceDir;
+static std::string lastChartOpenDir;
+static std::string lastChartSaveDir;
+
 static unsigned int currentWindow = 0;
+
+void initLastDirPaths();
 
 void startOpenChart();
 void loadEditWindow(std::string chartPath, SDL_Renderer * renderer);

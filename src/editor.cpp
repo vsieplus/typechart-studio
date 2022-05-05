@@ -84,6 +84,7 @@ Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
 
     setWindowIcon();
     Preferences::Instance().loadFromFile(PREFERENCES_PATH);
+    initLastDirPaths();    
 }
 
 void Editor::initFonts() {

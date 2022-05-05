@@ -58,10 +58,6 @@ static std::string UImusicFilepath = "";
 static std::string UIcoverArtFilepath = "";
 static std::string DEFAULT_WINDOW_NAME = "Untitled";
 
-static std::string lastOpenResourceDir = Preferences::Instance().getInputDir();
-static std::string lastChartOpenDir = Preferences::Instance().getInputDir();
-static std::string lastChartSaveDir = Preferences::Instance().getSaveDir();
-
 static bool popupIncomplete = true;
 static bool popupInvalidJSON = true;
 static bool popupFailedToLoadMusic = false;
@@ -69,6 +65,12 @@ static bool newEditStarted = false;
 
 static float UImusicPreviewStart = 0;
 static float UImusicPreviewStop = 15;
+
+void initLastDirPaths() {
+    lastOpenResourceDir = Preferences::Instance().getInputDir();
+    lastChartOpenDir = Preferences::Instance().getInputDir();
+    lastChartSaveDir = Preferences::Instance().getSaveDir();
+}
 
 bool loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
     json songinfoJSON;
@@ -829,21 +831,6 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
         ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
 }
-
-const std::unordered_map<std::string, std::set<char>> MIDDLE_ROW_KEYS = {
-    {"QWERTY", {'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
-                'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';',
-                'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/'}},
-    {"DVORAK", {'\'', ',', '.', 'P', 'Y', 'F', 'G', 'C', 'R', 'L',
-                'A', 'O', 'E', 'U', 'I', 'D', 'H', 'T', 'N', 'S',
-                ';', 'Q', 'J', 'K', 'X', 'B', 'M', 'W', 'V', 'Z'}},
-    {"AZERTY", {'A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
-                'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M',
-                'W', 'X', 'C', 'V', 'B', 'N', ',', ';', ':', '!'}},
-    {"COLEMAK", {'Q', 'W', 'F', 'P', 'G', 'J', 'L', 'U', 'Y', ';',
-                'A', 'R', 'S', 'T', 'D', 'H', 'N', 'E', 'I', 'O',
-                'Z', 'X', 'C', 'V', 'B', 'K', 'M', ',', '.', '/'}}
-};
 
 const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
     {0, "L" ICON_FA_ARROW_UP },
