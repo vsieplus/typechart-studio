@@ -58,10 +58,11 @@ void showFileMenu(SDL_Renderer * renderer) {
 
     if(ImGui::BeginMenu("Recent")) {
         for(auto & recentPath : Preferences::Instance().getMostRecentFiles()) {
-            if(ImGui::MenuItem(fs::path(recentPath.c_str()).stem().c_str())) {
+            if(ImGui::MenuItem(fs::path(recentPath.c_str()).filename().c_str())) {
                 loadEditWindow(recentPath, renderer);
             }
         }
+        ImGui::EndMenu();
     }
 
     if(ImGui::MenuItem("Save", "Ctrl+S")) {

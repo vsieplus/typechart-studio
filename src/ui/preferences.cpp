@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstring>
 #include <SDL2/SDL.h>
 
@@ -12,6 +13,8 @@ static ImGuiWindowFlags preferencesWindowFlags = ImGuiWindowFlags_NoCollapse | I
 static ImVec2 preferencesWindowSize = ImVec2(1100, 500);
 
 const static int MAX_MOST_RECENT = 5;
+
+static std::list<std::string> mostRecentFilesStr;
 
 void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
     if(showPreferences) {
@@ -69,9 +72,30 @@ void Preferences::loadFromFile(std::string preferencesPath) {
 
 		SDL_RWclose(saveFile);
 	}
+
+    for(int i = 0; i < 5; i++) {
+        if(mostRecentFilepaths[i][0] == '\0') {
+            break;
+        } else {
+            std::string currPath = mostRecentFilepaths[i];
+            mostRecentFilesStr.push_back(currPath);
+        }
+    }
 }
 
 void Preferences::saveToFile(std::string preferencesPath) {
+    int i = 0;
+    for(auto iter = mostRecentFilesStr.begin(); iter != mostRecentFilesStr.end(); iter++) {
+        auto & path = *iter;
+
+        auto copyLength = std::min((int)(path.size()), 512 - 1);
+        std::copy(path.begin(), path.begin() + copyLength, mostRecentFilepaths[i]);
+        i++;
+
+        if(i == 5)
+            break;
+    }
+
     // Open in write/binary mode
 	SDL_RWops * saveFile = SDL_RWFromFile(preferencesPath.c_str(), "w+b");
 	if(saveFile) {
@@ -99,22 +123,20 @@ const char * Preferences::getSaveDir() const {
 }
 
 void Preferences::addMostRecentFile(std::string path) {
-    if(mostRecentFiles.size() == MAX_MOST_RECENT) {
-        mostRecentFiles.pop_back();
+    if(mostRecentFilesStr.size() == MAX_MOST_RECENT) {
+        mostRecentFilesStr.pop_back();
     }
-
-    // check if already exists, erase if so
-    for(auto iter = mostRecentFiles.begin(); iter != mostRecentFiles.end(); iter++) {
-        auto & currPath = *iter;
-        if(path == currPath) {
-            mostRecentFiles.erase(iter);
+    
+    for(auto iter = mostRecentFilesStr.begin(); iter != mostRecentFilesStr.end(); iter++) {
+        if(path == *iter) {
+            mostRecentFilesStr.erase(iter);
             break;
         }
     }
 
-    mostRecentFiles.push_front(path);
+    mostRecentFilesStr.push_front(path);
 }
 
 const std::list<std::string> & Preferences::getMostRecentFiles() const {
-    return mostRecentFiles;
+    return mostRecentFilesStr;
 }

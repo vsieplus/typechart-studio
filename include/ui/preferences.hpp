@@ -37,13 +37,13 @@ class Preferences {
         char inputDir[512] = ".";
         char outputDir[512] = ".";
 
+        char mostRecentFilepaths[5][512] = { "\0", "\0", "\0", "\0", "\0" };
+
         float musicVolume = 1.f;
         float soundVolume = 1.f;
 
         bool copyArtAndMusic = true;
         bool showPreferences = false;
-
-        std::list<std::string> mostRecentFiles = {};
 };
 
 
