@@ -41,10 +41,9 @@ class Preferences {
         float soundVolume = 1.f;
 
         bool copyArtAndMusic = true;
+        bool showPreferences = false;
 
-        bool showPreferences;
-
-        std::list<std::string> mostRecentFiles;
+        std::list<std::string> mostRecentFiles = {};
 };
 
 
