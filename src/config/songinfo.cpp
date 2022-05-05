@@ -31,7 +31,14 @@ void SongInfo::saveSonginfo(std::string saveDir) {
         fs::path artSavePath = fs::path(saveDir) / fs::path(coverartFilename);
         fs::path musicSavePath = fs::path(saveDir) / fs::path(musicFilename);
 
-        fs::copy_file(fs::path(musicFilepath), musicSavePath, fs::copy_options::overwrite_existing);
-        fs::copy_file(fs::path(coverartFilepath), artSavePath, fs::copy_options::overwrite_existing);
+        fs::path musicSrcPath = fs::path(musicFilepath);
+        if(fs::exists(musicSrcPath)) {
+            fs::copy_file(musicSrcPath, musicSavePath, fs::copy_options::overwrite_existing);
+        }
+
+        fs::path artSrcPath = fs::path(coverartFilepath);
+        if(fs::exists(artSrcPath)) {
+            fs::copy_file(artSrcPath, artSavePath, fs::copy_options::overwrite_existing);
+        }
     }
 }
