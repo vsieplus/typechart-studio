@@ -337,12 +337,6 @@ void loadEditWindow(std::string chartPath, SDL_Renderer * renderer) {
     auto artTexture = Texture::loadTexture(songinfo.coverartFilepath, renderer);
 
     EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartinfo, songinfo);
-
-    // initial section from BPM
-    float initialBpm = ::atof(songinfo.bpmtext.c_str());
-    BeatPos initialSectionStart = {0, 1, 0};
-    newWindow.songpos.timeinfo.push_back(Timeinfo(initialSectionStart, nullptr, 4, initialBpm));
-
     editWindows.push_back(newWindow);
 }
 
