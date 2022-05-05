@@ -63,21 +63,25 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
 
         std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
 
-        std::vector<ordered_json> stopsJSON = chartinfoJSON["stops"];
-        for(auto & stopJSON : stopsJSON) {
-            std::vector<int> pos = stopJSON["pos"];
-            float beatDuration = stopJSON["duration"];
+        if(!chartinfoJSON["stops"].empty()) {
+            std::vector<ordered_json> stopsJSON = chartinfoJSON["stops"];
+            for(auto & stopJSON : stopsJSON) {
+                std::vector<int> pos = stopJSON["pos"];
+                float beatDuration = stopJSON["duration"];
 
-            //notes.addStop()
+                //notes.addStop()
+            }
         }
 
-        std::vector<ordered_json> skipsJSON = chartinfoJSON["skips"];
-        for(auto & skipJSON : skipsJSON) {
-            std::vector<int> pos = skipJSON["pos"];
-            float beatDuration = skipJSON["duration"];
-            float skipTime = skipJSON["skiptime"];
+        if(!chartinfoJSON["skips"].empty()) {
+            std::vector<ordered_json> skipsJSON = chartinfoJSON["skips"];
+            for(auto & skipJSON : skipsJSON) {
+                std::vector<int> pos = skipJSON["pos"];
+                float beatDuration = skipJSON["duration"];
+                float skipTime = skipJSON["skiptime"];
 
-            //notes.addSkip()
+                //notes.addSkip()
+            }
         }
 
         std::vector<ordered_json> notesJSON = chartinfoJSON["notes"];
