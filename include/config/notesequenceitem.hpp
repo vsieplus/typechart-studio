@@ -2,6 +2,8 @@
 #define NOTESEQUENCEITEM_HPP
 
 #include <string>
+#include <set>
+#include <unordered_map>
 
 #include "config/beatpos.hpp"
 
@@ -11,6 +13,22 @@ enum SequencerItemType {
     BOT_NOTE,
     STOP,
     SKIP
+};
+
+
+const std::unordered_map<std::string, std::set<char>> MIDDLE_ROW_KEYS = {
+    {"QWERTY", {'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
+                'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';',
+                'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/'}},
+    {"DVORAK", {'\'', ',', '.', 'P', 'Y', 'F', 'G', 'C', 'R', 'L',
+                'A', 'O', 'E', 'U', 'I', 'D', 'H', 'T', 'N', 'S',
+                ';', 'Q', 'J', 'K', 'X', 'B', 'M', 'W', 'V', 'Z'}},
+    {"AZERTY", {'A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
+                'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M',
+                'W', 'X', 'C', 'V', 'B', 'N', ',', ';', ':', '!'}},
+    {"COLEMAK", {'Q', 'W', 'F', 'P', 'G', 'J', 'L', 'U', 'Y', ';',
+                'A', 'R', 'S', 'T', 'D', 'H', 'N', 'E', 'I', 'O',
+                'Z', 'X', 'C', 'V', 'B', 'K', 'M', ',', '.', '/'}}
 };
 
 struct NoteSequenceItem {
