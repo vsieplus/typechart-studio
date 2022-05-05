@@ -68,7 +68,7 @@ static float UImusicPreviewStop = 15;
 
 void initLastDirPaths() {
     lastOpenResourceDir = Preferences::Instance().getInputDir();
-    lastChartOpenDir = Preferences::Instance().getInputDir();
+    lastChartOpenDir = Preferences::Instance().getSaveDir();
     lastChartSaveDir = Preferences::Instance().getSaveDir();
 }
 
