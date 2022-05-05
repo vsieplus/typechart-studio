@@ -5,8 +5,8 @@ class ImFont;
 class SDL_Renderer;
 
 // all the imgui menubar functions
-void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer);
-void showFileMenu(SDL_Renderer * renderer);
+void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audioSystem);
+void showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem);
 void showEditMenu();
 void showOptionMenu();
 void showHelpMenu();

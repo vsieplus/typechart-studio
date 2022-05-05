@@ -193,9 +193,9 @@ void Editor::update() {
 		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 
-        showMenuBar(menuFont, renderer);
+        showMenuBar(menuFont, renderer, &audioSystem);
         showInitEditWindow(&audioSystem, renderer);
-        showOpenChartWindow(renderer);
+        showOpenChartWindow(renderer, &audioSystem);
         showEditWindows(&audioSystem, keysPressed);
 
         updateShortcuts();

@@ -305,7 +305,7 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     }
 }
 
-void loadEditWindow(std::string chartPath, SDL_Renderer * renderer) {
+void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::string chartPath) {
     fs::path chartDir = fs::path(chartPath).parent_path();
 
     // try to load songinfo, chart info
@@ -325,28 +325,36 @@ void loadEditWindow(std::string chartPath, SDL_Renderer * renderer) {
     SongInfo songinfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
                                  UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
 
+    if(!audioSystem->loadMusic(UImusicFilepath)) {
+        ImGui::OpenPopup("failedToLoadMusic");
+        popupFailedToLoadMusic = true;
+        return;
+    }
+
     if(!chartinfo.loadChart(chartPath, songpos)) {
         ImGui::OpenPopup("failedToOpenChart");
         return;
     }
 
     auto newWindowData = getNextWindowNameAndID();
-    auto windowName = newWindowData.first;
     auto windowID = newWindowData.second;
+    std::string windowName = fs::path(chartinfo.savePath).filename().string();
 
     auto artTexture = Texture::loadTexture(songinfo.coverartFilepath, renderer);
 
     EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartinfo, songinfo);
+    newWindow.unsaved = false;
+    newWindow.songpos = songpos;
     editWindows.push_back(newWindow);
 }
 
-void showOpenChartWindow(SDL_Renderer * renderer) {
+void showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem) {
     if(ImGuiFileDialog::Instance()->Display("openChart", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             std::string chartPath = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string chartDir = ImGuiFileDialog::Instance()->GetCurrentPath();
 
-            loadEditWindow(chartPath, renderer);
+            loadEditWindow(renderer, audioSystem, chartPath);
 
             lastChartOpenDir = chartDir;
 

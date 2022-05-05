@@ -44,8 +44,8 @@ static unsigned int currentWindow = 0;
 void initLastDirPaths();
 
 void startOpenChart();
-void loadEditWindow(std::string chartPath, SDL_Renderer * renderer);
-void showOpenChartWindow(SDL_Renderer * renderer);
+void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::string chartPath);
+void showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem);
 
 void startNewEditWindow();
 void startSaveCurrentChart(bool saveAs = false);
