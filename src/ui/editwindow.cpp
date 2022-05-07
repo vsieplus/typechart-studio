@@ -318,7 +318,7 @@ void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::str
     ChartInfo chartinfo;
     SongPosition songpos;
 
-    if(!loadSonginfo(songinfoPath, chartDir)) {
+    if(!loadSonginfo(songinfoPath, chartDir.string())) {
         return;
     }
 
