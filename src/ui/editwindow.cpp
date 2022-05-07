@@ -463,7 +463,9 @@ void startSaveCurrentChart(bool saveAs) {
 
 }
 
-void tryCloseEditWindow(EditWindowData & currWindow, std::vector<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
+bool tryCloseEditWindow(EditWindowData & currWindow, std::vector<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
+    bool closed = false;
+
     if(currWindow.unsaved) {
         char msg[128];
         snprintf(msg, 128, "Unsaved work! [%s]", currWindow.name.c_str());
@@ -477,6 +479,7 @@ void tryCloseEditWindow(EditWindowData & currWindow, std::vector<EditWindowData>
         ImGui::SameLine();
         if(ImGui::Button("No")) {
             closeWindow(currWindow, iter, audioSystem);
+            closed = true;
         }
 
         ImGui::SameLine();
@@ -487,7 +490,10 @@ void tryCloseEditWindow(EditWindowData & currWindow, std::vector<EditWindowData>
         ImGui::End();
     } else {
         closeWindow(currWindow, iter, audioSystem);
+        closed = true;
     }
+
+    return closed;
 }
 
 std::pair<int, float> splitSecsbyMin(float seconds) {
@@ -1169,7 +1175,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
     static ImVec2 sizeBeforeUpdate;
 
     unsigned int i = 0;
-    for(auto iter = editWindows.begin(); iter != editWindows.end(); iter++) {
+    for(auto iter = editWindows.begin(); iter != editWindows.end();) {
         auto & currWindow = *iter;
         currWindow.songpos.update();
 
@@ -1203,8 +1209,9 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
         ImGui::End();
 
+        bool closedCurrwindow = false;
         if(!currWindow.open) {
-            tryCloseEditWindow(currWindow, iter, audioSystem);
+            closedCurrwindow = tryCloseEditWindow(currWindow, iter, audioSystem);
         }
 
         if(ImGuiFileDialog::Instance()->Display("saveChart", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
@@ -1226,6 +1233,9 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
             ImGuiFileDialog::Instance()->Close();
         }
 
-        i++;
+        if(!closedCurrwindow) {
+            i++;
+            iter++;
+        }
     }
 }
