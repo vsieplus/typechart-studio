@@ -49,7 +49,8 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
         typist = chartinfoJSON["typist"];
         keyboardLayout = chartinfoJSON["keyboard"];
         level = chartinfoJSON["level"];
-        songpos.offsetMS = chartinfoJSON["offsetMS"] - BASE_OFFSET;
+        songpos.offsetMS = chartinfoJSON["offsetMS"];
+        songpos.offsetMS -= BASE_OFFSET;
 
         std::vector<ordered_json> timeinfo = chartinfoJSON["timeinfo"];
         Timeinfo * prevTimeinfo = nullptr;
@@ -105,6 +106,9 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
             BeatPos beatpos = (BeatPos){pos.at(0), pos.at(1), pos.at(2)};
             BeatPos endBeatpos = beatpos;
             std::string keyText = noteJSON["key"];
+            if(STR_TO_FUNCTION_KEY.find(keyText) != STR_TO_FUNCTION_KEY.end()) {
+                keyText = STR_TO_FUNCTION_KEY.at(keyText);
+            }
 
             switch(noteType) {
                 case NoteType::KEYPRESS:

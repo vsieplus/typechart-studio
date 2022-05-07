@@ -37,6 +37,14 @@ const std::unordered_map<std::string, std::string> FUNCTION_KEY_TO_STR = {
     { "_", "Space" },
 };
 
+const std::unordered_map<std::string, std::string> STR_TO_FUNCTION_KEY = {
+    { "Left Shift", "L" ICON_FA_ARROW_UP },
+    { "Right Shift", "R" ICON_FA_ARROW_UP },
+    { "CapsLock", ICON_FA_ARROW_UP },
+    { "Return", ICON_FA_ARROW_LEFT_LONG },
+    { "Space", "_" },
+};
+
 struct Note : public NoteSequenceItem {
     Note(float absBeat, float beatEnd, BeatPos beatpos, BeatPos endBeatpos, NoteType noteType, NoteSplit noteSplit, SequencerItemType itemType, std::string key) :
         NoteSequenceItem(absBeat, beatEnd, beatpos, endBeatpos), noteType(noteType), noteSplit(noteSplit), itemType(itemType) { displayText = key; }
