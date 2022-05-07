@@ -838,7 +838,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x / 2.f);
     ImGui::SliderInt("Offset (ms)", &songpos.offsetMS, 0, 1000);
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
-        ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
+        ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Automatically +100ms when saved)\n(Ctrl + Click to enter)");
 }
 
 const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
