@@ -58,15 +58,13 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }    
     }
 
-    void resetPassed(float songBeat, float currSpb) {
-        float currBeatDelay = .1f / currSpb;
-        
+    void resetPassed(float songBeat) {        
         for(auto & item : myItems) {
             switch(item->getItemType()) {
                 case SequencerItemType::TOP_NOTE:
                 case SequencerItemType::MID_NOTE:
                 case SequencerItemType::BOT_NOTE:
-                    item->passed = item->absBeat + currBeatDelay < songBeat;
+                    item->passed = item->absBeat < songBeat;
                     break;
                 case SequencerItemType::SKIP:
                     break;
@@ -76,7 +74,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void update(float songBeat, float currSpb, AudioSystem * audioSystem) {        
+    void update(float songBeat, AudioSystem * audioSystem) {        
         for(auto & item : myItems) {
             switch(item->getItemType()) {
                 case SequencerItemType::TOP_NOTE:

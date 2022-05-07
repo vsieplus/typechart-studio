@@ -551,7 +551,7 @@ void removeSection(SongPosition & songpos) {
     songpos.setSongBeatPosition(songpos.absBeat);
 }
 
-void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, SongPosition & songpos, bool & unsaved) {
+void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved) {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
     ImGui::Image(artTexture, ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
@@ -719,6 +719,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
                 }
 
                 songpos.setSongBeatPosition(currSection.absBeatStart + FLT_EPSILON);
+                chartinfo.notes.resetPassed(songpos.absBeat);
                 updateAudioPosition(audioSystem, songpos);
             }
         }
@@ -772,7 +773,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     if(ImGui::Button(ICON_FA_STOP)) {
         audioSystem->stopMusic();
         songpos.stop();
-        notes.resetPassed(songpos.absBeat, songpos.currSpb);
+        notes.resetPassed(songpos.absBeat);
     }
 
     if(songpos.absTime > musicLengthSecs) {
@@ -840,7 +841,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         currWindow.unsaved = true;
     }
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
-        ImGui::SetTooltip("Offset from the first beat in milliseconds\n[Add +100ms before saving]\n(Ctrl + Click to enter)");
+        ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
 }
 
 const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
@@ -951,7 +952,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             songpos.setSongBeatPosition(0);
         }
 
-        chartinfo.notes.resetPassed(songpos.absBeat, songpos.currSpb);
+        chartinfo.notes.resetPassed(songpos.absBeat);
     }
 
     static float zoomStep = 0.25f;
@@ -998,7 +999,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             songpos.setSongBeatPosition(0);
         }
 
-        chartinfo.notes.resetPassed(songpos.absBeat, songpos.currSpb);
+        chartinfo.notes.resetPassed(songpos.absBeat);
     }
 
     // insert or update entity at the clicked beat
@@ -1120,7 +1121,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         unsaved = true;        
     }
 
-    chartinfo.notes.update(songpos.absBeat, songpos.currSpb, audioSystem);
+    chartinfo.notes.update(songpos.absBeat, audioSystem);
 
     // sideways scroll
     if(!ImGuiFileDialog::Instance()->IsOpened() && io.MouseWheel != 0.f && !io.KeyCtrl) {
@@ -1159,7 +1160,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             songpos.setSongBeatPosition(FLT_EPSILON);
         }
 
-        chartinfo.notes.resetPassed(songpos.absBeat, songpos.currSpb);
+        chartinfo.notes.resetPassed(songpos.absBeat);
     }
 }
 
@@ -1191,7 +1192,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
         showEditWindowMetadata(currWindow);
         ImGui::SameLine();
-        showEditWindowChartData(currWindow.artTexture.get(), audioSystem, currWindow.songpos, currWindow.unsaved);
+        showEditWindowChartData(currWindow.artTexture.get(), audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved);
 
         ImGui::Separator();
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, 
