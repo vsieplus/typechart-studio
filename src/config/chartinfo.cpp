@@ -170,6 +170,8 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
 
     ordered_json timeinfo;
 
+    std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
+
     for(auto & section : songpos.timeinfo) {
         ordered_json sectionJSON;
         sectionJSON["pos"] = { section.beatpos.measure, section.beatpos.beatsplit, section.beatpos.split };
@@ -185,9 +187,11 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
     ordered_json skipsJSON = ordered_json::array();
     ordered_json notesJSON = ordered_json::array();
 
+    std::sort(notes.myItems.begin(), notes.myItems.end());
+
     for(auto & item : notes.myItems) {
         ordered_json itemJSON;
-        json itemBeatpos = {item->beatpos.measure, item->beatpos.beatsplit, item->beatpos.split};
+        ordered_json itemBeatpos = {item->beatpos.measure, item->beatpos.beatsplit, item->beatpos.split};
 
         switch(item->getItemType()) {
             case SequencerItemType::STOP:

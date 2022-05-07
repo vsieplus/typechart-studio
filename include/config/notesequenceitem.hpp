@@ -1,6 +1,7 @@
 #ifndef NOTESEQUENCEITEM_HPP
 #define NOTESEQUENCEITEM_HPP
 
+#include <memory>
 #include <string>
 #include <set>
 #include <unordered_map>
@@ -48,6 +49,7 @@ struct NoteSequenceItem {
     bool passed = false;
 };
 
+bool operator<(const std::shared_ptr<NoteSequenceItem> & lhs, const std::shared_ptr<NoteSequenceItem> & rhs);
 bool operator<(const NoteSequenceItem & lhs, const NoteSequenceItem & rhs);
 
 #endif // NOTESEQUENCEITEM_HPP
