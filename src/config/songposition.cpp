@@ -60,18 +60,16 @@ void SongPosition::setSongTimePosition(float absTime) {
 
     this->absTime = absTime;
 
-    unsigned int i = 0;
+    int i = 0;
     for(auto const & tInfo : timeinfo) {
-        if(i == timeinfo.size() - 1 || absTime < tInfo.absTimeStart) {
-            int prev = (int)i - 1;
-            i = std::max(0, prev);
+        if(absTime < tInfo.absTimeStart) {
             break;
         }
 
         i++;
     }
 
-    currentSection = i;
+    currentSection = std::max(0, i - 1);
     prevSectionBeats = timeinfo.at(currentSection).absBeatStart;
     prevSectionTime = timeinfo.at(currentSection).absTimeStart;
 
