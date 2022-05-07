@@ -49,7 +49,7 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
         typist = chartinfoJSON["typist"];
         keyboardLayout = chartinfoJSON["keyboard"];
         level = chartinfoJSON["level"];
-        songpos.offsetMS = chartinfoJSON["offsetMS"];
+        songpos.offsetMS = chartinfoJSON["offsetMS"] - BASE_OFFSET;
 
         std::vector<ordered_json> timeinfo = chartinfoJSON["timeinfo"];
         Timeinfo * prevTimeinfo = nullptr;
