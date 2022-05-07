@@ -7,6 +7,8 @@
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
 
+const int BASE_OFFSET = 100;
+
 float calculateAbsBeat(BeatPos beatpos, std::vector<Timeinfo> & timeinfo) {
     float absBeat = 0.f;
     int prevSectionBeatsPerMeasure = 4;
@@ -166,7 +168,7 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
     chartinfo["typist"] = typist;
     chartinfo["keyboard"] = keyboardLayout;
     chartinfo["level"] = level;
-    chartinfo["offsetMS"] = songpos.offsetMS;
+    chartinfo["offsetMS"] = songpos.offsetMS + BASE_OFFSET;
 
     ordered_json timeinfo;
 
