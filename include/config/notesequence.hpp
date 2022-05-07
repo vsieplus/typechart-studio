@@ -76,9 +76,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void update(float songBeat, float currSpb, AudioSystem * audioSystem) {
-        float currBeatDelay = .1f / currSpb;
-        
+    void update(float songBeat, float currSpb, AudioSystem * audioSystem) {        
         for(auto & item : myItems) {
             switch(item->getItemType()) {
                 case SequencerItemType::TOP_NOTE:
@@ -86,7 +84,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                 case SequencerItemType::BOT_NOTE:
                     if(item->passed) {
                         break;
-                    } else if(item->absBeat + currBeatDelay < songBeat) {
+                    } else if(item->absBeat < songBeat) {
                         item->passed = true;
                         audioSystem->playSound("keypress");
                     }
