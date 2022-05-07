@@ -345,6 +345,7 @@ void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::str
     EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartinfo, songinfo);
     newWindow.unsaved = false;
     newWindow.songpos = songpos;
+    newWindow.initialSaved = true;
     editWindows.push_back(newWindow);
 }
 
