@@ -437,8 +437,11 @@ void closeWindow(EditWindowData & currWindow, std::vector<EditWindowData>::itera
 }
 
 void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePath, std::string saveDir) {
+    if(!currWindow.initialSaved && chartSavePath != currWindow.chartinfo.savePath) {
+        currWindow.songinfo.saveSonginfo(saveDir);
+    }
     currWindow.chartinfo.saveChart(chartSavePath, currWindow.songpos);
-    currWindow.songinfo.saveSonginfo(saveDir);
+    
     currWindow.initialSaved = true;
     currWindow.unsaved = false;
 }
@@ -449,6 +452,7 @@ void startSaveCurrentChart(bool saveAs) {
         if(editWindow.unsaved) {
             // save vs save as
             if(saveAs || !editWindow.initialSaved) {
+                editWindow.initialSaved = false;
                 ImGuiFileDialog::Instance()->OpenModal("saveChart", "Save current chart", saveFileFilter, Preferences::Instance().getSaveDir(), "Untitled.type",
                                                         1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
             } else {
@@ -738,7 +742,8 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 }
 
 // toolbar info / buttons
-void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, float * previewStop, SongPosition & songpos, std::vector<bool> & keysPressed) {
+void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, float * previewStop, SongPosition & songpos,
+                           NoteSequence & notes, std::vector<bool> & keysPressed) {
     auto musicLengthSecs = audioSystem->getMusicLength();
 
     auto songAudioPos = splitSecsbyMin(songpos.absTime);
@@ -767,6 +772,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     if(ImGui::Button(ICON_FA_STOP)) {
         audioSystem->stopMusic();
         songpos.stop();
+        notes.resetPassed(songpos.absBeat, songpos.currSpb);
     }
 
     if(songpos.absTime > musicLengthSecs) {
@@ -1185,7 +1191,8 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
         showEditWindowChartData(currWindow.artTexture.get(), audioSystem, currWindow.songpos, currWindow.unsaved);
 
         ImGui::Separator();
-        showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, keysPressed);
+        showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, 
+                              currWindow.chartinfo.notes, keysPressed);
         ImGui::Separator();
 
         showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, keysPressed);
