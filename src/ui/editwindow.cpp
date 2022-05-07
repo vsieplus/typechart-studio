@@ -743,7 +743,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 
 // toolbar info / buttons
 void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, float * previewStop, SongPosition & songpos,
-                           NoteSequence & notes, std::vector<bool> & keysPressed) {
+                           NoteSequence & notes, std::vector<bool> & keysPressed, EditWindowData & currWindow) {
     auto musicLengthSecs = audioSystem->getMusicLength();
 
     auto songAudioPos = splitSecsbyMin(songpos.absTime);
@@ -836,9 +836,11 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x / 2.f);
-    ImGui::SliderInt("Offset (ms)", &songpos.offsetMS, 0, 1000);
+    if(ImGui::SliderInt("Offset (ms)", &songpos.offsetMS, -1000, 1000)) {
+        currWindow.unsaved = true;
+    }
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
-        ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Automatically +100ms when saved)\n(Ctrl + Click to enter)");
+        ImGui::SetTooltip("Offset from the first beat in milliseconds\n[Add +100ms before saving]\n(Ctrl + Click to enter)");
 }
 
 const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
@@ -1115,6 +1117,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
     if(!ImGuiFileDialog::Instance()->IsOpened() && rightClickedEntity && chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
         chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
+        unsaved = true;        
     }
 
     chartinfo.notes.update(songpos.absBeat, songpos.currSpb, audioSystem);
@@ -1192,7 +1195,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
         ImGui::Separator();
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, 
-                              currWindow.chartinfo.notes, keysPressed);
+                              currWindow.chartinfo.notes, keysPressed, currWindow);
         ImGui::Separator();
 
         showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, keysPressed);
