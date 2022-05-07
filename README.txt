@@ -1,5 +1,4 @@
-This is Typechart Studio, a tool that can create charts for the game
-Typing Tempo. Here is a quick overview of how to use it:
+This is Typechart Studio, a tool that can create charts for the game Typing Tempo.
 
 --------
 
