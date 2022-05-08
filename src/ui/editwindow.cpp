@@ -1102,17 +1102,17 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     ImGui::EndCombo();
                 }
 
-                if(keysPressed[SDL_SCANCODE_RETURN] || keysPressed[SDL_SCANCODE_RETURN2]) {
+                if(keysPressed[SDL_SCANCODE_RETURN] || keysPressed[SDL_SCANCODE_KP_ENTER]) {
                     std::string keyText = FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey);                
-                        if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
-                            chartinfo.notes.editItem(insertBeat, insertItemType, keyText);
-                        } else {
-                            chartinfo.notes.addItem(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, insertItemType, keyText);
-                        }
+                    if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
+                        chartinfo.notes.editItem(insertBeat, insertItemType, keyText);
+                    } else {
+                        chartinfo.notes.addItem(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, insertItemType, keyText);
+                    }
 
-                        selectedFuncKey = 0;
-                        ImGui::CloseCurrentPopup();
-                        unsaved = true;
+                    selectedFuncKey = 0;
+                    ImGui::CloseCurrentPopup();
+                    unsaved = true;
                 }
                 break;
             case SequencerItemType::SKIP:
