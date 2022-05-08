@@ -558,12 +558,6 @@ void removeSection(SongPosition & songpos) {
 }
 
 
-// notes by lane
-static float getLaneNoteCount(void * data, int i) {
-    const ChartInfo * chartinfo = (ChartInfo *) data;
-    return chartinfo->notes.getLaneItemCount((SequencerItemType)i);
-}
-
 static float getKeyFrequencies(void * data, int i) {
     const ChartInfo * chartinfo = (ChartInfo *)data;
     return chartinfo->notes.getKeyItemCount(i);
@@ -755,18 +749,24 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     ImGui::Separator();
 
     ImGui::Text("Key Distribution by Lane");
-    ImGui::PlotHistogram("##laneDist", getLaneNoteCount, (void*)&chartinfo, 3);
+    if(ImGui::BeginTable("laneTable", 1)) {
+        for(int lane = 0; lane < 3; lane++) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Lane %d: %d", lane, chartinfo.notes.getLaneItemCount((SequencerItemType)lane));
+        }
+        ImGui::EndTable();
+    }
 
     ImGui::Separator();
 
     // notes by key (top x)
     static int currTopNotes = 6;
 
-    ImGui::Text("Top X: ");
+    ImGui::Text("Most frequent Keys");
     ImGui::SameLine();
     ImGui::SliderInt("##topNotes", &currTopNotes, 1, 45);
     
-    ImGui::Text("Most frequent Keys");
     ImGui::PlotHistogram("##keyFreqs", getKeyFrequencies, (void*)&chartinfo, currTopNotes);
 
     ImGui::EndChild();
