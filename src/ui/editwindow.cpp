@@ -890,10 +890,12 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
         }
 
         // calculate the leftover beats
-        if (absBeat < time.absBeatStart || i == timeinfo.size() - 1) {
-            int currBeatsPerMeasure = (i == timeinfo.size() - 1) ? time.beatsPerMeasure : prevBeatsPerMeasure;
+        bool isLastSection = i == timeinfo.size() - 1;
+        if (absBeat < time.absBeatStart || isLastSection) {
+            int currBeatsPerMeasure = isLastSection ? time.beatsPerMeasure : prevBeatsPerMeasure;
+            float currAbsBeat = isLastSection ? time.absBeatStart : prevSectionAbsBeat;
 
-            float leftoverMeasures = (absBeat - prevSectionAbsBeat) / currBeatsPerMeasure;
+            float leftoverMeasures = (absBeat - currAbsBeat) / currBeatsPerMeasure;
             int leftoverMeasuresFull = std::floor(leftoverMeasures);
             float leftoverBeats = (leftoverMeasures - leftoverMeasuresFull) * currBeatsPerMeasure;
             int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit);
