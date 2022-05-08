@@ -43,6 +43,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     NoteSequence() : mFrameMin(0.f), mFrameMax(1000.f) {}
 
     float mFrameMin, mFrameMax;
+    int numTopNotes = 0;
+    int numMidNotes = 0;
+    int numBotNotes = 0;
 
     std::vector<std::shared_ptr<NoteSequenceItem>> myItems;
 
@@ -105,6 +108,20 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         myItems.push_back(newNote);
 
         std::sort(myItems.begin(), myItems.end());
+
+        switch(itemType) {
+            case SequencerItemType::TOP_NOTE:
+                numTopNotes++;
+                break;
+            case SequencerItemType::MID_NOTE:
+                numMidNotes++;
+                break;
+            case SequencerItemType::BOT_NOTE:
+                numBotNotes++;
+                break;
+            default:
+                break;
+        }
     }
 
     void addStop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
@@ -149,6 +166,21 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
                 (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
                 myItems.erase(iter);
+
+                switch(seqItem->getItemType()) {
+                    case SequencerItemType::TOP_NOTE:
+                        numTopNotes--;
+                        break;
+                    case SequencerItemType::MID_NOTE:
+                        numMidNotes--;
+                        break;
+                    case SequencerItemType::BOT_NOTE:
+                        numBotNotes--;
+                        break;
+                    default:
+                        break;
+                }
+
                 break;
             }
         }
@@ -163,6 +195,45 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
 
         return false;
+    }
+
+    int getLaneItemCount(SequencerItemType lane) const {
+        switch(lane) {
+            case SequencerItemType::TOP_NOTE:
+                return numTopNotes;
+            case SequencerItemType::MID_NOTE:
+                return numMidNotes;
+            case SequencerItemType::BOT_NOTE:
+                return numBotNotes;
+            default:
+                return 0;
+        }
+    }
+
+    int getKeyItemCount(int frequencyRank) const {
+        return 1;
+    }
+
+    void resetItemCounts() {
+        numTopNotes = 0;
+        numMidNotes = 0;
+        numBotNotes = 0;
+
+        for(auto & item : myItems) {
+            switch(item->getItemType()) {
+                case SequencerItemType::TOP_NOTE:
+                    numTopNotes++;
+                    break;
+                case SequencerItemType::MID_NOTE:
+                    numMidNotes++;
+                    break;
+                case SequencerItemType::BOT_NOTE:
+                    numBotNotes++;
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     virtual int GetFrameMin() const {

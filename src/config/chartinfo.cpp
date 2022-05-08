@@ -157,6 +157,7 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
     }
 
     std::sort(notes.myItems.begin(), notes.myItems.end());
+    notes.resetItemCounts();
 
     return true;
 }

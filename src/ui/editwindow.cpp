@@ -557,13 +557,25 @@ void removeSection(SongPosition & songpos) {
     songpos.setSongBeatPosition(songpos.absBeat);
 }
 
+
+// notes by lane
+static float getLaneNoteCount(void * data, int i) {
+    const ChartInfo * chartinfo = (ChartInfo *) data;
+    return chartinfo->notes.getLaneItemCount((SequencerItemType)i);
+}
+
+static float getKeyFrequencies(void * data, int i) {
+    const ChartInfo * chartinfo = (ChartInfo *)data;
+    return chartinfo->notes.getKeyItemCount(i);
+}
+
 void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved) {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
     ImGui::Image(artTexture, ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
 
     ImGui::SameLine();
-    ImGui::BeginChild("timedata");
+    ImGui::BeginChild("timedata", ImVec2(ImGui::GetContentRegionAvail().x * .5f, 0), true);
 
     ImGui::Text("Chart Sections");
     ImGui::SameLine();
@@ -708,7 +720,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     }
 
     // display section info
-    if(ImGui::BeginListBox("##chartsections", ImVec2(ImGui::GetContentRegionAvail().x / 2.f, ImGui::GetContentRegionAvail().y))) {
+    if(ImGui::BeginListBox("##chartsections", ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y))) {
         for(unsigned int i = 0; i < songpos.timeinfo.size(); i++) {
             Timeinfo currSection = songpos.timeinfo.at(i);
 
@@ -738,11 +750,24 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     ImGui::SameLine();
 
     // chart / note statistics
-    ImGui::BeginChild("chartStatistics");
+    ImGui::BeginChild("chartStatistics", ImVec2(0, 0), true);
     ImGui::Text("Total Notes: %d", chartinfo.notes.GetItemCount());
+    ImGui::Separator();
 
+    ImGui::Text("Key Distribution by Lane");
+    ImGui::PlotHistogram("##laneDist", getLaneNoteCount, (void*)&chartinfo, 3);
 
+    ImGui::Separator();
+
+    // notes by key (top x)
+    static int currTopNotes = 6;
+
+    ImGui::Text("Top X: ");
+    ImGui::SameLine();
+    ImGui::SliderInt("##topNotes", &currTopNotes, 1, 45);
     
+    ImGui::Text("Most frequent Keys");
+    ImGui::PlotHistogram("##keyFreqs", getKeyFrequencies, (void*)&chartinfo, currTopNotes);
 
     ImGui::EndChild();
 
