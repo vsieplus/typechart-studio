@@ -737,9 +737,10 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 
     ImGui::SameLine();
 
-    // pane to edit the selected entity
-    ImGui::BeginChild("selectedData", ImVec2(0, 0), true);
-    ImGui::Text("Currently Selected: ");
+    // chart / note statistics
+    ImGui::BeginChild("chartStatistics");
+    ImGui::Text("Total Notes: %d", chartinfo.notes.GetItemCount());
+
 
     
 
@@ -891,9 +892,10 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
 
         // calculate the leftover beats
         bool isLastSection = i == timeinfo.size() - 1;
-        if (absBeat < time.absBeatStart || isLastSection) {
-            int currBeatsPerMeasure = isLastSection ? time.beatsPerMeasure : prevBeatsPerMeasure;
-            float currAbsBeat = isLastSection ? time.absBeatStart : prevSectionAbsBeat;
+        bool beatInPrevSection = absBeat < time.absBeatStart; 
+        if (beatInPrevSection || isLastSection) {
+            int currBeatsPerMeasure = beatInPrevSection ? prevBeatsPerMeasure : time.beatsPerMeasure;
+            float currAbsBeat = beatInPrevSection ? prevSectionAbsBeat : time.absBeatStart;
 
             float leftoverMeasures = (absBeat - currAbsBeat) / currBeatsPerMeasure;
             int leftoverMeasuresFull = std::floor(leftoverMeasures);
