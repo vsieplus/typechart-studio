@@ -133,14 +133,12 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
             SequencerItemType itemType;
             if(MIDDLE_ROW_KEYS.find(keyboardLayout) != MIDDLE_ROW_KEYS.end()) {
                 auto & validKeys = MIDDLE_ROW_KEYS.at(keyboardLayout);
-                if(validKeys.find(keyText.at(0)) != validKeys.end()) {
+                if(FUNCTION_KEY_TO_STR.find(keyText) != FUNCTION_KEY_TO_STR.end()) {
+                    itemType = SequencerItemType::BOT_NOTE;
+                } else if(validKeys.find(keyText.at(0)) != validKeys.end()) {
                     itemType = SequencerItemType::MID_NOTE;
-                } else if(keyText.length() == 1) {
-                    if(isdigit(keyText.at(0))) {
-                        itemType = SequencerItemType::TOP_NOTE;
-                    } else {
-                        itemType = SequencerItemType::BOT_NOTE;
-                    }
+                } else if(keyText.length() == 1 && isdigit(keyText.at(0))) {
+                    itemType = SequencerItemType::TOP_NOTE;
                 }
             } else {
                 // unsupported keyboard layout
