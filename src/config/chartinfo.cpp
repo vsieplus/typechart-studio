@@ -131,14 +131,16 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
             }
 
             SequencerItemType itemType;
-            if(keyText.length() > 1) {
-                itemType = SequencerItemType::BOT_NOTE;
-            } else if(MIDDLE_ROW_KEYS.find(keyboardLayout) != MIDDLE_ROW_KEYS.end()) {
+            if(MIDDLE_ROW_KEYS.find(keyboardLayout) != MIDDLE_ROW_KEYS.end()) {
                 auto & validKeys = MIDDLE_ROW_KEYS.at(keyboardLayout);
                 if(validKeys.find(keyText.at(0)) != validKeys.end()) {
                     itemType = SequencerItemType::MID_NOTE;
-                } else {
-                    itemType = SequencerItemType::TOP_NOTE;
+                } else if(keyText.length() == 1) {
+                    if(isdigit(keyText.at(0))) {
+                        itemType = SequencerItemType::TOP_NOTE;
+                    } else {
+                        itemType = SequencerItemType::BOT_NOTE;
+                    }
                 }
             } else {
                 // unsupported keyboard layout
