@@ -560,7 +560,12 @@ void removeSection(SongPosition & songpos) {
 
 static float getKeyFrequencies(void * data, int i) {
     const ChartInfo * chartinfo = (ChartInfo *)data;
-    return chartinfo->notes.getKeyItemCount(i);
+    const auto keyData = chartinfo->notes.getKeyItemData(i);
+
+    auto keyText = keyData.first;
+    auto keyCount = keyData.second;
+
+    return keyCount;
 }
 
 void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved) {
@@ -749,15 +754,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     ImGui::Separator();
 
     ImGui::Text("Key Distribution by Lane");
-    if(ImGui::BeginTable("laneTable", 1)) {
-        for(int lane = 0; lane < 3; lane++) {
-            ImGui::TableNextRow();
-            ImGui::TableSetColumnIndex(0);
-            ImGui::Text("Lane %d: %d", lane, chartinfo.notes.getLaneItemCount((SequencerItemType)lane));
-        }
-        ImGui::EndTable();
-    }
-
+    ImGui::Text("Top: %d | Middle: %d | Bottom: %d", chartinfo.notes.numTopNotes, chartinfo.notes.numMidNotes, chartinfo.notes.numBotNotes);
     ImGui::Separator();
 
     // notes by key (top x)
@@ -765,9 +762,12 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 
     ImGui::Text("Most frequent Keys");
     ImGui::SameLine();
-    ImGui::SliderInt("##topNotes", &currTopNotes, 1, 45);
+    ImGui::SetNextItemWidth(128.f);
+    ImGui::SliderInt("##topNotes", &currTopNotes, 1, chartinfo.notes.keyFreqsSorted.size() - 1);
     
-    ImGui::PlotHistogram("##keyFreqs", getKeyFrequencies, (void*)&chartinfo, currTopNotes);
+    int maxFreq = getKeyFrequencies((void*)&chartinfo, 0);
+    ImGui::PlotHistogram("##keyFreqs", getKeyFrequencies, (void*)&chartinfo, currTopNotes, 0, NULL, 0, maxFreq,
+                         ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y));
 
     ImGui::EndChild();
 

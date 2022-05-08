@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <float.h>
 #include <list>
+#include <map>
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -48,6 +49,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     int numBotNotes = 0;
 
     std::vector<std::shared_ptr<NoteSequenceItem>> myItems;
+    std::map<std::string, int> keyFrequencies;
+    std::vector<std::pair<std::string, int>> keyFreqsSorted;
 
     NoteSplit computeNoteSplit(int noteSplitNumerator, int noteSplitDenominator) {
         auto gcd = std::__gcd(noteSplitNumerator, noteSplitDenominator);
@@ -98,6 +101,10 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
+    static bool cmpSecond(const std::pair<std::string, int> & l, const std::pair<std::string, int> & r) {
+        return l.second > r.second;
+    }
+
     void addNote(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText) {
         NoteType noteType = NoteType::KEYPRESS;
         if(beatDuration > FLT_EPSILON) {
@@ -122,6 +129,11 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             default:
                 break;
         }
+
+        keyFrequencies[displayText] += 1;
+
+        keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
+        std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
     }
 
     void addStop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
@@ -161,6 +173,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     void deleteItem(float absBeat, int itemType) {
+        bool removeNote = false;
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
             auto & seqItem = *iter;
             if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
@@ -170,15 +183,25 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                 switch(seqItem->getItemType()) {
                     case SequencerItemType::TOP_NOTE:
                         numTopNotes--;
+                        removeNote = true;
                         break;
                     case SequencerItemType::MID_NOTE:
                         numMidNotes--;
+                        removeNote = true;
                         break;
                     case SequencerItemType::BOT_NOTE:
                         numBotNotes--;
+                        removeNote = true;
                         break;
                     default:
                         break;
+                }
+
+                if(removeNote) {
+                    keyFrequencies[seqItem->displayText] -= 1;
+
+                    keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
+                    std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
                 }
 
                 break;
@@ -210,8 +233,12 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    int getKeyItemCount(int frequencyRank) const {
-        return 1;
+    std::pair<std::string, int> getKeyItemData(int frequencyRank) const {
+        if((unsigned int)frequencyRank < keyFreqsSorted.size()) {
+            return keyFreqsSorted.at(frequencyRank);
+        } else {
+            return std::make_pair("", 0);
+        }
     }
 
     void resetItemCounts() {
@@ -220,20 +247,32 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         numBotNotes = 0;
 
         for(auto & item : myItems) {
+            bool insertedKey = false;
+
             switch(item->getItemType()) {
                 case SequencerItemType::TOP_NOTE:
                     numTopNotes++;
+                    insertedKey = true;
                     break;
                 case SequencerItemType::MID_NOTE:
                     numMidNotes++;
+                    insertedKey = true;
                     break;
                 case SequencerItemType::BOT_NOTE:
                     numBotNotes++;
+                    insertedKey = true;
                     break;
                 default:
                     break;
             }
+
+            if(insertedKey) {
+                keyFrequencies[item->displayText] += 1;
+            }
         }
+
+        keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
+        std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
     }
 
     virtual int GetFrameMin() const {
