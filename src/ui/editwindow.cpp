@@ -568,6 +568,16 @@ static float getKeyFrequencies(void * data, int i) {
     return keyCount;
 }
 
+static const char * getKeyFrequencyLabels(void * data, int i) {
+    const ChartInfo * chartinfo = (ChartInfo *)data;
+    const auto keyData = chartinfo->notes.getKeyItemData(i);
+
+    auto keyText = keyData.first;
+    auto keyCount = keyData.second;
+
+    return keyText.c_str();
+}
+
 void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved) {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
@@ -766,7 +776,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     ImGui::SliderInt("##topNotes", &currTopNotes, 1, chartinfo.notes.keyFreqsSorted.size() - 1);
     
     int maxFreq = getKeyFrequencies((void*)&chartinfo, 0);
-    ImGui::PlotHistogram("##keyFreqs", getKeyFrequencies, (void*)&chartinfo, currTopNotes, 0, NULL, 0, maxFreq,
+    ImGui::PlotHistogram("##keyFreqs", getKeyFrequencies, getKeyFrequencyLabels, (void*)&chartinfo, currTopNotes, 0, NULL, 0, maxFreq,
                          ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y));
 
     ImGui::EndChild();
