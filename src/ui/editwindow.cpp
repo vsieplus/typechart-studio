@@ -766,7 +766,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     ImGui::Separator();
 
     // notes by key (top x)
-    static int currTopNotes = 6;
+    static int currTopNotes = chartinfo.notes.keyFreqsSorted.size() / 2;
 
     ImGui::Text("Most frequent Keys");
     ImGui::SameLine();
