@@ -559,22 +559,20 @@ void removeSection(SongPosition & songpos) {
 
 
 static float getKeyFrequencies(void * data, int i) {
-    const ChartInfo * chartinfo = (ChartInfo *)data;
-    const auto keyData = chartinfo->notes.getKeyItemData(i);
+    ChartInfo * chartinfo = (ChartInfo *)data;
+    auto & keyData = chartinfo->notes.getKeyItemData(i);
 
-    auto keyText = keyData.first;
     auto keyCount = keyData.second;
 
     return keyCount;
 }
 
 static const char * getKeyFrequencyLabels(void * data, int i) {
-    const ChartInfo * chartinfo = (ChartInfo *)data;
-    const auto keyData = chartinfo->notes.getKeyItemData(i);
+    ChartInfo * chartinfo = (ChartInfo *)data;
+    auto & keyData = chartinfo->notes.getKeyItemData(i);
 
-    auto keyText = keyData.first;
-    auto keyCount = keyData.second;
-
+    auto & keyText = keyData.first;
+    
     return keyText.c_str();
 }
 

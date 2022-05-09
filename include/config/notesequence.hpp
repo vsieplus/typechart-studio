@@ -233,12 +233,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    std::pair<std::string, int> getKeyItemData(int frequencyRank) const {
-        if((unsigned int)frequencyRank < keyFreqsSorted.size()) {
-            return keyFreqsSorted.at(frequencyRank);
-        } else {
-            return std::make_pair("", 0);
-        }
+    std::pair<std::string, int> & getKeyItemData(int frequencyRank) {
+        return keyFreqsSorted.at(frequencyRank);
     }
 
     void resetItemCounts() {
