@@ -892,6 +892,14 @@ const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
     {4, "_" },
 };
 
+const std::unordered_map<int, SDL_Scancode> FUNCTION_KEY_COMBO_SCANCODES = {
+    {0, SDL_SCANCODE_LSHIFT },
+    {1, SDL_SCANCODE_RSHIFT },
+    {2, SDL_SCANCODE_CAPSLOCK },
+    {3, SDL_SCANCODE_RETURN },
+    {4, SDL_SCANCODE_SPACE },
+};
+
 int filterInputMiddleKey(ImGuiInputTextCallbackData * data) {
     std::string keyboardLayout;
     if(data->UserData) {
@@ -1122,6 +1130,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 break;
             case SequencerItemType::BOT_NOTE:
                 static int selectedFuncKey = 0;
+                static bool confirmEnter = false;
                 ImGui::SetNextItemWidth(64);
 
                 if(ImGui::BeginCombo("##addfunction_key", FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey).c_str())) {
@@ -1137,7 +1146,21 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     ImGui::EndCombo();
                 }
 
-                if(keysPressed[SDL_SCANCODE_RETURN] || keysPressed[SDL_SCANCODE_KP_ENTER]) {
+                for(auto & [keyIdx, keyText] : FUNCTION_KEY_COMBO_ITEMS) {
+                    if(keysPressed[FUNCTION_KEY_COMBO_SCANCODES.at(keyIdx)]) {
+                        if(selectedFuncKey != keyIdx)
+                            confirmEnter = false;
+                        
+                        selectedFuncKey = keyIdx;
+                    }
+                }
+
+                if(keysPressed[FUNCTION_KEY_COMBO_SCANCODES.at(selectedFuncKey)]) {
+                    if(!confirmEnter) {
+                        confirmEnter = true;
+                        break;
+                    }
+
                     std::string keyText = FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey);                
                     if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
                         chartinfo.notes.editItem(insertBeat, insertItemType, keyText);
@@ -1146,6 +1169,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     }
 
                     selectedFuncKey = 0;
+                    confirmEnter = false;
                     ImGui::CloseCurrentPopup();
                     unsaved = true;
                 }
