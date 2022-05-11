@@ -166,7 +166,20 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
                 (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
                 
+                auto oldText = seqItem->displayText;
                 seqItem->displayText = displayText;
+
+                // update key frequencies
+                if(seqItem->getItemType() == SequencerItemType::TOP_NOTE || seqItem->getItemType() == SequencerItemType::MID_NOTE ||
+                   seqItem->getItemType() == SequencerItemType::BOT_NOTE)
+                {
+                    keyFrequencies[oldText] -= 1;
+                    keyFrequencies[displayText] += 1;
+
+                    keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
+                    std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
+                }
+
                 break;
             }
         }
