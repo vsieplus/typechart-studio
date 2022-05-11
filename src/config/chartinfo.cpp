@@ -117,6 +117,9 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
 
                         NoteType nextNoteType = (NoteType)(nextNoteJSON["type"].get<int>());
                         std::string nextNoteKeyText = nextNoteJSON["key"];
+                        if(STR_TO_FUNCTION_KEY.find(nextNoteKeyText) != STR_TO_FUNCTION_KEY.end()) {
+                            nextNoteKeyText = STR_TO_FUNCTION_KEY.at(nextNoteKeyText);
+                        }
 
                         if(nextNoteKeyText == keyText && nextNoteType == NoteType::KEYHOLDRELEASE) {
                             std::vector<int> nextNotepos = nextNoteJSON["pos"];
