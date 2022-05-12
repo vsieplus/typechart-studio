@@ -9,7 +9,7 @@ using json = nlohmann::json;
 
 namespace fs = std::filesystem;
 
-void SongInfo::saveSonginfo(std::string saveDir) {
+void SongInfo::saveSonginfo(std::string saveDir, bool initialSaved) {
     this->saveDir = saveDir;
     fs::path songinfoSavePath = fs::path(saveDir) / fs::path("songinfo.json");
 
@@ -27,7 +27,7 @@ void SongInfo::saveSonginfo(std::string saveDir) {
     std::ofstream file(songinfoSavePath.c_str());
     file << std::setw(4) << songinfo << std::endl;
 
-    if(Preferences::Instance().getCopyArtAndMusic()) {
+    if(Preferences::Instance().getCopyArtAndMusic() && !initialSaved) {
         fs::path artSavePath = fs::path(saveDir) / fs::path(coverartFilename);
         fs::path musicSavePath = fs::path(saveDir) / fs::path(musicFilename);
 

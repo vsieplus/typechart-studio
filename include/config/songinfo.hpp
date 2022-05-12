@@ -10,7 +10,7 @@ struct SongInfo {
         musicFilepath(musicFilepath), coverartFilepath(coverartFilepath),
         musicPreviewStart(musicPreviewStart), musicPreviewStop(musicPreviewStop) {}
 
-    void saveSonginfo(std::string saveDir);
+    void saveSonginfo(std::string saveDir, bool initialSaved);
 
     std::string title;
     std::string artist;

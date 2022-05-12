@@ -437,9 +437,7 @@ void closeWindow(EditWindowData & currWindow, std::vector<EditWindowData>::itera
 }
 
 void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePath, std::string saveDir) {
-    if(!currWindow.initialSaved && chartSavePath != currWindow.chartinfo.savePath) {
-        currWindow.songinfo.saveSonginfo(saveDir);
-    }
+    currWindow.songinfo.saveSonginfo(saveDir, currWindow.initialSaved);
     currWindow.chartinfo.saveChart(chartSavePath, currWindow.songpos);
     
     currWindow.initialSaved = true;
@@ -560,20 +558,26 @@ void removeSection(SongPosition & songpos) {
 
 static float getKeyFrequencies(void * data, int i) {
     ChartInfo * chartinfo = (ChartInfo *)data;
-    auto & keyData = chartinfo->notes.getKeyItemData(i);
 
-    auto keyCount = keyData.second;
-
-    return keyCount;
+    if(i >= chartinfo->notes.keyFreqsSorted.size()) {
+        return 0;
+    } else {
+        auto & keyData = chartinfo->notes.getKeyItemData(i);
+        return keyData.second;
+    }
 }
 
 static const char * getKeyFrequencyLabels(void * data, int i) {
     ChartInfo * chartinfo = (ChartInfo *)data;
-    auto & keyData = chartinfo->notes.getKeyItemData(i);
 
-    auto & keyText = keyData.first;
+    if(i >= chartinfo->notes.keyFreqsSorted.size()) {
+        return nullptr;
+    } else {
+        auto & keyData = chartinfo->notes.getKeyItemData(i);
+        auto & keyText = keyData.first;
     
-    return keyText.c_str();
+        return keyText.c_str();
+    }
 }
 
 void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved) {
@@ -831,7 +835,9 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(sliderWidth);
-    ImGui::SliderFloat("##prevstart", previewStart, 0.f, musicLengthSecs, "%05.2f");
+    if(ImGui::SliderFloat("##prevstart", previewStart, 0.f, musicLengthSecs, "%05.2f")) {
+        currWindow.unsaved = true;
+    }
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
         ImGui::SetTooltip("Music preview start");
 
@@ -846,7 +852,9 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(sliderWidth);
-    ImGui::SliderFloat("##prevstop", previewStop, 0.f, musicLengthSecs, "%05.2f");
+    if(ImGui::SliderFloat("##prevstop", previewStop, 0.f, musicLengthSecs, "%05.2f")) {
+        currWindow.unsaved = true;
+    }
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
         ImGui::SetTooltip("Music preview stop");
     
