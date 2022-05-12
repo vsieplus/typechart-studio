@@ -324,6 +324,7 @@ void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::str
 
     SongInfo songinfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
                                  UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
+    songinfo.saveDir = chartDir.string();
 
     if(!audioSystem->loadMusic(UImusicFilepath)) {
         ImGui::OpenPopup("failedToLoadMusic");
@@ -775,7 +776,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     ImGui::Text("Most frequent Keys");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(128.f);
-    ImGui::SliderInt("##topNotes", &currTopNotes, 1, chartinfo.notes.keyFreqsSorted.size() - 1);
+    ImGui::SliderInt("##topNotes", &currTopNotes, 0, chartinfo.notes.keyFreqsSorted.size());
     
     int maxFreq = getKeyFrequencies((void*)&chartinfo, 0);
     ImGui::PlotHistogram("##keyFreqs", getKeyFrequencies, getKeyFrequencyLabels, (void*)&chartinfo, currTopNotes, 0, NULL, 0, maxFreq,
