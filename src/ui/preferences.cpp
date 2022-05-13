@@ -84,16 +84,20 @@ void Preferences::loadFromFile(std::string preferencesPath) {
 }
 
 void Preferences::saveToFile(std::string preferencesPath) {
-    int i = 0;
-    for(auto iter = mostRecentFilesStr.begin(); iter != mostRecentFilesStr.end(); iter++) {
+    auto iter = mostRecentFilesStr.begin();
+    for(int i = 0 ; i < MAX_MOST_RECENT; i++) {
         auto & path = *iter;
 
-        auto copyLength = std::min((int)(path.size()), 512 - 1);
-        std::copy(path.begin(), path.begin() + copyLength, mostRecentFilepaths[i]);
-        i++;
+        mostRecentFilepaths[i][0] = '\0';
 
-        if(i == 5)
-            break;
+
+        if(i < mostRecentFilesStr.size()) {
+            auto copyLength = std::min((int)(path.size()), 512 - 1);
+            std::copy(path.begin(), path.begin() + copyLength, mostRecentFilepaths[i]);
+            mostRecentFilepaths[i][copyLength] = '\0';
+        }
+
+        iter++;
     }
 
     // Open in write/binary mode
