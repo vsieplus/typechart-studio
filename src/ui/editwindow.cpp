@@ -1207,6 +1207,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
 
         bool decrease = io.MouseWheel > 0;
+        io.MouseWheel *= (2.f / timelineZoom);
         int beatsplitChange = std::floor(io.MouseWheel);
         if(beatsplitChange == 0)
             beatsplitChange = 1;
