@@ -58,8 +58,8 @@ void showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem) {
 
     if(ImGui::BeginMenu("Recent")) {
         for(auto & recentPath : Preferences::Instance().getMostRecentFiles()) {
-            auto labelName = fs::path(recentPath.c_str()).filename().string().c_str();
-            if(ImGui::MenuItem(labelName)) {
+            auto labelName = fs::path(recentPath.c_str()).parent_path().stem().string() + "/" + fs::path(recentPath.c_str()).filename().string();
+            if(ImGui::MenuItem(labelName.c_str())) {
                 loadEditWindow(renderer, audioSystem, recentPath);
             }
         }
