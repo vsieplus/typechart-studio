@@ -137,7 +137,11 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     void addStop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
-        
+        std::shared_ptr<Stop> newStop = std::make_shared<Stop>(absBeat, beatDuration, beatpos, endBeatpos);
+        newStop->displayText = std::to_string(beatDuration);
+        myItems.push_back(newStop);
+
+        std::sort(myItems.begin(), myItems.end());
     }
 
     void addSkip(float absBeat, float skipTime, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {

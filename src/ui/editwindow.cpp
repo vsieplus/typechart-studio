@@ -1224,6 +1224,11 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 }
                 break;
             case SequencerItemType::STOP:
+                chartinfo.notes.addStop(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos);
+                
+                ImGui::CloseCurrentPopup();
+                unsaved = true;
+
                 break;
         }
     

@@ -70,7 +70,12 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
                 std::vector<int> pos = stopJSON["pos"];
                 float beatDuration = stopJSON["duration"];
 
-                //notes.addStop()
+                BeatPos beatpos = (BeatPos){pos.at(0), pos.at(1), pos.at(2)};
+                float absBeat = calculateAbsBeat(beatpos, songpos.timeinfo);
+
+                BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
+
+                notes.addStop(absBeat, beatDuration, beatpos, endBeatpos);
             }
         }
 
