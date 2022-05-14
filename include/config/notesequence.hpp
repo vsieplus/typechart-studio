@@ -137,30 +137,33 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     void addStop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
-
+        
     }
 
-    void addSkip(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
+    void addSkip(float absBeat, float skipTime, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
+        std::shared_ptr<Skip> newSkip = std::make_shared<Skip>(absBeat, skipTime, beatDuration, beatpos, endBeatpos);
+        newSkip->displayText = std::to_string(skipTime);
+        myItems.push_back(newSkip);
 
+        std::sort(myItems.begin(), myItems.end());
     }
 
-    void addItem(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, int itemType, std::string displayText) {
-        switch(itemType) {
-            case SequencerItemType::TOP_NOTE:
-            case SequencerItemType::MID_NOTE:
-            case SequencerItemType::BOT_NOTE:
-                addNote(absBeat, beatDuration, beatpos, endBeatpos, (SequencerItemType)itemType, displayText);
+    void editSkip(float absBeat, float skipTime) {
+        for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
+            auto & seqItem = *iter;
+            if((int)(seqItem->getItemType()) == SequencerItemType::SKIP && absBeat >= seqItem->absBeat &&
+                (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
+
+                auto currSkip = std::dynamic_pointer_cast<Skip>(seqItem);
+                currSkip->displayText = std::to_string(skipTime);
+                currSkip->skipTime = skipTime;
+        
                 break;
-            case SequencerItemType::STOP:
-                addStop(absBeat, beatDuration, beatpos, endBeatpos);
-                break;
-            case SequencerItemType::SKIP:
-                addSkip(absBeat, beatDuration, beatpos, endBeatpos);
-                break;
+            }
         }
     }
 
-    void editItem(float absBeat, int itemType, std::string displayText) {
+    void editNote(float absBeat, int itemType, std::string displayText) {
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
             auto & seqItem = *iter;
             if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
@@ -169,16 +172,11 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                 auto oldText = seqItem->displayText;
                 seqItem->displayText = displayText;
 
-                // update key frequencies
-                if(seqItem->getItemType() == SequencerItemType::TOP_NOTE || seqItem->getItemType() == SequencerItemType::MID_NOTE ||
-                   seqItem->getItemType() == SequencerItemType::BOT_NOTE)
-                {
-                    keyFrequencies[oldText] -= 1;
-                    keyFrequencies[displayText] += 1;
+                keyFrequencies[oldText] -= 1;
+                keyFrequencies[displayText] += 1;
 
-                    keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
-                    std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
-                }
+                keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
+                std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
 
                 break;
             }
@@ -221,15 +219,15 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    bool containsItemAt(float absBeat, int itemType) {
+    std::shared_ptr<NoteSequenceItem> containsItemAt(float absBeat, int itemType) {
         for(auto & seqItem : myItems) {
             if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
                 (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
-                return true;
+                return seqItem;
             }
         }
 
-        return false;
+        return nullptr;
     }
 
     int getLaneItemCount(SequencerItemType lane) const {

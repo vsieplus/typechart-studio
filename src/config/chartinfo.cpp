@@ -1,5 +1,6 @@
 #include "config/chartinfo.hpp"
 #include "config/songposition.hpp"
+#include "ui/editwindow.hpp"
 
 #include <fstream>
 #include <memory>
@@ -80,7 +81,12 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
                 float beatDuration = skipJSON["duration"];
                 float skipTime = skipJSON["skiptime"];
 
-                //notes.addSkip()
+                BeatPos beatpos = (BeatPos){pos.at(0), pos.at(1), pos.at(2)};
+                float absBeat = calculateAbsBeat(beatpos, songpos.timeinfo);
+
+                BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
+
+                notes.addSkip(absBeat, skipTime, beatDuration, beatpos, endBeatpos);
             }
         }
 

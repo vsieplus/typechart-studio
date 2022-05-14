@@ -560,7 +560,7 @@ void removeSection(SongPosition & songpos) {
 static float getKeyFrequencies(void * data, int i) {
     ChartInfo * chartinfo = (ChartInfo *)data;
 
-    if(i >= chartinfo->notes.keyFreqsSorted.size()) {
+    if((unsigned int)i >= chartinfo->notes.keyFreqsSorted.size()) {
         return 0;
     } else {
         auto & keyData = chartinfo->notes.getKeyItemData(i);
@@ -571,7 +571,7 @@ static float getKeyFrequencies(void * data, int i) {
 static const char * getKeyFrequencyLabels(void * data, int i) {
     ChartInfo * chartinfo = (ChartInfo *)data;
 
-    if(i >= chartinfo->notes.keyFreqsSorted.size()) {
+    if((unsigned int)i >= chartinfo->notes.keyFreqsSorted.size()) {
         return nullptr;
     } else {
         auto & keyData = chartinfo->notes.getKeyItemData(i);
@@ -1126,9 +1126,9 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         std::string keyText(addedItem);
 
                         if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
-                            chartinfo.notes.editItem(insertBeat, insertItemType, keyText);
+                            chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                         } else {
-                            chartinfo.notes.addItem(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, insertItemType, keyText);
+                            chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                         }
 
                         addedItem[0] = '\0';
@@ -1172,9 +1172,9 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
                     std::string keyText = FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey);                
                     if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
-                        chartinfo.notes.editItem(insertBeat, insertItemType, keyText);
+                        chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                     } else {
-                        chartinfo.notes.addItem(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, insertItemType, keyText);
+                        chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                     }
 
                     selectedFuncKey = 0;
@@ -1184,6 +1184,44 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 }
                 break;
             case SequencerItemType::SKIP:
+                {
+                    if(!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+                        ImGui::SetKeyboardFocusHere(0);
+
+                    ImGui::SetNextItemWidth(128);
+
+                    static float skipBeats = 0;
+                    ImGui::InputFloat("Skip beats", &skipBeats, currentBeatsplitValue / 2.f, currentBeatsplitValue / 2.f);
+                    ImGui::SameLine();
+                    HelpMarker("How many beats will the skip be displayed for?\n- 0 -> the skip is instant\n"
+                            "- skip_duration / 2 -> the skip will take half the time as without the skip\n"
+                            "- skip_duration -> will look the same as no skip");
+
+                    if(skipBeats < 0.f)
+                        skipBeats = 0;
+
+                    auto currItem = chartinfo.notes.containsItemAt(insertBeat, insertItemType);
+                    if(currItem) {
+                        auto currSkip = std::dynamic_pointer_cast<Skip>(currItem);
+                        if(skipBeats > currSkip->beatDuration)
+                            skipBeats = currSkip->beatDuration;
+                    } else {
+                        if(skipBeats > endBeat - insertBeat)
+                            skipBeats = endBeat - insertBeat;
+                    }
+
+                    if(keysPressed[SDL_SCANCODE_RETURN] || keysPressed[SDL_SCANCODE_KP_ENTER]) {
+                        if(currItem) {
+                            chartinfo.notes.editSkip(insertBeat, skipBeats);
+                        } else {
+                            chartinfo.notes.addSkip(insertBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
+                        }
+
+                        ImGui::CloseCurrentPopup();
+                        unsaved = true;
+                    }
+                    
+                }
                 break;
             case SequencerItemType::STOP:
                 break;

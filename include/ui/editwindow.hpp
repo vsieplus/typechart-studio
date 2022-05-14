@@ -50,6 +50,8 @@ void showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem);
 void startNewEditWindow();
 void startSaveCurrentChart(bool saveAs = false);
 
+BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<Timeinfo> & timeinfo);
+
 void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer);
 void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
 
