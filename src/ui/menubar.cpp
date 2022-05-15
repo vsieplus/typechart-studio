@@ -77,25 +77,25 @@ void showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem) {
 
 void showEditMenu() {
     if(ImGui::MenuItem("Undo", "Ctrl+Z")) {
-
+        setUndo();
     }
 
     if(ImGui::MenuItem("Redo", "Ctrl+Y", false, false)) {
-
+        setRedo();
     }
 
     ImGui::Separator();
     
     if(ImGui::MenuItem("Cut", "Ctrl+X")) {
-
+        setCut();
     }
 
     if(ImGui::MenuItem("Copy", "Ctrl+C")) {
-
+        setCopy();
     }
 
     if(ImGui::MenuItem("Paste", "Ctrl+V")) {
-
+        setPaste();
     }
 }
 
