@@ -181,6 +181,27 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
     }
 
+    void flipNotes(std::string keyboardLayout, float startBeat, float endBeat, int minItemType, int maxItemType) {
+        if(KEYBOARD_FLIP_MAPS.find(keyboardLayout) != KEYBOARD_FLIP_MAPS.end()) {
+            auto & flipMap = KEYBOARD_FLIP_MAPS.at(keyboardLayout);
+
+            auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
+            for(auto & item: items) {
+                switch(item->getItemType()) {
+                    case SequencerItemType::TOP_NOTE:
+                    case SequencerItemType::MID_NOTE:
+                    case SequencerItemType::BOT_NOTE:
+                        if(flipMap.find(item->displayText) != flipMap.end()) {
+                            item->displayText = flipMap.at(item->displayText);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
 
     void addStop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
         std::shared_ptr<Stop> newStop = std::make_shared<Stop>(absBeat, beatDuration, beatpos, endBeatpos);

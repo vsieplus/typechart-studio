@@ -97,6 +97,12 @@ void showEditMenu() {
     if(ImGui::MenuItem("Paste", "Ctrl+V")) {
         setPaste();
     }
+
+    ImGui::Separator();
+
+    if(ImGui::MenuItem("Flip", "F")) {
+        setFlip();
+    }
 }
 
 void showOptionMenu() {

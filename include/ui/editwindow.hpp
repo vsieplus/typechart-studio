@@ -44,6 +44,7 @@ void setPaste();
 void setCut();
 void setUndo();
 void setRedo();
+void setFlip();
 
 void initLastDirPaths();
 

@@ -68,6 +68,7 @@ static bool activateCut = false;
 static bool activatePaste = false;
 static bool activateUndo = false;
 static bool activateRedo = false;
+static bool activateFlip = false;
 
 static float UImusicPreviewStart = 0;
 static float UImusicPreviewStop = 15;
@@ -92,6 +93,10 @@ void setUndo() {
 
 void setRedo() {
     activateRedo = true;
+}
+
+void setFlip() {
+    activateFlip = true;
 }
 
 void initLastDirPaths() {
@@ -1168,6 +1173,13 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             unsaved = true;
             haveSelection = false;
             activateCut = false;
+        }
+
+        // flip selected notes
+        if(activateFlip || keysPressed[SDL_GetScancodeFromKey(SDLK_f)]) {
+            chartinfo.notes.flipNotes(chartinfo.keyboardLayout, insertBeat, endBeat, insertItemType, insertItemTypeEnd);
+            unsaved = true;
+            activateFlip = false;
         }
 
         if(keysPressed[SDL_SCANCODE_DELETE]) {
