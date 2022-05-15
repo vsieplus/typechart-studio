@@ -1187,6 +1187,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             unsaved = true;
             haveSelection = false;
         }
+
+        if(keysPressed[SDL_SCANCODE_ESCAPE]) {
+            haveSelection = false;
+        }
     }
 
     if(!copiedItems.empty() && (activatePaste || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_v)]))) {
