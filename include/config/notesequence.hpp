@@ -17,6 +17,7 @@
 #include "config/note.hpp"
 #include "config/skip.hpp"
 #include "config/stop.hpp"
+#include "config/timeinfo.hpp"
 
 #include "systems/audiosystem.hpp"
 
@@ -38,6 +39,50 @@ const std::unordered_map<int, NoteSplit> DENOMINATOR_TO_NOTESPLIT = {
     { 48, NoteSplit::FORTYEIGHTH },
     { 96, NoteSplit::NINETYSIXTH }
 };
+
+inline BeatPos calculateBeatpos2(float absBeat, int currentBeatsplit, const std::vector<Timeinfo> & timeinfo) {
+    int measure = 0;
+    int measureSplit = 0;
+    int split = 0;
+
+    int prevBeatsPerMeasure = 0;
+    float prevSectionAbsBeat = 0.f;
+
+    unsigned int i = 0;
+    for(const auto & time : timeinfo) {
+        // track current measure
+        if(absBeat >= time.absBeatStart && i > 0) {
+            float prevSectionMeasures = (time.absBeatStart - prevSectionAbsBeat) / prevBeatsPerMeasure;
+            int prevSectionMeasuresFull = std::floor(prevSectionMeasures);
+
+            measure += prevSectionMeasuresFull;
+        }
+
+        // calculate the leftover beats
+        bool isLastSection = i == timeinfo.size() - 1;
+        bool beatInPrevSection = absBeat < time.absBeatStart; 
+        if (beatInPrevSection || isLastSection) {
+            int currBeatsPerMeasure = beatInPrevSection ? prevBeatsPerMeasure : time.beatsPerMeasure;
+            float currAbsBeat = beatInPrevSection ? prevSectionAbsBeat : time.absBeatStart;
+
+            float leftoverMeasures = (absBeat - currAbsBeat) / currBeatsPerMeasure;
+            int leftoverMeasuresFull = std::floor(leftoverMeasures);
+            float leftoverBeats = (leftoverMeasures - leftoverMeasuresFull) * currBeatsPerMeasure;
+            int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit);
+
+            measure += leftoverMeasuresFull;
+            measureSplit = currentBeatsplit * currBeatsPerMeasure;
+            split = leftoverBeatsplits;
+            break;            
+        }
+
+        prevSectionAbsBeat = time.absBeatStart;
+        prevBeatsPerMeasure = time.beatsPerMeasure;
+        i++;
+    }
+
+    return (BeatPos){measure, measureSplit, split};
+}
 
 struct NoteSequence : public ImSequencer::SequenceInterface {
     // my datas
@@ -136,6 +181,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
     }
 
+
     void addStop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
         std::shared_ptr<Stop> newStop = std::make_shared<Stop>(absBeat, beatDuration, beatpos, endBeatpos);
         newStop->displayText = std::to_string(beatDuration);
@@ -185,6 +231,94 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                 break;
             }
         }
+    }
+
+    std::vector<std::shared_ptr<NoteSequenceItem>> getItems(float startBeat, float endBeat, int minItemType, int maxItemType) {
+        std::vector<std::shared_ptr<NoteSequenceItem>> currItems;
+
+        for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
+            auto & seqItem = *iter;
+
+            int seqItemType = (int)(seqItem->getItemType());
+
+            if(seqItemType >= minItemType && seqItemType <= maxItemType && startBeat <= seqItem->absBeat && seqItem->absBeat <= endBeat) {
+                currItems.push_back(seqItem);
+            } else if(endBeat <= seqItem->absBeat) {
+                break;
+            }
+        }
+
+        return currItems;
+    }
+
+    void insertItems(float insertBeat, int currentBeatsplit, int minItemType, int maxItemType,
+                     const std::vector<Timeinfo> & timeinfo, std::vector<std::shared_ptr<NoteSequenceItem>> items) {
+        if(!items.empty()) {
+            float firstBeat = items.front()->absBeat;
+            deleteItems(insertBeat, insertBeat + (items.back()->beatEnd - firstBeat), minItemType, maxItemType);
+            
+            for(auto item: items) {
+                float currBeat = insertBeat + (item->absBeat - firstBeat);
+                float currEndBeat = insertBeat + (item->beatEnd - firstBeat);
+
+                BeatPos currBeatpos = calculateBeatpos2(currBeat, currentBeatsplit, timeinfo);
+                BeatPos currEndBeatpos = calculateBeatpos2(currEndBeat, currentBeatsplit, timeinfo);;
+
+                switch(item->getItemType()) {
+                    case SequencerItemType::TOP_NOTE:
+                    case SequencerItemType::MID_NOTE:
+                    case SequencerItemType::BOT_NOTE:
+                        addNote(currBeat, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos, item->getItemType(), item->displayText);
+                        break;
+                    case SequencerItemType::STOP:
+                        addStop(currBeat, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos);
+                        break;
+                    case SequencerItemType::SKIP:
+                        auto currSkip = std::dynamic_pointer_cast<Skip>(item);
+                        addSkip(currBeat, currSkip->skipTime, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos);
+                        break;
+                }
+            }
+        }
+    }
+
+    void deleteItems(float startBeat, float endBeat, int minItemType, int maxItemType) {
+        for(auto iter = myItems.begin(); iter != myItems.end();) {
+            bool removeNote = false;
+            auto & seqItem = *iter;
+
+            int seqItemType = (int)(seqItem->getItemType());
+
+            if(seqItemType >= minItemType && seqItemType <= maxItemType && startBeat <= seqItem->absBeat && seqItem->absBeat <= endBeat) {
+                switch(seqItem->getItemType()) {
+                    case SequencerItemType::TOP_NOTE:
+                        numTopNotes--;
+                        removeNote = true;
+                        break;
+                    case SequencerItemType::MID_NOTE:
+                        numMidNotes--;
+                        removeNote = true;
+                        break;
+                    case SequencerItemType::BOT_NOTE:
+                        numBotNotes--;
+                        removeNote = true;
+                        break;
+                    default:
+                        break;
+                }
+
+                if(removeNote) {
+                    keyFrequencies[seqItem->displayText] -= 1;
+                }
+
+                iter = myItems.erase(iter);
+            } else {
+                iter++;
+            }
+        }
+
+        keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
+        std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
     }
 
     void deleteItem(float absBeat, int itemType) {

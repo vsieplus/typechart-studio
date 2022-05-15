@@ -39,7 +39,11 @@ static std::string lastOpenResourceDir;
 static std::string lastChartOpenDir;
 static std::string lastChartSaveDir;
 
-static unsigned int currentWindow = 0;
+void setCopy();
+void setPaste();
+void setCut();
+void setUndo();
+void setRedo();
 
 void initLastDirPaths();
 

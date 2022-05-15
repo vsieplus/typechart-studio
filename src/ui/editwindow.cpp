@@ -63,8 +63,36 @@ static bool popupInvalidJSON = true;
 static bool popupFailedToLoadMusic = false;
 static bool newEditStarted = false;
 
+static bool activateCopy = false;
+static bool activateCut = false;
+static bool activatePaste = false;
+static bool activateUndo = false;
+static bool activateRedo = false;
+
 static float UImusicPreviewStart = 0;
 static float UImusicPreviewStop = 15;
+
+inline static unsigned int currentWindow = 0;
+
+void setCopy() {
+    activateCopy = true;
+}
+
+void setPaste() {
+    activatePaste = true;
+}
+
+void setCut() {
+    activateCut = true;
+}
+
+void setUndo() {
+    activateUndo = true;
+}
+
+void setRedo() {
+    activateRedo = true;
+}
 
 void initLastDirPaths() {
     lastOpenResourceDir = Preferences::Instance().getInputDir();
@@ -970,8 +998,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     // let's create the sequencer
     static int currentBeatsplit = 4;
     static int clickedItemType = 0;
+    static int releasedItemType = 0;
     static bool updatedBeat = false;
     static float clickedBeat = 0.f;
+    static float hoveredBeat = 0.f;
     static float timelineZoom = 2.f;
 
     ImGui::PushItemWidth(130);
@@ -1040,11 +1070,13 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
     static bool leftClickedEntity = false;
     static bool leftClickReleased = false;
+    static bool leftClickShift = false;
+    static bool haveSelection = false;
     bool rightClickedEntity = false;
 
     int beatsPerMeasure = songpos.timeinfo.size() > songpos.currentSection ? songpos.timeinfo.at(songpos.currentSection).beatsPerMeasure : 4;
-    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, nullptr, &updatedBeat, &leftClickedEntity, &leftClickReleased,
-              &rightClickedEntity, &clickedBeat, &clickedItemType, nullptr, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
+    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, haveSelection, nullptr, &updatedBeat, &leftClickedEntity, &leftClickReleased, &leftClickShift,
+              &rightClickedEntity, &clickedBeat, &hoveredBeat, &clickedItemType, &releasedItemType, nullptr, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
 
     if(updatedBeat) {
         if(!songpos.started) {
@@ -1066,13 +1098,14 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     static char addedItem[2];
     static float insertBeat;
     static BeatPos insertBeatpos;
-    static int insertItemType;
+    static int insertItemType = 0;
     static bool startedNote = false;
     static ImGuiInputTextFlags addItemFlags = 0;
     static ImGuiInputTextCallbackData addItemCallbackData;
     if(!ImGuiFileDialog::Instance()->IsOpened() && leftClickedEntity && !ImGui::IsPopupOpen("add_item")) {
         insertBeat = clickedBeat;
         insertItemType = clickedItemType;
+        haveSelection = false;
 
         insertBeatpos = calculateBeatpos(clickedBeat, currentBeatsplit, songpos.timeinfo);
         
@@ -1096,16 +1129,59 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         startedNote = true;
     }
 
+    static int insertItemTypeEnd = 0;
     static float endBeat;
     static BeatPos endBeatpos;
     if(!ImGuiFileDialog::Instance()->IsOpened() && startedNote && leftClickReleased && !ImGui::IsPopupOpen("add_item") && clickedBeat >= insertBeat) {
-        ImGui::OpenPopup("add_item");
-        endBeat = clickedBeat;
+        if(leftClickShift) {
+            haveSelection = true;
 
+            if(releasedItemType < insertItemType) {
+                auto tmp = insertItemType;
+                insertItemType = releasedItemType;
+                insertItemTypeEnd = tmp;
+            } else {
+                insertItemTypeEnd = releasedItemType;
+            }
+        } else {
+            ImGui::OpenPopup("add_item");
+        }
+        
+        endBeat = clickedBeat;
         endBeatpos = calculateBeatpos(endBeat, currentBeatsplit, songpos.timeinfo); 
 
         leftClickReleased = false;
+        leftClickShift = false;
         startedNote = false;
+    }
+
+    // copy, cut, delete selection of notes
+    static std::vector<std::shared_ptr<NoteSequenceItem>> copiedItems;
+    if(haveSelection) {
+        if(activateCopy || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_c)])) {
+            copiedItems = chartinfo.notes.getItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
+            haveSelection = false;
+            activateCopy = false;
+        } else if(activateCut || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_x)])) {
+            copiedItems = chartinfo.notes.getItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
+            chartinfo.notes.deleteItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
+            unsaved = true;
+            haveSelection = false;
+            activateCut = false;
+        }
+
+        if(keysPressed[SDL_SCANCODE_DELETE]) {
+            chartinfo.notes.deleteItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
+            unsaved = true;
+            haveSelection = false;
+        }
+    }
+
+    if(!copiedItems.empty() && (activatePaste || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_v)]))) {
+        chartinfo.notes.insertItems(hoveredBeat, currentBeatsplit, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
+        unsaved = true;
+        copiedItems.clear();
+        activatePaste = false;
     }
 
     if(ImGui::BeginPopup("add_item")) {
