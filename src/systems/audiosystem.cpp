@@ -65,7 +65,7 @@ void AudioSystem::initAudioSystem(SDL_Window * window) {
         musicStops[i] = 0.f;
         lastBufferPositions[i] = 0.f;
 
-        memset(&sfInfos[i], 0, sizeof(sfInfos[i]));
+        memset(&sfInfos[i], 0, sizeof(SF_INFO));
 
         musicSourcesActive.insert({ i, false });
     }
@@ -235,7 +235,7 @@ int AudioSystem::loadMusic(std::string path) {
             sf_close(sndfiles[nextIdx]);
         }
 
-        memset(&sfInfos[nextIdx], 0, sizeof(sfInfos[nextIdx]));
+        memset(&sfInfos[nextIdx], 0, sizeof(SF_INFO));
         sndfiles[nextIdx] = sf_open(path.c_str(), SFM_READ, &sfInfos[nextIdx]);
         
         if(!sndfiles[nextIdx]) {
@@ -260,7 +260,7 @@ void AudioSystem::deactivateMusicSource(int sourceIdx) {
         sf_close(sndfiles[sourceIdx]);
         free(membufs[sourceIdx]);
 
-        memset(&sfInfos[sourceIdx], 0, sizeof(sfInfos[sourceIdx]));
+        memset(&sfInfos[sourceIdx], 0, sizeof(SF_INFO));
 
         musicStops[sourceIdx] = 0.f;
         stopMusicsEarly[sourceIdx] = false;
