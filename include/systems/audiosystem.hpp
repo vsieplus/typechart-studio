@@ -2,6 +2,7 @@
 #define AUDIOSYSTEM_HPP
 
 #include <array>
+#include <map>
 #include <string>
 #include <unordered_map>
 
@@ -23,43 +24,46 @@ class AudioSystem {
         void update(SDL_Window * window);
 
         bool loadSound(std::string soundID, std::string path);
-        bool loadMusic(std::string path);
+        int loadMusic(std::string path);
+
+        void deactivateMusicSource(int sourceIdx);
 
         void playSound(std::string soundID);
 
-        void startMusic(float startPosition = 0.f);
-        void setMusicPosition(float position);
-        void resumeMusic();
-        void pauseMusic();
-        void stopMusic();
+        void startMusic(int sourceIdx, float startPosition = 0.f);
+        void setMusicPosition(int sourceIdx, float position);
+        void resumeMusic(int sourceIdx);
+        void pauseMusic(int sourceIdx);
+        void stopMusic(int sourceIdx);
 
         void setMusicVolume(float gain);
         void setSoundVolume(float gain);
 
         // calculate song pos, length in seconds
-        float getMusicLength();
-        float getSongPosition();
+        float getMusicLength(int sourceIdx);
+        float getSongPosition(int sourceIdx);
 
-        bool isMusicPlaying() const;
-        bool isMusicPaused() const;
+        bool isMusicPlaying(int sourceIdx) const;
+        bool isMusicPaused(int sourceIdx) const;
 
-        bool getStopMusicEarly() const;
-        void setStopMusicEarly(bool stopMusicEarly);
+        bool getStopMusicEarly(int sourceIdx) const;
+        void setStopMusicEarly(int sourceIdx, bool stopMusicEarly);
         
-        float getMusicStop() const;
-        void setMusicStop(float musicStop);
+        float getMusicStop(int sourceIdx) const;
+        void setMusicStop(int sourceIdx, float musicStop);
     private:
         void initSoundSource(ALuint source, float pitch, float gain, std::array<float, 3> position,
                              std::array<float, 3> velocity, bool looping);
 
         float getBufferLength(ALuint bufid) const;
 
-        void updateBufferStream(SDL_Window * window);
+        void updateBufferStream(SDL_Window * window, int sourceIdx);
 
         static const int BUFFER_FRAMES = 8192;
         static const int NUM_BUFFERS = 4;
 
         static const int NUM_SOUND_SOURCES = 128;
+        static const int NUM_MUSIC_SOURCES = 16;
 
         ALCdevice * soundDevice;
         ALCcontext * soundContext;
@@ -67,21 +71,28 @@ class AudioSystem {
         ALuint soundBuffers[NUM_SOUND_SOURCES];
         ALuint soundSources[NUM_SOUND_SOURCES];
 
-        ALuint musicBuffers[NUM_BUFFERS];
-        ALuint musicSource;
+        ALuint musicBuffers[NUM_MUSIC_SOURCES][NUM_BUFFERS];
+        ALuint musicSources[NUM_MUSIC_SOURCES];
 
         // for tracking time position of music
-        float lastBufferPosition = 0.f;
-        float musicStop = 0.f;
+        float lastBufferPositions[NUM_MUSIC_SOURCES];
+        float musicStops[NUM_MUSIC_SOURCES];
 
-        bool stopMusicEarly = false;
+        bool stopMusicsEarly[NUM_MUSIC_SOURCES];
 
-        SNDFILE * sndfile = nullptr;
-        SF_INFO sfInfo;
+        SNDFILE * sndfiles[NUM_MUSIC_SOURCES];
+        SF_INFO sfInfos[NUM_MUSIC_SOURCES];
 
-        float * membuf = nullptr;
+        float * membufs[NUM_MUSIC_SOURCES];
+
+        // SNDFILE * sndfile = nullptr;
+        // SF_INFO sfInfo;
+
+        // float * membuf = nullptr;
 
         std::unordered_map<std::string, ALuint> soundBufferIDs;
+
+        std::map<int, bool> musicSourcesActive;
 
         // Force to read float samples to avoid clipping issue
         ALenum musicFormat = AL_FORMAT_STEREO_FLOAT32;
