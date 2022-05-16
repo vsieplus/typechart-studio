@@ -85,7 +85,7 @@ void Preferences::loadFromFile(std::string preferencesPath) {
 
 void Preferences::saveToFile(std::string preferencesPath) {
     auto iter = mostRecentFilesStr.begin();
-    for(int i = 0 ; i < MAX_MOST_RECENT; i++) {
+    for(unsigned int i = 0 ; i < MAX_MOST_RECENT; i++) {
         auto & path = *iter;
 
         mostRecentFilepaths[i][0] = '\0';
