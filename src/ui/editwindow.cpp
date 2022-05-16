@@ -312,7 +312,8 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     ChartInfo chartinfo = ChartInfo(UIlevel, UItypist, ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout));
 
     // attempt to load music
-    if(!audioSystem->loadMusic(UImusicFilepath)) {
+    int musicSourceIdx = audioSystem->loadMusic(UImusicFilepath);
+    if(musicSourceIdx == -1) {
         ImGui::OpenPopup("failedToLoadMusic");
         popupFailedToLoadMusic = true;
         return;
@@ -325,7 +326,7 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
 
         auto artTexture = Texture::loadTexture(UIcoverArtFilepath, renderer);
 
-        EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartinfo, songinfo);
+        EditWindowData newWindow = EditWindowData(true, windowID, musicSourceIdx, windowName, artTexture, chartinfo, songinfo);
 
         // initial section from BPM
         float initialBpm = ::atof(UIbpmtext);
@@ -359,7 +360,9 @@ void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::str
                                  UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
     songinfo.saveDir = chartDir.string();
 
-    if(!audioSystem->loadMusic(UImusicFilepath)) {
+    int musicSourceIdx = audioSystem->loadMusic(UImusicFilepath);
+
+    if(musicSourceIdx == -1) {
         ImGui::OpenPopup("failedToLoadMusic");
         popupFailedToLoadMusic = true;
         return;
@@ -376,7 +379,7 @@ void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::str
 
     auto artTexture = Texture::loadTexture(songinfo.coverartFilepath, renderer);
 
-    EditWindowData newWindow = EditWindowData(true, windowID, windowName, artTexture, chartinfo, songinfo);
+    EditWindowData newWindow = EditWindowData(true, windowID, musicSourceIdx, windowName, artTexture, chartinfo, songinfo);
     newWindow.unsaved = false;
     newWindow.songpos = songpos;
     newWindow.initialSaved = true;
@@ -465,9 +468,11 @@ void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
 
 void closeWindow(EditWindowData & currWindow, std::vector<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
     availableWindowIDs.push(currWindow.ID);
-    iter = editWindows.erase(iter);
 
-    audioSystem->stopMusic();
+    audioSystem->stopMusic(currWindow.musicSourceIdx);
+    audioSystem->deactivateMusicSource(currWindow.musicSourceIdx);
+
+    iter = editWindows.erase(iter);
 }
 
 void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePath, std::string saveDir) {
@@ -537,12 +542,12 @@ std::pair<int, float> splitSecsbyMin(float seconds) {
     return std::make_pair(fullMinutes, leftoverSecs);
 }
 
-void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos) {
+void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos, int musicSourceIdx) {
     // udpate audio position
-    if(audioSystem->isMusicPlaying()) {
+    if(audioSystem->isMusicPlaying(musicSourceIdx)) {
         audioSystem->startMusic(songpos.absTime);
     } else {
-        audioSystem->setMusicPosition(songpos.absTime);
+        audioSystem->setMusicPosition(musicSourceIdx, songpos.absTime);
     }
 }
 
@@ -614,7 +619,7 @@ static const char * getKeyFrequencyLabels(void * data, int i) {
     }
 }
 
-void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved) {
+void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, int musicSourceIdx) {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
     ImGui::Image(artTexture, ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
@@ -783,7 +788,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 
                 songpos.setSongBeatPosition(currSection.absBeatStart + FLT_EPSILON);
                 chartinfo.notes.resetPassed(songpos.absBeat);
-                updateAudioPosition(audioSystem, songpos);
+                updateAudioPosition(audioSystem, songpos, musicSourceIdx);
             }
         }
 
@@ -823,23 +828,23 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 // toolbar info / buttons
 void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, float * previewStop, SongPosition & songpos,
                            NoteSequence & notes, std::vector<bool> & keysPressed, EditWindowData & currWindow) {
-    auto musicLengthSecs = audioSystem->getMusicLength();
+    auto musicLengthSecs = audioSystem->getMusicLength(currWindow.musicSourceIdx);
 
     auto songAudioPos = splitSecsbyMin(songpos.absTime);
     auto songLength = splitSecsbyMin(musicLengthSecs);
     ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
 
     ImGui::SameLine();
-    if((ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || keysPressed[SDL_SCANCODE_SPACE]) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) {
+    if((currWindow.focused && (ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || keysPressed[SDL_SCANCODE_SPACE])) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) {
         if(songpos.paused) {
-            audioSystem->resumeMusic();
+            audioSystem->resumeMusic(currWindow.musicSourceIdx);
             songpos.unpause();
         } else if(!songpos.started) {
-            audioSystem->startMusic();
+            audioSystem->startMusic(currWindow.musicSourceIdx);
             songpos.start();
-            audioSystem->setStopMusicEarly(false);
+            audioSystem->setStopMusicEarly(currWindow.musicSourceIdx, false);
         } else {
-            audioSystem->pauseMusic();
+            audioSystem->pauseMusic(currWindow.musicSourceIdx);
             songpos.pause();
         }
     }
@@ -849,7 +854,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
     ImGui::SameLine();
     if(ImGui::Button(ICON_FA_STOP)) {
-        audioSystem->stopMusic();
+        audioSystem->stopMusic(currWindow.musicSourceIdx);
         songpos.stop();
         notes.resetPassed(songpos.absBeat);
     }
@@ -859,8 +864,8 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         songpos.started = false;
     }
 
-    if(audioSystem->getStopMusicEarly() && songpos.absTime > audioSystem->getMusicStop()) {
-        songpos.absTime = audioSystem->getMusicStop();
+    if(audioSystem->getStopMusicEarly(currWindow.musicSourceIdx) && songpos.absTime > audioSystem->getMusicStop(currWindow.musicSourceIdx)) {
+        songpos.absTime = audioSystem->getMusicStop(currWindow.musicSourceIdx);
         songpos.started = false;
     }
 
@@ -902,11 +907,11 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
     ImGui::SameLine();
     if(ImGui::Button("Preview " ICON_FA_TRAILER)) {
-        audioSystem->stopMusic();
-        audioSystem->startMusic(*previewStart);
-        audioSystem->setMusicStop(*previewStop);
+        audioSystem->stopMusic(currWindow.musicSourceIdx);
+        audioSystem->startMusic(currWindow.musicSourceIdx, *previewStart);
+        audioSystem->setMusicStop(currWindow.musicSourceIdx, *previewStop);
 
-        audioSystem->setStopMusicEarly(true);
+        audioSystem->setStopMusicEarly(currWindow.musicSourceIdx, true);
         
         if(!songpos.started)
             songpos.start();
@@ -999,7 +1004,8 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
     return (BeatPos){measure, measureSplit, split};
 }
 
-void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, std::vector<bool> & keysPressed) {
+void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, std::vector<bool> & keysPressed,
+                            int musicSourceIdx, bool windowFocused) {
     // let's create the sequencer
     static int currentBeatsplit = 4;
     static int clickedItemType = 0;
@@ -1042,7 +1048,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
 
         if(songpos.absTime >= 0) {
-            updateAudioPosition(audioSystem, songpos);
+            updateAudioPosition(audioSystem, songpos, musicSourceIdx);
         } else {
             songpos.setSongBeatPosition(0);
         }
@@ -1063,13 +1069,13 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
     // ctrl + scroll to adjust zoom
     auto & io = ImGui::GetIO();
-    if(!ImGuiFileDialog::Instance()->IsOpened() && io.MouseWheel != 0.f && io.KeyCtrl && !io.KeyShift) {
+    if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && io.MouseWheel != 0.f && io.KeyCtrl && !io.KeyShift) {
         int multiplier = io.MouseWheel > 0 ? 1 : -1;
 
         timelineZoom += zoomStep * multiplier;
     }
 
-    if(timelineZoom < zoomStep * 2) {
+    if(windowFocused && timelineZoom < zoomStep * 2) {
         timelineZoom = zoomStep * 2;
     }
 
@@ -1080,10 +1086,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     bool rightClickedEntity = false;
 
     int beatsPerMeasure = songpos.timeinfo.size() > songpos.currentSection ? songpos.timeinfo.at(songpos.currentSection).beatsPerMeasure : 4;
-    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, haveSelection, nullptr, &updatedBeat, &leftClickedEntity, &leftClickReleased, &leftClickShift,
+    Sequencer(&(chartinfo.notes), timelineZoom, currentBeatsplit, beatsPerMeasure, haveSelection, windowFocused, nullptr, &updatedBeat, &leftClickedEntity, &leftClickReleased, &leftClickShift,
               &rightClickedEntity, &clickedBeat, &hoveredBeat, &clickedItemType, &releasedItemType, nullptr, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
 
-    if(updatedBeat) {
+    if(windowFocused && updatedBeat) {
         if(!songpos.started) {
             songpos.start();
             songpos.pause();
@@ -1091,13 +1097,16 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         songpos.setSongBeatPosition(songpos.absBeat);
 
         if(songpos.absTime >= 0) {
-            updateAudioPosition(audioSystem, songpos);
+            updateAudioPosition(audioSystem, songpos, musicSourceIdx);
         } else {
             songpos.setSongBeatPosition(0);
         }
 
         chartinfo.notes.resetPassed(songpos.absBeat);
     }
+
+    char addItemPopup[16];
+    snprintf(addItemPopup, 16, "add_item_%d", musicSourceIdx);
 
     // insert or update entity at the clicked beat
     static char addedItem[2];
@@ -1107,7 +1116,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     static bool startedNote = false;
     static ImGuiInputTextFlags addItemFlags = 0;
     static ImGuiInputTextCallbackData addItemCallbackData;
-    if(!ImGuiFileDialog::Instance()->IsOpened() && leftClickedEntity && !ImGui::IsPopupOpen("add_item")) {
+    if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && leftClickedEntity && !ImGui::IsPopupOpen(addItemPopup)) {
         insertBeat = clickedBeat;
         insertItemType = clickedItemType;
         haveSelection = false;
@@ -1137,7 +1146,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     static int insertItemTypeEnd = 0;
     static float endBeat;
     static BeatPos endBeatpos;
-    if(!ImGuiFileDialog::Instance()->IsOpened() && startedNote && leftClickReleased && !ImGui::IsPopupOpen("add_item") && clickedBeat >= insertBeat) {
+    if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && startedNote && leftClickReleased &&
+       !ImGui::IsPopupOpen(addItemPopup) && clickedBeat >= insertBeat) {
         if(leftClickShift) {
             haveSelection = true;
 
@@ -1149,7 +1159,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 insertItemTypeEnd = releasedItemType;
             }
         } else {
-            ImGui::OpenPopup("add_item");
+            ImGui::OpenPopup(addItemPopup);
         }
         
         endBeat = clickedBeat;
@@ -1162,7 +1172,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
     // copy, cut, delete selection of notes
     static std::vector<std::shared_ptr<NoteSequenceItem>> copiedItems;
-    if(haveSelection) {
+    if(windowFocused && haveSelection) {
         if(activateCopy || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_c)])) {
             copiedItems = chartinfo.notes.getItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
             haveSelection = false;
@@ -1193,14 +1203,14 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
     }
 
-    if(!copiedItems.empty() && (activatePaste || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_v)]))) {
+    if(windowFocused && !copiedItems.empty() && (activatePaste || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_v)]))) {
         chartinfo.notes.insertItems(hoveredBeat, currentBeatsplit, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
         unsaved = true;
         copiedItems.clear();
         activatePaste = false;
     }
 
-    if(ImGui::BeginPopup("add_item")) {
+    if(ImGui::BeginPopup(addItemPopup)) {
         if(keysPressed[SDL_SCANCODE_ESCAPE]) {
             addedItem[0] = '\0';
             ImGui::CloseCurrentPopup();
@@ -1327,15 +1337,16 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         ImGui::EndPopup();
     }
 
-    if(!ImGuiFileDialog::Instance()->IsOpened() && rightClickedEntity && chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
+    if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && rightClickedEntity && chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
         chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
         unsaved = true;        
     }
 
-    chartinfo.notes.update(songpos.absBeat, audioSystem);
+    if(windowFocused)
+        chartinfo.notes.update(songpos.absBeat, audioSystem);
 
     // sideways scroll
-    if(!ImGuiFileDialog::Instance()->IsOpened() && io.MouseWheel != 0.f && !io.KeyCtrl) {
+    if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && io.MouseWheel != 0.f && !io.KeyCtrl) {
         if(!songpos.started) {
             songpos.start();
             songpos.pause();
@@ -1367,7 +1378,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
 
         if(songpos.absTime >= 0) {
-            updateAudioPosition(audioSystem, songpos);
+            updateAudioPosition(audioSystem, songpos, musicSourceIdx);
         } else {
             songpos.setSongBeatPosition(FLT_EPSILON);
         }
@@ -1385,7 +1396,6 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
         auto & currWindow = *iter;
         currWindow.songpos.update();
 
-
         ImGuiWindowFlags windowFlags = 0;
         if(currWindow.unsaved)  windowFlags |= ImGuiWindowFlags_UnsavedDocument;
         if(!currWindow.open)    windowFlags |= ImGuiWindowFlags_NoInputs;
@@ -1400,18 +1410,21 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
         if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
             currentWindow = i;
+            currWindow.focused = true;
+        } else {
+            currWindow.focused = false;
         }
 
         showEditWindowMetadata(currWindow);
         ImGui::SameLine();
-        showEditWindowChartData(currWindow.artTexture.get(), audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved);
+        showEditWindowChartData(currWindow.artTexture.get(), audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, currWindow.musicSourceIdx);
 
         ImGui::Separator();
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, 
                               currWindow.chartinfo.notes, keysPressed, currWindow);
         ImGui::Separator();
 
-        showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, keysPressed);
+        showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, keysPressed, currWindow.musicSourceIdx, currWindow.focused);
 
         ImGui::End();
 
