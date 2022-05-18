@@ -220,6 +220,14 @@ void Editor::updateShortcuts() {
     if(shortcutsActivated.at(SDLK_o)) {
         startOpenChart();
     }
+
+    if(shortcutsActivated.at(SDLK_z)) {
+        setUndo();
+    }
+
+    if(shortcutsActivated.at(SDLK_y)) {
+        setRedo();
+    }
 }
 
 void Editor::render() {
