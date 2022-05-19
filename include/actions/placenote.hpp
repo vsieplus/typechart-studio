@@ -6,7 +6,8 @@
 
 class PlaceNoteAction : public EditAction {
     public:
-        PlaceNoteAction(NoteSequence & noteSequence, float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText);
+        PlaceNoteAction(NoteSequence & noteSequence, bool & unsaved, float absBeat, float beatDuration,
+                        BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText);
 
         virtual void undoAction() override;
         virtual void redoAction() override;

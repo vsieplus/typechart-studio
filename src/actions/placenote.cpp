@@ -1,11 +1,12 @@
 #include "actions/placenote.hpp"
 
-PlaceNoteAction::PlaceNoteAction(NoteSequence & noteSequence, float absBeat, float beatDuration, BeatPos beatpos,
+PlaceNoteAction::PlaceNoteAction(NoteSequence & noteSequence, bool & unsaved, float absBeat, float beatDuration, BeatPos beatpos,
                                  BeatPos endBeatpos, SequencerItemType itemType, std::string displayText) :
-    noteSequence(noteSequence), absBeat(absBeat), beatDuration(beatDuration), beatpos(beatpos), endBeatpos(endBeatpos),
+    EditAction(unsaved), noteSequence(noteSequence), absBeat(absBeat), beatDuration(beatDuration), beatpos(beatpos), endBeatpos(endBeatpos),
     itemType(itemType), displayText(displayText) {}
 
 void PlaceNoteAction::undoAction() {
+    EditAction::undoAction();
     noteSequence.deleteItem(absBeat, itemType);
 }
 

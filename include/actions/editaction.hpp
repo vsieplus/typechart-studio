@@ -3,9 +3,16 @@
 
 class EditAction {
     public:
-        virtual void undoAction() = 0;
-        virtual void redoAction() = 0;
+        EditAction(bool & unsaved) : unsaved(unsaved), wasUnsaved(unsaved) {}
 
+        virtual void undoAction() {
+            unsaved = wasUnsaved;
+        }
+
+        virtual void redoAction() = 0;
+    private:
+        bool & unsaved;
+        bool wasUnsaved;
 };
 
 #endif // EDITACTION_HPP
