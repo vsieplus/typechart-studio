@@ -81,6 +81,12 @@ void Preferences::loadFromFile(std::string preferencesPath) {
             mostRecentFilesStr.push_back(currPath);
         }
     }
+
+    if(darkTheme) {
+        ImGui::StyleColorsDark();
+    } else {
+        ImGui::StyleColorsLight();
+    }
 }
 
 void Preferences::saveToFile(std::string preferencesPath) {
@@ -112,6 +118,15 @@ void Preferences::saveToFile(std::string preferencesPath) {
 
 void Preferences::setShowPreferences(bool showPreferences) {
     this->showPreferences = showPreferences;
+}
+
+
+bool Preferences::isDarkTheme() const {
+    return darkTheme;
+}
+
+void Preferences::setDarkTheme(bool dark) {
+    this->darkTheme = dark;
 }
 
 bool Preferences::getCopyArtAndMusic() const {

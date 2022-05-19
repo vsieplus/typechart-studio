@@ -113,14 +113,12 @@ void showOptionMenu() {
     if(ImGui::BeginMenu("Theme")) {
         if(ImGui::MenuItem("Dark")) {
             ImGui::StyleColorsDark();
+            Preferences::Instance().setDarkTheme(true);
         }
 
         if(ImGui::MenuItem("Light")) {
             ImGui::StyleColorsLight();
-        }
-
-        if(ImGui::MenuItem("Classic")) {
-            ImGui::StyleColorsClassic();
+            Preferences::Instance().setDarkTheme(false);
         }
 
         ImGui::EndMenu();

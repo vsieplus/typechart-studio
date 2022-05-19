@@ -25,6 +25,9 @@ class Preferences {
 
         void addMostRecentFile(std::string path);
 
+        bool isDarkTheme () const;
+        void setDarkTheme(bool dark);
+
         bool getCopyArtAndMusic() const;
 
         const char * getInputDir() const;
@@ -44,6 +47,8 @@ class Preferences {
 
         bool copyArtAndMusic = true;
         bool showPreferences = false;
+
+        bool darkTheme = true;
 };
 
 

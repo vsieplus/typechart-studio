@@ -60,9 +60,6 @@ void initImGUI(SDL_Window * window, SDL_Renderer * renderer) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
-	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsLight();
-
 	// setup platform, rendering backends
 	ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
 	ImGui_ImplSDLRenderer_Init(renderer);
