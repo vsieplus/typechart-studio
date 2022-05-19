@@ -14,8 +14,11 @@
 #include "actions/deleteitems.hpp"
 #include "actions/deletenote.hpp"
 #include "actions/editnote.hpp"
+#include "actions/editskip.hpp"
 #include "actions/insertitems.hpp"
 #include "actions/placenote.hpp"
+#include "actions/placestop.hpp"
+#include "actions/placeskip.hpp"
 
 #include "ui/preferences.hpp"
 #include "ui/editwindow.hpp"
@@ -1367,11 +1370,19 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     }
 
                     if(keysPressed[SDL_SCANCODE_RETURN] || keysPressed[SDL_SCANCODE_KP_ENTER]) {
-                        if(currItem) {
+
+                        std::shared_ptr<EditAction> currAction;
+                        if(currItem.get()) {
+                            auto currSkip = std::dynamic_pointer_cast<Skip>(currItem);
+                            currAction = std::make_shared<EditSkipAction>(unsaved, insertBeat, currSkip->skipTime, skipBeats);
                             chartinfo.notes.editSkip(insertBeat, skipBeats);
                         } else {
                             chartinfo.notes.addSkip(insertBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
+                            currAction = std::make_shared<PlaceSkipAction>(unsaved, insertBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
                         }
+
+                        editActionsUndo.push(currAction);
+                        emptyActionStack(editActionsRedo);
 
                         ImGui::CloseCurrentPopup();
                         unsaved = true;
@@ -1381,7 +1392,11 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 break;
             case SequencerItemType::STOP:
                 chartinfo.notes.addStop(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos);
-                
+
+                auto putAction = std::make_shared<PlaceStopAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos);
+                editActionsUndo.push(putAction);
+                emptyActionStack(editActionsRedo);
+
                 ImGui::CloseCurrentPopup();
                 unsaved = true;
 
