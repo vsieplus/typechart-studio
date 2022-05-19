@@ -80,7 +80,7 @@ void showEditMenu() {
         setUndo();
     }
 
-    if(ImGui::MenuItem("Redo", "Ctrl+Y", false, false)) {
+    if(ImGui::MenuItem("Redo", "Ctrl+Y")) {
         setRedo();
     }
 
