@@ -11,6 +11,7 @@
 #include "ImGuiFileDialog.h"
 #include "IconsFontAwesome6.h"
 
+#include "actions/deleteitems.hpp"
 #include "actions/deletenote.hpp"
 #include "actions/editnote.hpp"
 #include "actions/placenote.hpp"
@@ -1190,7 +1191,15 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         } else if(activateCut || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_x)])) {
             copiedItems = chartinfo.notes.getItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
             chartinfo.notes.deleteItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
-            unsaved = true;
+
+            if(!copiedItems.empty()) {
+                auto delAction = std::make_shared<DeleteItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, insertBeat, endBeat, copiedItems);
+                editActionsUndo.push(delAction);
+                emptyActionStack(editActionsRedo);
+
+                unsaved = true;
+            }
+
             haveSelection = false;
             activateCut = false;
         }
@@ -1203,8 +1212,17 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
 
         if(keysPressed[SDL_SCANCODE_DELETE]) {
+            auto deletedItems = chartinfo.notes.getItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
             chartinfo.notes.deleteItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
-            unsaved = true;
+
+            if(!deletedItems.empty()) {
+                auto delAction = std::make_shared<DeleteItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, insertBeat, endBeat, deletedItems);
+                editActionsUndo.push(delAction);
+                emptyActionStack(editActionsRedo);
+
+                unsaved = true;
+            }
+
             haveSelection = false;
         }
 
