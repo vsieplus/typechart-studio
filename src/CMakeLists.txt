@@ -5,6 +5,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/deleteitems.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/deletenote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/editnote.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/actions/insertitems.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/placenote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/beatpos.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/chartinfo.cpp

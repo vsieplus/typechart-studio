@@ -14,6 +14,7 @@
 #include "actions/deleteitems.hpp"
 #include "actions/deletenote.hpp"
 #include "actions/editnote.hpp"
+#include "actions/insertitems.hpp"
 #include "actions/placenote.hpp"
 
 #include "ui/preferences.hpp"
@@ -1231,10 +1232,18 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
     }
 
-    if(windowFocused && !copiedItems.empty() && (activatePaste || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_v)]))) {
-        chartinfo.notes.insertItems(hoveredBeat, currentBeatsplit, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
-        unsaved = true;
-        copiedItems.clear();
+    if(windowFocused && (activatePaste || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_v)]))) {
+        if(!copiedItems.empty()) {
+            auto overwrittenItems = chartinfo.notes.getItems(hoveredBeat, hoveredBeat + (copiedItems.back()->absBeat - copiedItems.front()->absBeat), insertItemType, insertItemTypeEnd);
+            chartinfo.notes.insertItems(hoveredBeat, currentBeatsplit, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
+
+            auto insAction = std::make_shared<InsertItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, hoveredBeat, copiedItems, overwrittenItems);
+            editActionsUndo.push(insAction);
+            emptyActionStack(editActionsRedo);
+
+            unsaved = true;
+        }
+
         activatePaste = false;
     }
 
