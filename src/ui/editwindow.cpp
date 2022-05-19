@@ -1476,7 +1476,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
     }
 
     if(activateUndo) {
-        if(!editWindows.at(currentWindow).editActionsUndo.empty()) {
+        if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).editActionsUndo.empty()) {
             auto action = editWindows.at(currentWindow).editActionsUndo.top();
             action->undoAction();
 
@@ -1488,7 +1488,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
     }
 
     if(activateRedo) {
-        if(!editWindows.at(currentWindow).editActionsRedo.empty()) {
+        if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).editActionsRedo.empty()) {
             auto action = editWindows.at(currentWindow).editActionsRedo.top();
             action->redoAction();
 
