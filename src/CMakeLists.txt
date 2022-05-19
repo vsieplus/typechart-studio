@@ -2,6 +2,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/editor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/editaction.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/actions/deletenote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/placenote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/beatpos.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/chartinfo.cpp

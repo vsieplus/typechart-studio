@@ -11,6 +11,7 @@
 #include "ImGuiFileDialog.h"
 #include "IconsFontAwesome6.h"
 
+#include "actions/deletenote.hpp"
 #include "actions/placenote.hpp"
 
 #include "ui/preferences.hpp"
@@ -1353,9 +1354,17 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         ImGui::EndPopup();
     }
 
-    if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && rightClickedEntity && chartinfo.notes.containsItemAt(clickedBeat, clickedItemType)) {
-        chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
-        unsaved = true;        
+    if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && rightClickedEntity) {
+        auto itemToDelete = chartinfo.notes.containsItemAt(clickedBeat, clickedItemType);\
+        if(itemToDelete.get()) {
+            chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
+            auto deleteAction = std::make_shared<DeleteNoteAction>(unsaved, itemToDelete->absBeat, itemToDelete->beatEnd - itemToDelete->absBeat,
+                                                                   itemToDelete->beatpos, itemToDelete->endBeatpos, itemToDelete->getItemType(), itemToDelete->displayText);
+            editActionsUndo.push(deleteAction);
+            emptyActionStack(editActionsRedo);
+
+            unsaved = true;        
+        }
     }
 
     if(windowFocused)
