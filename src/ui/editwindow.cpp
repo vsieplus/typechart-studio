@@ -11,6 +11,8 @@
 #include "ImGuiFileDialog.h"
 #include "IconsFontAwesome6.h"
 
+#include "actions/placenote.hpp"
+
 #include "ui/preferences.hpp"
 #include "ui/editwindow.hpp"
 #include "ui/windowsizes.hpp"
@@ -103,6 +105,11 @@ void initLastDirPaths() {
     lastOpenResourceDir = Preferences::Instance().getInputDir();
     lastChartOpenDir = Preferences::Instance().getSaveDir();
     lastChartSaveDir = Preferences::Instance().getSaveDir();
+}
+
+void emptyActionStack(std::stack<std::shared_ptr<EditAction>> & stack) {
+    while(!stack.empty())
+        stack.pop();
 }
 
 bool loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
@@ -1005,6 +1012,7 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
 }
 
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, std::vector<bool> & keysPressed,
+                            std::stack<std::shared_ptr<EditAction>> & editActionsUndo, std::stack<std::shared_ptr<EditAction>> & editActionsRedo,
                             int musicSourceIdx, bool windowFocused) {
     // let's create the sequencer
     static int currentBeatsplit = 4;
@@ -1231,6 +1239,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                             chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                         } else {
                             chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+                            
+                            auto placeAction = std::make_shared<PlaceNoteAction>(chartinfo.notes, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+                            editActionsUndo.push(placeAction);
+                            emptyActionStack(editActionsRedo);
                         }
 
                         addedItem[0] = '\0';
@@ -1277,6 +1289,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                     } else {
                         chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+
+                        auto placeAction = std::make_shared<PlaceNoteAction>(chartinfo.notes, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+                        editActionsUndo.push(placeAction);
+                        emptyActionStack(editActionsRedo);
                     }
 
                     selectedFuncKey = 0;
@@ -1424,7 +1440,8 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
                               currWindow.chartinfo.notes, keysPressed, currWindow);
         ImGui::Separator();
 
-        showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, keysPressed, currWindow.musicSourceIdx, currWindow.focused);
+        showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, keysPressed,
+                               currWindow.editActionsUndo, currWindow.editActionsRedo, currWindow.musicSourceIdx, currWindow.focused);
 
         ImGui::End();
 
@@ -1456,5 +1473,33 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
             i++;
             iter++;
         }
+    }
+
+    if(activateUndo) {
+        if(!editWindows.at(currentWindow).editActionsUndo.empty()) {
+            auto action = editWindows.at(currentWindow).editActionsUndo.top();
+            action->undoAction();
+
+            editWindows.at(currentWindow).editActionsRedo.push(action);
+            editWindows.at(currentWindow).editActionsUndo.pop();
+
+            editWindows.at(currentWindow).unsaved = true;
+        }
+
+        activateUndo = false;
+    }
+
+    if(activateRedo) {
+        if(!editWindows.at(currentWindow).editActionsRedo.empty()) {
+            auto action = editWindows.at(currentWindow).editActionsRedo.top();
+            action->redoAction();
+
+            editWindows.at(currentWindow).editActionsUndo.push(action);
+            editWindows.at(currentWindow).editActionsRedo.pop();
+
+            editWindows.at(currentWindow).unsaved = true;
+        }
+
+        activateRedo = false;
     }
 }

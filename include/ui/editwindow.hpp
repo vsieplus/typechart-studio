@@ -1,10 +1,13 @@
 #ifndef EDITWINDOW_HPP
 #define EDITWINDOW_HPP
 
+#include <memory>
 #include <queue>
+#include <stack>
 #include <string>
 #include <vector>
 
+#include "actions/editaction.hpp"
 #include "config/chartinfo.hpp"
 #include "config/songinfo.hpp"
 #include "config/songposition.hpp"
@@ -27,6 +30,9 @@ struct EditWindowData {
     std::string name;
 
     std::shared_ptr<SDL_Texture> artTexture;
+
+    std::stack<std::shared_ptr<EditAction>> editActionsUndo;
+    std::stack<std::shared_ptr<EditAction>> editActionsRedo;
 
     SongPosition songpos;
 
