@@ -12,6 +12,7 @@
 #include "IconsFontAwesome6.h"
 
 #include "actions/deletenote.hpp"
+#include "actions/editnote.hpp"
 #include "actions/placenote.hpp"
 
 #include "ui/preferences.hpp"
@@ -1236,15 +1237,19 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     if(addedItem[0] != '\0') {
                         std::string keyText(addedItem);
 
-                        if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
+                        std::shared_ptr<EditAction> currAction;
+                        auto foundItem = chartinfo.notes.containsItemAt(insertBeat, insertItemType);
+
+                        if(foundItem.get()) {
+                            currAction = std::make_shared<EditNoteAction>(unsaved, insertBeat, (SequencerItemType)insertItemType, foundItem->displayText, keyText);
                             chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                         } else {
                             chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
-                            
-                            auto placeAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
-                            editActionsUndo.push(placeAction);
-                            emptyActionStack(editActionsRedo);
+                            currAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                         }
+
+                        editActionsUndo.push(currAction);
+                        emptyActionStack(editActionsRedo);
 
                         addedItem[0] = '\0';
                         ImGui::CloseCurrentPopup();
@@ -1285,16 +1290,20 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         break;
                     }
 
-                    std::string keyText = FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey);                
-                    if(chartinfo.notes.containsItemAt(insertBeat, insertItemType)) {
+                    std::string keyText = FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey);
+
+                    std::shared_ptr<EditAction> currAction;
+                    auto foundItem = chartinfo.notes.containsItemAt(insertBeat, insertItemType);
+                    if(foundItem.get()) {
+                        currAction = std::make_shared<EditNoteAction>(unsaved, insertBeat, (SequencerItemType)insertItemType, foundItem->displayText, keyText);
                         chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                     } else {
                         chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
-
-                        auto placeAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
-                        editActionsUndo.push(placeAction);
-                        emptyActionStack(editActionsRedo);
+                        currAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                     }
+
+                    editActionsUndo.push(currAction);
+                    emptyActionStack(editActionsRedo);
 
                     selectedFuncKey = 0;
                     confirmEnter = false;
