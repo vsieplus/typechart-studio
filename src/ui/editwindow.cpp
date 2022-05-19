@@ -1240,7 +1240,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         } else {
                             chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                             
-                            auto placeAction = std::make_shared<PlaceNoteAction>(chartinfo.notes, unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+                            auto placeAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                             editActionsUndo.push(placeAction);
                             emptyActionStack(editActionsRedo);
                         }
@@ -1290,7 +1290,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     } else {
                         chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
 
-                        auto placeAction = std::make_shared<PlaceNoteAction>(chartinfo.notes, unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+                        auto placeAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                         editActionsUndo.push(placeAction);
                         emptyActionStack(editActionsRedo);
                     }
@@ -1478,7 +1478,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
     if(activateUndo) {
         if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).editActionsUndo.empty()) {
             auto action = editWindows.at(currentWindow).editActionsUndo.top();
-            action->undoAction();
+            action->undoAction(&editWindows.at(currentWindow));
 
             editWindows.at(currentWindow).editActionsRedo.push(action);
             editWindows.at(currentWindow).editActionsUndo.pop();
@@ -1490,7 +1490,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
     if(activateRedo) {
         if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).editActionsRedo.empty()) {
             auto action = editWindows.at(currentWindow).editActionsRedo.top();
-            action->redoAction();
+            action->redoAction(&editWindows.at(currentWindow));
 
             editWindows.at(currentWindow).editActionsUndo.push(action);
             editWindows.at(currentWindow).editActionsRedo.pop();

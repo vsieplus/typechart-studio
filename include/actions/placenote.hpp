@@ -6,15 +6,12 @@
 
 class PlaceNoteAction : public EditAction {
     public:
-        PlaceNoteAction(NoteSequence & noteSequence, bool & unsaved, float absBeat, float beatDuration,
-                        BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText);
+        PlaceNoteAction(bool unsaved, float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText);
 
-        virtual void undoAction() override;
-        virtual void redoAction() override;
+        virtual void undoAction(EditWindowData * editWindow) override;
+        virtual void redoAction(EditWindowData * editWindow) override;
 
     private:
-        NoteSequence & noteSequence;
-
         float absBeat;
         float beatDuration;
 
