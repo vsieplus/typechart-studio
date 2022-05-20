@@ -559,7 +559,7 @@ std::pair<int, float> splitSecsbyMin(float seconds) {
 void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos, int musicSourceIdx) {
     // udpate audio position
     if(audioSystem->isMusicPlaying(musicSourceIdx)) {
-        audioSystem->startMusic(songpos.absTime);
+        audioSystem->startMusic(musicSourceIdx, songpos.absTime);
     } else {
         audioSystem->setMusicPosition(musicSourceIdx, songpos.absTime);
     }
