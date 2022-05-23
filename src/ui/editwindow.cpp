@@ -192,7 +192,7 @@ void showSongConfig() {
     // song config
     ImGui::Text(ICON_FA_CLIPBOARD " Song configuration");
     if(ImGui::Button("Load from existing...")) {
-        ImGuiFileDialog::Instance()->OpenModal("selectSonginfo", "Select songinfo.json", songinfoFileFilter, lastOpenResourceDir, "");
+        ImGuiFileDialog::Instance()->OpenModal("selectSonginfo", "Select songinfo.json", songinfoFileFilter, lastChartOpenDir, "");
     }
     
     ImGui::SameLine();
@@ -205,7 +205,7 @@ void showSongConfig() {
             std::string songinfoDir = ImGuiFileDialog::Instance()->GetCurrentPath();
             loadSonginfo(songinfoPath, songinfoDir);
 
-            lastOpenResourceDir = songinfoDir;
+            lastChartOpenDir = songinfoDir;
         }
 
         ImGuiFileDialog::Instance()->Close();
