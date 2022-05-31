@@ -559,9 +559,9 @@ std::pair<int, float> splitSecsbyMin(float seconds) {
 void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos, int musicSourceIdx) {
     // udpate audio position
     if(audioSystem->isMusicPlaying(musicSourceIdx)) {
-        audioSystem->startMusic(musicSourceIdx, songpos.absTime);
+        audioSystem->startMusic(musicSourceIdx, songpos.absTime + (songpos.offsetMS / 1000.f));
     } else {
-        audioSystem->setMusicPosition(musicSourceIdx, songpos.absTime);
+        audioSystem->setMusicPosition(musicSourceIdx, songpos.absTime  + (songpos.offsetMS / 1000.f));
     }
 }
 
@@ -1457,7 +1457,9 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(songpos.absTime >= 0) {
             updateAudioPosition(audioSystem, songpos, musicSourceIdx);
         } else {
-            songpos.setSongBeatPosition(FLT_EPSILON);
+            audioSystem->stopMusic(musicSourceIdx);
+            songpos.stop();
+            chartinfo.notes.resetPassed(songpos.absBeat);
         }
 
         chartinfo.notes.resetPassed(songpos.absBeat);
