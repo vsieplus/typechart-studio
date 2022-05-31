@@ -330,6 +330,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
                 if(removeNote) {
                     keyFrequencies[seqItem->displayText] -= 1;
+                    if(keyFrequencies[seqItem->displayText] == 0) {
+                        keyFrequencies.erase(seqItem->displayText);
+                    }
                 }
 
                 iter = myItems.erase(iter);
@@ -367,6 +370,10 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
                 if(removeNote) {
                     keyFrequencies[seqItem->displayText] -= 1;
+
+                    if(keyFrequencies[seqItem->displayText] == 0) {
+                        keyFrequencies.erase(seqItem->displayText);
+                    }
 
                     keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
                     std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
