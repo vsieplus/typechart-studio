@@ -1459,7 +1459,6 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         } else {
             audioSystem->stopMusic(musicSourceIdx);
             songpos.stop();
-            chartinfo.notes.resetPassed(songpos.absBeat);
         }
 
         chartinfo.notes.resetPassed(songpos.absBeat);
