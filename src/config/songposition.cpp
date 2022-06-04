@@ -37,7 +37,7 @@ void SongPosition::updateBeatPos() {
 void SongPosition::updateSection() {
     if(currentSection < timeinfo.size() - 1) {
         int nextSection = currentSection + 1;
-        if(absTime + (offsetMS / 1000.f) >= timeinfo.at(nextSection).absTimeStart) {
+        if(absTime >= timeinfo.at(nextSection).absTimeStart) {
             currentSection = nextSection;
 
             prevSectionBeats = timeinfo.at(currentSection).absBeatStart;
