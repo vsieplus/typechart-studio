@@ -37,7 +37,7 @@ class Editor {
         SDL_Window * window;
         SDL_Renderer * renderer;
 
-        ImVec4 clearColor = ImVec4(0.267f, 0.294f, 0.38f, 1.00f);
+        ImVec4 clearColor = ImVec4(0.0784f, 0.0784f, 0.0784f, 1.00f);
 
         ImFont * menuFont = nullptr;
 
