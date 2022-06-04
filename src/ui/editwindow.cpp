@@ -1073,6 +1073,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
     static float zoomStep = 0.25f;
 
+    auto currBeatpos = calculateBeatpos(songpos.absBeat, currentBeatsplit, songpos.timeinfo);
+    ImGui::SameLine();
+    ImGui::Text("[Pos]: [%d, %d, %d]", currBeatpos.measure, currBeatpos.beatsplit, currBeatpos.split);
+
     ImGui::SameLine();
     ImGui::Text("Zoom " ICON_FA_MAGNIFYING_GLASS ": ");
     ImGui::SameLine();
