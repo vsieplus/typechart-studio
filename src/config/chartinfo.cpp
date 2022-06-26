@@ -265,5 +265,5 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
 
     // write to file
     std::ofstream file(savePath.c_str());
-    file << chartinfo << std::endl;
+    file << std::setw(4) << chartinfo << std::endl;
 }
