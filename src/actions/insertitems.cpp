@@ -16,12 +16,14 @@ void InsertItemsAction::undoAction(EditWindowData * editWindow) {
     }
 
     if(!itemsDeleted.empty()) {
-        editWindow->chartinfo.notes.insertItems(itemsDeleted.front()->absBeat, beatsplit, itemTypeStart, itemTypeEnd, editWindow->songpos.timeinfo, itemsDeleted);
+        editWindow->chartinfo.notes.insertItems(itemsDeleted.front()->absBeat, editWindow->songpos.absBeat, beatsplit, itemTypeStart,
+            itemTypeEnd, editWindow->songpos.timeinfo, itemsDeleted);
     }
 }
 
 void InsertItemsAction::redoAction(EditWindowData * editWindow) {
     if(!itemsInserted.empty()) {
-        editWindow->chartinfo.notes.insertItems(startBeat, beatsplit, itemTypeStart, itemTypeEnd, editWindow->songpos.timeinfo, itemsInserted);
+        editWindow->chartinfo.notes.insertItems(startBeat, editWindow->songpos.absBeat, beatsplit, itemTypeStart,
+            itemTypeEnd, editWindow->songpos.timeinfo, itemsInserted);
     }
 }

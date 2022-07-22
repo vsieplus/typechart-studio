@@ -153,13 +153,14 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         return l.second > r.second;
     }
 
-    void addNote(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText) {
+    void addNote(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText) {
         NoteType noteType = NoteType::KEYPRESS;
         if(beatDuration > FLT_EPSILON) {
             noteType = NoteType::KEYHOLDSTART;
         }
 
-        std::shared_ptr<NoteSequenceItem> newNote = std::make_shared<Note>(absBeat, absBeat + beatDuration, beatpos, endBeatpos, noteType, NoteSplit::EIGHTH, itemType, displayText);
+        std::shared_ptr<NoteSequenceItem> newNote = std::make_shared<Note>(absBeat, absBeat + beatDuration, songBeat, beatpos, endBeatpos, 
+            noteType, NoteSplit::EIGHTH, itemType, displayText);
         myItems.push_back(newNote);
 
         std::sort(myItems.begin(), myItems.end());
@@ -206,16 +207,16 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
 
-    void addStop(float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
-        std::shared_ptr<Stop> newStop = std::make_shared<Stop>(absBeat, beatDuration, beatpos, endBeatpos);
+    void addStop(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
+        std::shared_ptr<Stop> newStop = std::make_shared<Stop>(absBeat, songBeat, beatDuration, beatpos, endBeatpos);
         newStop->displayText = std::to_string(beatDuration);
         myItems.push_back(newStop);
 
         std::sort(myItems.begin(), myItems.end());
     }
 
-    void addSkip(float absBeat, float skipTime, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
-        std::shared_ptr<Skip> newSkip = std::make_shared<Skip>(absBeat, skipTime, beatDuration, beatpos, endBeatpos);
+    void addSkip(float absBeat, float songBeat, float skipTime, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
+        std::shared_ptr<Skip> newSkip = std::make_shared<Skip>(absBeat, songBeat, skipTime, beatDuration, beatpos, endBeatpos);
         newSkip->displayText = std::to_string(skipTime);
         myItems.push_back(newSkip);
 
@@ -275,7 +276,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         return currItems;
     }
 
-    void insertItems(float insertBeat, int currentBeatsplit, int minItemType, int maxItemType,
+    void insertItems(float insertBeat, float songBeat, int currentBeatsplit, int minItemType, int maxItemType,
                      const std::vector<Timeinfo> & timeinfo, std::vector<std::shared_ptr<NoteSequenceItem>> items) {
         if(!items.empty()) {
             float firstBeat = items.front()->absBeat;
@@ -292,14 +293,14 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                     case SequencerItemType::TOP_NOTE:
                     case SequencerItemType::MID_NOTE:
                     case SequencerItemType::BOT_NOTE:
-                        addNote(currBeat, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos, item->getItemType(), item->displayText);
+                        addNote(currBeat, songBeat, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos, item->getItemType(), item->displayText);
                         break;
                     case SequencerItemType::STOP:
-                        addStop(currBeat, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos);
+                        addStop(currBeat, songBeat, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos);
                         break;
                     case SequencerItemType::SKIP:
                         auto currSkip = std::dynamic_pointer_cast<Skip>(item);
-                        addSkip(currBeat, currSkip->skipTime, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos);
+                        addSkip(currBeat, songBeat, currSkip->skipTime, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos);
                         break;
                 }
             }

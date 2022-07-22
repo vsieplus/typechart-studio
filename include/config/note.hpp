@@ -46,8 +46,8 @@ const std::unordered_map<std::string, std::string> STR_TO_FUNCTION_KEY = {
 };
 
 struct Note : public NoteSequenceItem {
-    Note(float absBeat, float beatEnd, BeatPos beatpos, BeatPos endBeatpos, NoteType noteType, NoteSplit noteSplit, SequencerItemType itemType, std::string key) :
-        NoteSequenceItem(absBeat, beatEnd, beatpos, endBeatpos), noteType(noteType), noteSplit(noteSplit), itemType(itemType) { displayText = key; }
+    Note(float absBeat, float beatEnd, float songBeat, BeatPos beatpos, BeatPos endBeatpos, NoteType noteType, NoteSplit noteSplit, SequencerItemType itemType, std::string key) :
+        NoteSequenceItem(absBeat, beatEnd, songBeat, beatpos, endBeatpos), noteType(noteType), noteSplit(noteSplit), itemType(itemType) { displayText = key; }
 
     virtual SequencerItemType getItemType() const override {
         return itemType;

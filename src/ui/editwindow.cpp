@@ -1250,7 +1250,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     if(windowFocused && (activatePaste || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_v)]))) {
         if(!copiedItems.empty()) {
             auto overwrittenItems = chartinfo.notes.getItems(hoveredBeat, hoveredBeat + (copiedItems.back()->absBeat - copiedItems.front()->absBeat), insertItemType, insertItemTypeEnd);
-            chartinfo.notes.insertItems(hoveredBeat, currentBeatsplit, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
+            chartinfo.notes.insertItems(hoveredBeat, songpos.absBeat, currentBeatsplit, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
 
             auto insAction = std::make_shared<InsertItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, hoveredBeat, copiedItems, overwrittenItems);
             editActionsUndo.push(insAction);
@@ -1286,7 +1286,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                             currAction = std::make_shared<EditNoteAction>(unsaved, insertBeat, (SequencerItemType)insertItemType, foundItem->displayText, keyText);
                             chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                         } else {
-                            chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+                            chartinfo.notes.addNote(insertBeat, songpos.absBeat, endBeat - insertBeat, insertBeatpos, endBeatpos,
+                                (SequencerItemType)insertItemType, keyText);
                             currAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                         }
 
@@ -1340,7 +1341,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         currAction = std::make_shared<EditNoteAction>(unsaved, insertBeat, (SequencerItemType)insertItemType, foundItem->displayText, keyText);
                         chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                     } else {
-                        chartinfo.notes.addNote(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+                        chartinfo.notes.addNote(insertBeat, songpos.absBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                         currAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
                     }
 
@@ -1388,7 +1389,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                             currAction = std::make_shared<EditSkipAction>(unsaved, insertBeat, currSkip->skipTime, skipBeats);
                             chartinfo.notes.editSkip(insertBeat, skipBeats);
                         } else {
-                            chartinfo.notes.addSkip(insertBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
+                            chartinfo.notes.addSkip(insertBeat, songpos.absBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
                             currAction = std::make_shared<PlaceSkipAction>(unsaved, insertBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
                         }
 
@@ -1402,7 +1403,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 }
                 break;
             case SequencerItemType::STOP:
-                chartinfo.notes.addStop(insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos);
+                chartinfo.notes.addStop(insertBeat, songpos.absBeat, endBeat - insertBeat, insertBeatpos, endBeatpos);
 
                 auto putAction = std::make_shared<PlaceStopAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos);
                 editActionsUndo.push(putAction);

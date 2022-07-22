@@ -6,7 +6,7 @@ DeleteNoteAction::DeleteNoteAction(bool unsaved, float absBeat, float beatDurati
 
 void DeleteNoteAction::undoAction(EditWindowData * editWindow) {
     EditAction::undoAction(editWindow);
-    editWindow->chartinfo.notes.addNote(absBeat, beatDuration, beatpos, endBeatpos, itemType, displayText);
+    editWindow->chartinfo.notes.addNote(absBeat, editWindow->songpos.absBeat, beatDuration, beatpos, endBeatpos, itemType, displayText);
 }
 
 void DeleteNoteAction::redoAction(EditWindowData * editWindow) {

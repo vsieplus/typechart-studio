@@ -10,5 +10,5 @@ void PlaceNoteAction::undoAction(EditWindowData * editWindow) {
 }
 
 void PlaceNoteAction::redoAction(EditWindowData * editWindow) {
-    editWindow->chartinfo.notes.addNote(absBeat, beatDuration, beatpos, endBeatpos, itemType, displayText);
+    editWindow->chartinfo.notes.addNote(absBeat, editWindow->songpos.absBeat, beatDuration,beatpos, endBeatpos, itemType, displayText);
 }

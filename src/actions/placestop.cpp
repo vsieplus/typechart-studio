@@ -11,5 +11,5 @@ void PlaceStopAction::undoAction(EditWindowData * editWindow) {
 }
 
 void PlaceStopAction::redoAction(EditWindowData * editWindow) {
-    editWindow->chartinfo.notes.addStop(absBeat, beatDuration, beatpos, endBeatpos);
+    editWindow->chartinfo.notes.addStop(absBeat, editWindow->songpos.absBeat, beatDuration, beatpos, endBeatpos);
 }

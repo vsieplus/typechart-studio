@@ -69,8 +69,8 @@ const std::unordered_map<std::string, std::unordered_map<std::string, std::strin
 };
 
 struct NoteSequenceItem {
-    NoteSequenceItem(float absBeat, float beatEnd, BeatPos beatpos, BeatPos endBeatpos) :
-        absBeat(absBeat), beatEnd(beatEnd), beatpos(beatpos), endBeatpos(endBeatpos) {}
+    NoteSequenceItem(float absBeat, float beatEnd, float songBeat, BeatPos beatpos, BeatPos endBeatpos) :
+        absBeat(absBeat), beatEnd(beatEnd), beatpos(beatpos), endBeatpos(endBeatpos), passed(absBeat < songBeat) {}
 
     virtual SequencerItemType getItemType() const = 0;
 
@@ -82,7 +82,7 @@ struct NoteSequenceItem {
 
     std::string displayText = "";
 
-    bool passed = false;
+    bool passed;
 };
 
 bool operator<(const std::shared_ptr<NoteSequenceItem> & lhs, const std::shared_ptr<NoteSequenceItem> & rhs);

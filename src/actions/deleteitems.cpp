@@ -9,7 +9,8 @@ DeleteItemsAction::DeleteItemsAction(bool unsaved, int beatsplit, int itemTypeSt
 void DeleteItemsAction::undoAction(EditWindowData * editWindow) {
     EditAction::undoAction(editWindow);
     if(!items.empty()) {
-        editWindow->chartinfo.notes.insertItems(items.front()->absBeat, beatsplit, itemTypeStart, itemTypeEnd, editWindow->songpos.timeinfo, items);
+        editWindow->chartinfo.notes.insertItems(items.front()->absBeat, editWindow->songpos.absBeat, beatsplit, itemTypeStart, 
+            itemTypeEnd, editWindow->songpos.timeinfo, items);
     }
 }
 

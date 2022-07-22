@@ -11,5 +11,5 @@ void PlaceSkipAction::undoAction(EditWindowData * editWindow) {
 }
 
 void PlaceSkipAction::redoAction(EditWindowData * editWindow) {
-    editWindow->chartinfo.notes.addSkip(absBeat, skipBeats, beatDuration, beatpos, endBeatpos);
+    editWindow->chartinfo.notes.addSkip(absBeat, editWindow->songpos.absBeat, skipBeats, beatDuration, beatpos, endBeatpos);
 }

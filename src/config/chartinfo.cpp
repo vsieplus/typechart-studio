@@ -75,7 +75,7 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
 
                 BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
 
-                notes.addStop(absBeat, beatDuration, beatpos, endBeatpos);
+                notes.addStop(absBeat, songpos.absBeat, beatDuration, beatpos, endBeatpos);
             }
         }
 
@@ -91,7 +91,7 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
 
                 BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
 
-                notes.addSkip(absBeat, skipTime, beatDuration, beatpos, endBeatpos);
+                notes.addSkip(absBeat, songpos.absBeat, skipTime, beatDuration, beatpos, endBeatpos);
             }
         }
 
@@ -164,7 +164,7 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
 
             float beatDuration = absBeatEnd - absBeat;
 
-            notes.addNote(absBeat, beatDuration, beatpos, endBeatpos, itemType, keyText);
+            notes.addNote(absBeat, songpos.absBeat, beatDuration, beatpos, endBeatpos, itemType, keyText);
         }
     } catch(...) {
         return false;
