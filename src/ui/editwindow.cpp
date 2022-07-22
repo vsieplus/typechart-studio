@@ -15,6 +15,7 @@
 #include "actions/deletenote.hpp"
 #include "actions/editnote.hpp"
 #include "actions/editskip.hpp"
+#include "actions/flipnote.hpp"
 #include "actions/insertitems.hpp"
 #include "actions/placenote.hpp"
 #include "actions/placestop.hpp"
@@ -1215,6 +1216,11 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
         // flip selected notes
         if(activateFlip || keysPressed[SDL_GetScancodeFromKey(SDLK_f)]) {
+            auto flipAction = std::make_shared<FlipNoteAction>(unsaved, insertItemType, insertItemTypeEnd, insertBeat, endBeat,
+                chartinfo.keyboardLayout);
+            editActionsUndo.push(flipAction);
+            emptyActionStack(editActionsRedo);
+
             chartinfo.notes.flipNotes(chartinfo.keyboardLayout, insertBeat, endBeat, insertItemType, insertItemTypeEnd);
             unsaved = true;
             activateFlip = false;

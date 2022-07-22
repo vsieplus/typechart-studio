@@ -6,6 +6,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/deletenote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/editnote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/editskip.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/actions/flipnote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/insertitems.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/placenote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/placestop.cpp
