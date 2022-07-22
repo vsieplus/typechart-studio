@@ -17,7 +17,7 @@ const int MENU_FONT_SIZE = 24;
 
 const std::string PROGRAM_NAME = "Typechart Studio";
 
-const std::string PREFERENCES_PATH = "preferences.bin";
+const std::string PREFERENCES_PATH = "preferences.json";
 
 const fs::path FONTS_DIR = fs::path("fonts");
 const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("Sen-Regular.ttf");
