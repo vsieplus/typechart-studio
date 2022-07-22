@@ -6,3 +6,5 @@ releases/*
 imgui.ini
 imgui
 *.o
+
+todo.txt
