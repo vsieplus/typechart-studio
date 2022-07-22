@@ -125,7 +125,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void update(float songBeat, AudioSystem * audioSystem) {        
+    void update(float songBeat, AudioSystem * audioSystem, bool notesoundEnabled) {        
         for(auto & item : myItems) {
             switch(item->getItemType()) {
                 case SequencerItemType::TOP_NOTE:
@@ -135,7 +135,10 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                         break;
                     } else if(item->absBeat < songBeat) {
                         item->passed = true;
-                        audioSystem->playSound("keypress");
+
+                        if(notesoundEnabled) {
+                            audioSystem->playSound("keypress");
+                        }
                     }
                     break;
                 case SequencerItemType::SKIP:

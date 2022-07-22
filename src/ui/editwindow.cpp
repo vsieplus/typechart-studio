@@ -1430,7 +1430,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 
     if(windowFocused)
-        chartinfo.notes.update(songpos.absBeat, audioSystem);
+        chartinfo.notes.update(songpos.absBeat, audioSystem, Preferences::Instance().isNotesoundEnabled());
 
     // sideways scroll
     if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && io.MouseWheel != 0.f && !io.KeyCtrl) {
