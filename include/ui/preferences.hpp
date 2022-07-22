@@ -25,22 +25,18 @@ class Preferences {
 
         void addMostRecentFile(std::string path);
 
+        bool isNotesoundEnabled() const;
         bool isDarkTheme () const;
         void setDarkTheme(bool dark);
 
         bool getCopyArtAndMusic() const;
 
-        const char * getInputDir() const;
-        const char * getSaveDir() const;
+        std::string getInputDir() const;
+        std::string getSaveDir() const;
 
         const std::list<std::string> & getMostRecentFiles() const;
     private:
         Preferences() {}
-
-        char inputDir[512] = ".";
-        char outputDir[512] = ".";
-
-        char mostRecentFilepaths[5][512] = { "\0", "\0", "\0", "\0", "\0" };
 
         float musicVolume = 1.f;
         float soundVolume = 1.f;
@@ -48,7 +44,14 @@ class Preferences {
         bool copyArtAndMusic = true;
         bool showPreferences = false;
 
+        bool enableNotesound = true;
+
         bool darkTheme = true;
+
+        std::string inputDir;
+        std::string saveDir;
+
+        std::list<std::string> mostRecentFilepaths;
 };
 
 

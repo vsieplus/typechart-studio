@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <cstring>
-#include <SDL2/SDL.h>
+
+#include <nlohmann/json.hpp>
+using ordered_json = nlohmann::ordered_json;
 
 #include "imgui.h"
 #include "ImGuiFileDialog.h"
@@ -12,16 +14,17 @@
 static ImGuiWindowFlags preferencesWindowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
 static ImVec2 preferencesWindowSize = ImVec2(1100, 500);
 
-const static int MAX_MOST_RECENT = 5;
-
-static std::list<std::string> mostRecentFilesStr;
+const static int MAX_MOST_RECENT = 10;
 
 void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
     if(showPreferences) {
         ImGui::SetNextWindowSize(preferencesWindowSize);
         ImGui::Begin("Preferences", &showPreferences, preferencesWindowFlags);
 
-        ImGui::InputText("Default Input Directory", Preferences::inputDir, 256, ImGuiInputTextFlags_ReadOnly);
+        char inputDirStr[256];
+        strncpy(inputDirStr, inputDir.c_str(), 256);
+
+        ImGui::InputText("Default Input Directory", inputDirStr, 256, ImGuiInputTextFlags_ReadOnly);
         ImGui::SameLine();
         if(ImGui::Button("Browse...##inputdir")) {
             ImGuiFileDialog::Instance()->OpenDialog("chooseInputDir", "Choose Default Input Directory", nullptr, Preferences::inputDir);
@@ -29,21 +32,24 @@ void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
 
         if(ImGuiFileDialog::Instance()->Display("chooseInputDir", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
             if (ImGuiFileDialog::Instance()->IsOk()) {
-                strcpy(Preferences::inputDir, ImGuiFileDialog::Instance()->GetFilePathName().c_str());
+                inputDir = ImGuiFileDialog::Instance()->GetFilePathName();
             }
 
             ImGuiFileDialog::Instance()->Close();
         }
 
-        ImGui::InputText("Default Save Directory", Preferences::outputDir, 256, ImGuiInputTextFlags_ReadOnly);
+        char saveDirStr[256];
+        strncpy(saveDirStr, saveDir.c_str(), 256);
+
+        ImGui::InputText("Default Save Directory", saveDirStr, 256, ImGuiInputTextFlags_ReadOnly);
         ImGui::SameLine();
         if(ImGui::Button("Browse...##outputdir")) {
-            ImGuiFileDialog::Instance()->OpenDialog("chooseOutputDir", "Choose Default Output Directory", nullptr, Preferences::outputDir);
+            ImGuiFileDialog::Instance()->OpenDialog("chooseOutputDir", "Choose Default Output Directory", nullptr, Preferences::saveDir.c_str());
         }
 
         if(ImGuiFileDialog::Instance()->Display("chooseOutputDir", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
             if (ImGuiFileDialog::Instance()->IsOk()) {
-                strcpy(Preferences::outputDir, ImGuiFileDialog::Instance()->GetFilePathName().c_str());
+                saveDir = ImGuiFileDialog::Instance()->GetFilePathName();
             }
 
             ImGuiFileDialog::Instance()->Close();
@@ -57,6 +63,7 @@ void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
             audioSystem->setSoundVolume(Preferences::soundVolume);
         }
 
+        ImGui::Checkbox("Enable Notesounds", &enableNotesound);
         ImGui::Checkbox("Copy Art and Music when Saving", &copyArtAndMusic);
 
         ImGui::End();
@@ -64,22 +71,45 @@ void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
 }
 
 void Preferences::loadFromFile(std::string preferencesPath) {
-	SDL_RWops * saveFile = SDL_RWFromFile(preferencesPath.c_str(), "r+b");
-    // if file exists, load data to profile, otherwise return false
-	if(saveFile) {
-        // Read from file into address of playerProfile, for its size in bytes 1x
-        SDL_RWread(saveFile, &Instance(), sizeof(Preferences), 1);
+    ordered_json preferencesJSON;
 
-		SDL_RWclose(saveFile);
-	}
+    try {
+        std::ifstream in(preferencesPath);
+        in >> preferencesJSON;
 
-    for(int i = 0; i < 5; i++) {
-        if(mostRecentFilepaths[i][0] == '\0') {
-            break;
-        } else {
-            std::string currPath = mostRecentFilepaths[i];
-            mostRecentFilesStr.push_back(currPath);
+        if(preferencesJSON.contains("musicVolume")) {
+            musicVolume = preferencesJSON["musicVolume"];
         }
+        
+        if(preferencesJSON.contains("soundVolume")) {
+            soundVolume = preferencesJSON["soundVolume"];
+        }
+
+        if(preferencesJSON.contains("enableNotesound")) {
+            enableNotesound = preferencesJSON["enableNotesound"];
+        }
+
+        if(preferencesJSON.contains("copyAssetsWhenSaving")) {
+            copyArtAndMusic = preferencesJSON["copyAssetsWhenSaving"];
+        }
+
+        if(preferencesJSON.contains("theme")) {
+            darkTheme = preferencesJSON["theme"] == "dark";
+        }
+
+        if(preferencesJSON.contains("defaultInputDir")) {
+            inputDir = preferencesJSON["defaultInputDir"];
+        }
+        
+        if(preferencesJSON.contains("defaultSaveDir")) {
+            saveDir = preferencesJSON["defaultSaveDir"];
+        }
+
+        if(preferencesJSON.contains("recentFiles")) {
+            mostRecentFilepaths = preferencesJSON["recentFiles"];
+        }
+    } catch(...) {
+        // no preferences file exists, or field(s) are corrupt
     }
 
     if(darkTheme) {
@@ -90,36 +120,33 @@ void Preferences::loadFromFile(std::string preferencesPath) {
 }
 
 void Preferences::saveToFile(std::string preferencesPath) {
-    auto iter = mostRecentFilesStr.begin();
-    for(unsigned int i = 0 ; i < MAX_MOST_RECENT; i++) {
-        auto & path = *iter;
+    // write settings to JSON object
+    ordered_json preferencesJSON;
 
-        mostRecentFilepaths[i][0] = '\0';
+    preferencesJSON["musicVolume"] = musicVolume;
+    preferencesJSON["soundVolume"] = soundVolume;
+    preferencesJSON["enableNotesound"] = enableNotesound;
+    preferencesJSON["copyAssetsWhenSaving"] = copyArtAndMusic;
 
+    preferencesJSON["theme"] = darkTheme ? "dark" : "light";
 
-        if(i < mostRecentFilesStr.size()) {
-            auto copyLength = std::min((int)(path.size()), 512 - 1);
-            std::copy(path.begin(), path.begin() + copyLength, mostRecentFilepaths[i]);
-            mostRecentFilepaths[i][copyLength] = '\0';
-        }
+    preferencesJSON["defaultInputDir"] = inputDir;
+    preferencesJSON["defaultSaveDir"] = saveDir;
 
-        iter++;
-    }
+    preferencesJSON["recentFiles"] = mostRecentFilepaths;
 
-    // Open in write/binary mode
-	SDL_RWops * saveFile = SDL_RWFromFile(preferencesPath.c_str(), "w+b");
-	if(saveFile) {
-        // Write to file, the profile's starting address, size, and qty. (1)
-        SDL_RWwrite(saveFile, &Instance(), sizeof(Preferences), 1);
-
-		SDL_RWclose(saveFile);
-	}
+    // write to file
+    std::ofstream file(preferencesPath.c_str());
+    file << std::setw(4) << preferencesJSON << std::endl;
 }
 
 void Preferences::setShowPreferences(bool showPreferences) {
     this->showPreferences = showPreferences;
 }
 
+bool Preferences::isNotesoundEnabled() const {
+    return enableNotesound;
+}
 
 bool Preferences::isDarkTheme() const {
     return darkTheme;
@@ -133,29 +160,29 @@ bool Preferences::getCopyArtAndMusic() const {
     return copyArtAndMusic;
 }
 
-const char * Preferences::getInputDir() const {
+std::string Preferences::getInputDir() const {
     return inputDir;
 }
 
-const char * Preferences::getSaveDir() const {
-    return outputDir;
+std::string Preferences::getSaveDir() const {
+    return saveDir;
 }
 
 void Preferences::addMostRecentFile(std::string path) {
-    if(mostRecentFilesStr.size() == MAX_MOST_RECENT) {
-        mostRecentFilesStr.pop_back();
+    if(mostRecentFilepaths.size() == MAX_MOST_RECENT) {
+        mostRecentFilepaths.pop_back();
     }
     
-    for(auto iter = mostRecentFilesStr.begin(); iter != mostRecentFilesStr.end(); iter++) {
+    for(auto iter = mostRecentFilepaths.begin(); iter != mostRecentFilepaths.end(); iter++) {
         if(path == *iter) {
-            mostRecentFilesStr.erase(iter);
+            mostRecentFilepaths.erase(iter);
             break;
         }
     }
 
-    mostRecentFilesStr.push_front(path);
+    mostRecentFilepaths.push_front(path);
 }
 
 const std::list<std::string> & Preferences::getMostRecentFiles() const {
-    return mostRecentFilesStr;
+    return mostRecentFilepaths;
 }
