@@ -31,7 +31,6 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
         }
 
         if(ImGui::BeginMenu("Help")) {
-            showHelpMenu();
             ImGui::EndMenu();
         }
 
@@ -122,11 +121,5 @@ void showOptionMenu() {
         }
 
         ImGui::EndMenu();
-    }
-}
-
-void showHelpMenu() {
-    if(ImGui::MenuItem("Tutorial")) {
-        // open link
     }
 }

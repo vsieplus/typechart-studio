@@ -9,6 +9,5 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
 void showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem);
 void showEditMenu();
 void showOptionMenu();
-void showHelpMenu();
 
 #endif // MENUBAR_HPP
