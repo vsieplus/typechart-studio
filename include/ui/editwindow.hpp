@@ -17,7 +17,8 @@ class AudioSystem;
 
 struct EditWindowData {
     EditWindowData(bool open, int ID, int musicSourceIdx, std::string name, std::shared_ptr<SDL_Texture> artTexture, ChartInfo chartinfo, SongInfo songinfo) : 
-        open(open), ID(ID), musicSourceIdx(musicSourceIdx), name(name), artTexture(artTexture), chartinfo(chartinfo), songinfo(songinfo) {
+        open(open), ID(ID), musicSourceIdx(musicSourceIdx), name(name), artTexture(artTexture), chartinfo(chartinfo), songinfo(songinfo), 
+        currTopNotes(chartinfo.notes.keyFreqsSorted.size()) {
     }
 
     bool open;
@@ -27,6 +28,7 @@ struct EditWindowData {
 
     int ID;
     int musicSourceIdx;
+
     std::string name;
 
     std::shared_ptr<SDL_Texture> artTexture;
@@ -38,6 +40,8 @@ struct EditWindowData {
 
     ChartInfo chartinfo;
     SongInfo songinfo;
+
+    int currTopNotes;
 };
 
 static std::queue<int> availableWindowIDs;

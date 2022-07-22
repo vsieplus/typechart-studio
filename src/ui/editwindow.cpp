@@ -634,7 +634,8 @@ static const char * getKeyFrequencyLabels(void * data, int i) {
     }
 }
 
-void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, int musicSourceIdx) {
+void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, int * currTopNotes, 
+        ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, int musicSourceIdx) {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
     ImGui::Image(artTexture, ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
@@ -823,16 +824,13 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     ImGui::Text("Top: %d | Middle: %d | Bottom: %d", chartinfo.notes.numTopNotes, chartinfo.notes.numMidNotes, chartinfo.notes.numBotNotes);
     ImGui::Separator();
 
-    // notes by key (top x)
-    static int currTopNotes = chartinfo.notes.keyFreqsSorted.size();
-
     ImGui::Text("Most frequent Keys");
     ImGui::SameLine();
     ImGui::SetNextItemWidth(128.f);
-    ImGui::SliderInt("##topNotes", &currTopNotes, 0, chartinfo.notes.keyFreqsSorted.size());
+    ImGui::SliderInt("##topNotes", currTopNotes, 0, chartinfo.notes.keyFreqsSorted.size());
     
     int maxFreq = getKeyFrequencies((void*)&chartinfo, 0);
-    ImGui::PlotHistogram("##keyFreqs", getKeyFrequencies, getKeyFrequencyLabels, (void*)&chartinfo, currTopNotes, 0, NULL, 0, maxFreq,
+    ImGui::PlotHistogram("##keyFreqs", getKeyFrequencies, getKeyFrequencyLabels, (void*)&chartinfo, *currTopNotes, 0, NULL, 0, maxFreq,
                          ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y));
 
     ImGui::EndChild();
@@ -1505,7 +1503,8 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
         showEditWindowMetadata(currWindow);
         ImGui::SameLine();
-        showEditWindowChartData(currWindow.artTexture.get(), audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, currWindow.musicSourceIdx);
+        showEditWindowChartData(currWindow.artTexture.get(), audioSystem, &currWindow.currTopNotes, currWindow.chartinfo, currWindow.songpos,
+            currWindow.unsaved, currWindow.musicSourceIdx);
 
         ImGui::Separator();
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, 
