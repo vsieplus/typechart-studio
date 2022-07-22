@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <filesystem>
@@ -845,7 +846,9 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 
     auto songAudioPos = splitSecsbyMin(songpos.absTime);
     auto songLength = splitSecsbyMin(musicLengthSecs);
-    ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPos.first, songAudioPos.second, songLength.first, songLength.second);
+    auto songAudioPosMin = std::max(0, songAudioPos.first);
+    auto songAudioPosSecs = songAudioPos.first < 0 ? 0 : songAudioPos.second;
+    ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPosMin, songAudioPosSecs, songLength.first, songLength.second);
 
     ImGui::SameLine();
     if((currWindow.focused && (ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || keysPressed[SDL_SCANCODE_SPACE])) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) {
@@ -1074,7 +1077,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
     auto currBeatpos = calculateBeatpos(songpos.absBeat, currentBeatsplit, songpos.timeinfo);
     ImGui::SameLine();
-    ImGui::Text("[Pos]: [%d, %d, %d]", currBeatpos.measure, currBeatpos.beatsplit, currBeatpos.split);
+    ImGui::Text("[Pos]: [%d, %d, %d]", std::max(0, currBeatpos.measure), std::max(0, currBeatpos.beatsplit), std::max(0, currBeatpos.split));
 
     ImGui::SameLine();
     ImGui::Text("Zoom " ICON_FA_MAGNIFYING_GLASS ": ");
