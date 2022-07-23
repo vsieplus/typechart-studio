@@ -385,9 +385,10 @@ namespace ImSequencer
 
                      float draggedBeats = (firstSelectableBeat + (j * 1.f / currentBeatsplit)) - firstClickedBeat;
 
+                     // light outline over currently hovered region
                      if((io.MouseDown[0] || (leftClickShift && *leftClickShift)) && draggedBeats > 0.f) {
                         hoverSz.x = firstSelectableBeatX + j * beatsplitPixelWidth - 3 + 32 - 3; 
-                        hoverPos.x = hoverSz.x - (draggedBeats * currentBeatsplit + 1) * beatsplitPixelWidth; 
+                        hoverPos.x = hoverSz.x - (draggedBeats * currentBeatsplit) * beatsplitPixelWidth - 32 + 3; 
                      } else {
                         hoverPos.x = firstSelectableBeatX + j * beatsplitPixelWidth - 3;
                         hoverSz.x = hoverPos.x + 32 - 3;
