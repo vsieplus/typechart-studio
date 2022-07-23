@@ -1307,14 +1307,17 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 break;
             case SequencerItemType::BOT_NOTE:
                 static int selectedFuncKey = 0;
-                static bool confirmEnter = false;
+                static bool insertKey = false;
                 ImGui::SetNextItemWidth(64);
 
                 if(ImGui::BeginCombo("##addfunction_key", FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey).c_str())) {
                     for(auto & [keyIdx, keyTxt] : FUNCTION_KEY_COMBO_ITEMS) {
                         bool keySelected = false;
-                        if(ImGui::Selectable(keyTxt.c_str(), &keySelected))
+                        if(ImGui::Selectable(keyTxt.c_str(), &keySelected)) {
                             selectedFuncKey = keyIdx;
+                            insertKey = true;
+                            break;
+                        }
 
                         if(keySelected)
                             ImGui::SetItemDefaultFocus();
@@ -1324,20 +1327,14 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 }
 
                 for(auto & [keyIdx, keyText] : FUNCTION_KEY_COMBO_ITEMS) {
-                    if(keysPressed[FUNCTION_KEY_COMBO_SCANCODES.at(keyIdx)]) {
-                        if(selectedFuncKey != keyIdx)
-                            confirmEnter = false;
-                        
+                    if(keysPressed[FUNCTION_KEY_COMBO_SCANCODES.at(keyIdx)]) {                        
                         selectedFuncKey = keyIdx;
+                        insertKey = true;
+                        break;
                     }
                 }
 
-                if(keysPressed[FUNCTION_KEY_COMBO_SCANCODES.at(selectedFuncKey)]) {
-                    if(!confirmEnter) {
-                        confirmEnter = true;
-                        break;
-                    }
-
+                if(insertKey) {
                     std::string keyText = FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey);
 
                     std::shared_ptr<EditAction> currAction;
@@ -1354,9 +1351,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     emptyActionStack(editActionsRedo);
 
                     selectedFuncKey = 0;
-                    confirmEnter = false;
                     ImGui::CloseCurrentPopup();
                     unsaved = true;
+                    insertKey = false;
+                    leftClickReleased = false;
                 }
                 break;
             case SequencerItemType::SKIP:
@@ -1403,6 +1401,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
                         ImGui::CloseCurrentPopup();
                         unsaved = true;
+
+                        leftClickReleased = false;
                     }
                     
                 }
