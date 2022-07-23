@@ -1115,6 +1115,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(!songpos.started) {
             songpos.start();
             songpos.pause();
+            
+            songpos.pauseCounter += (songpos.offsetMS / 1000.f) * SDL_GetPerformanceFrequency();
         }
         songpos.setSongBeatPosition(songpos.absBeat);
 
