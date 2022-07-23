@@ -1439,6 +1439,9 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(!songpos.started) {
             songpos.start();
             songpos.pause();
+
+            // decrease pause counter manually by offset, since skipping
+            songpos.pauseCounter += (songpos.offsetMS / 1000.f) * SDL_GetPerformanceFrequency();
         }
 
         bool decrease = io.MouseWheel > 0;
