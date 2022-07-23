@@ -1461,12 +1461,14 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             targetBeat = origNearBeat - beatsplitChange * currentBeatsplitValue;
         }
 
-        // scroll up, decrease beat, scroll down increase beat
-        songpos.setSongBeatPosition(songpos.absBeat - (beatsplitChange * currentBeatsplitValue));
+        if(decrease || (!decrease && songpos.absTime < audioSystem->getMusicLength(musicSourceIdx))) {
+            // scroll up, decrease beat, scroll down increase beat
+            songpos.setSongBeatPosition(songpos.absBeat - (beatsplitChange * currentBeatsplitValue));
 
-        // clamp to nearest split
-        if((decrease && songpos.absBeat < targetBeat) || (!decrease && songpos.absBeat > targetBeat)) {
-            songpos.setSongBeatPosition(targetBeat);
+            // clamp to nearest split
+            if((decrease && songpos.absBeat < targetBeat) || (!decrease && songpos.absBeat > targetBeat)) {
+                songpos.setSongBeatPosition(targetBeat);
+            }
         }
 
         if(songpos.absTime >= 0) {
