@@ -1004,7 +1004,7 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
             float leftoverMeasures = (absBeat - currAbsBeat) / currBeatsPerMeasure;
             int leftoverMeasuresFull = std::floor(leftoverMeasures);
             float leftoverBeats = (leftoverMeasures - leftoverMeasuresFull) * currBeatsPerMeasure;
-            int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit);
+            int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit + 0.5);
 
             measure += leftoverMeasuresFull;
             measureSplit = currentBeatsplit * currBeatsPerMeasure;
