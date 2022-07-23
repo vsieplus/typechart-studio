@@ -801,6 +801,8 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
                 if(!songpos.started) {
                     songpos.start();
                     songpos.pause();
+
+                    songpos.pauseCounter += (songpos.offsetMS / 1000.f) * SDL_GetPerformanceFrequency();
                 }
 
                 songpos.setSongBeatPosition(currSection.absBeatStart + FLT_EPSILON);
@@ -1044,7 +1046,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     ImGui::SameLine();
 
     int fullBeats = std::floor(songpos.absBeat);
-    float fullBeatSplits = std::floor((songpos.absBeat - fullBeats) / currentBeatsplitValue);
+    int fullBeatSplits = (int)((songpos.absBeat - fullBeats) / currentBeatsplitValue + 0.5);
     float origNearBeat = fullBeats + (fullBeatSplits * (1.f / currentBeatsplit));
     float prevTargetBeat = (songpos.absBeat == origNearBeat) ? origNearBeat - currentBeatsplitValue : origNearBeat;
     float nextTargetBeat = origNearBeat + (1.f / currentBeatsplit);
@@ -1053,6 +1055,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(!songpos.started) {
             songpos.start();
             songpos.pause();
+            songpos.pauseCounter += (songpos.offsetMS / 1000.f) * SDL_GetPerformanceFrequency();
         }
 
         songpos.setSongBeatPosition(songpos.absBeat);
@@ -1115,7 +1118,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(!songpos.started) {
             songpos.start();
             songpos.pause();
-            
+
             songpos.pauseCounter += (songpos.offsetMS / 1000.f) * SDL_GetPerformanceFrequency();
         }
         songpos.setSongBeatPosition(songpos.absBeat);
@@ -1453,7 +1456,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             beatsplitChange = 1;
 
         int fullBeats = std::floor(songpos.absBeat);
-        float fullBeatSplits = std::floor((songpos.absBeat - fullBeats) / currentBeatsplitValue);
+        int fullBeatSplits = (int)((songpos.absBeat - fullBeats) / currentBeatsplitValue + 0.5);
         float origNearBeat = fullBeats + (fullBeatSplits * (1.f / currentBeatsplit));
 
         float targetBeat;
