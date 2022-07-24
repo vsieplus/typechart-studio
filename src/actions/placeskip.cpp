@@ -8,8 +8,10 @@ PlaceSkipAction::PlaceSkipAction(bool unsaved, float absBeat, float skipBeats, f
 void PlaceSkipAction::undoAction(EditWindowData * editWindow) {
     EditAction::undoAction(editWindow);
     editWindow->chartinfo.notes.deleteItem(absBeat, SequencerItemType::SKIP);
+    editWindow->songpos.removeSkip(absBeat);
 }
 
 void PlaceSkipAction::redoAction(EditWindowData * editWindow) {
-    editWindow->chartinfo.notes.addSkip(absBeat, editWindow->songpos.absBeat, skipBeats, beatDuration, beatpos, endBeatpos);
+    auto skip = editWindow->chartinfo.notes.addSkip(absBeat, editWindow->songpos.absBeat, skipBeats, beatDuration, beatpos, endBeatpos);
+    editWindow->songpos.addSkip(skip);
 }

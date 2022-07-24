@@ -215,12 +215,14 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         std::sort(myItems.begin(), myItems.end());
     }
 
-    void addSkip(float absBeat, float songBeat, float skipTime, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
+    std::shared_ptr<Skip> addSkip(float absBeat, float songBeat, float skipTime, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
         std::shared_ptr<Skip> newSkip = std::make_shared<Skip>(absBeat, songBeat, skipTime, beatDuration, beatpos, endBeatpos);
         newSkip->displayText = std::to_string(skipTime);
         myItems.push_back(newSkip);
 
         std::sort(myItems.begin(), myItems.end());
+
+        return newSkip;
     }
 
     void editSkip(float absBeat, float skipTime) {

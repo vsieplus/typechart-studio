@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <float.h>
 
 #include "config/songposition.hpp"
@@ -26,9 +27,12 @@ void SongPosition::update() {
         auto now = SDL_GetPerformanceCounter();
         absTime = (((double)(now - songStart)) / SDL_GetPerformanceFrequency()) - (offsetMS / 1000.f);
 
-        updateBeatPos();
+        updateBeatPos(now);
+
         updateBPM();
         updateSection();
+
+        updateSkips();
     }
 }
 
@@ -48,8 +52,26 @@ void SongPosition::updateBPM() {
     }
 }
 
-void SongPosition::updateBeatPos() {
-    absBeat = prevSectionBeats + ((absTime - prevSectionTime) / currSpb);
+void SongPosition::updateBeatPos(uint64_t now) {
+    if(beatSkipped) {
+        auto timeSinceSkip = (now - currSkipBegin) / (double)SDL_GetPerformanceFrequency();
+
+        // check if full skip passed, or if still 'skipping'
+        if(timeSinceSkip > currSkipDuration) {
+            beatSkipped = false;
+            beatSkiptimePassed = false;
+        } else if(!beatSkiptimePassed) {
+            if(timeSinceSkip < currSkipTime) {
+                absBeat = prevSectionBeats + ((currSkipStartTimePosition - prevSectionTime) / currSpb) +
+                    (timeSinceSkip / currSkipSpb);
+            } else {
+                absBeat = prevSectionBeats + ((currSkipStartTimePosition - prevSectionTime + currSkipDuration) / currSpb);
+                beatSkiptimePassed = true;
+            }
+        }
+    } else {
+        absBeat = prevSectionBeats + ((absTime - prevSectionTime) / currSpb);
+    }
 }
 
 void SongPosition::updateSection() {
@@ -73,6 +95,57 @@ void SongPosition::updateSection() {
             currSpb = 60.f / timeinfo.at(currentSection).bpm;
 
             bpmInterpolating = false;
+        }
+    }
+}
+
+void SongPosition::updateSkips() {
+    if(!beatSkipped && currentSkip <= skips.size() - 1) {
+        float currSkipBeat = skips.at(currentSkip)->absBeat;
+
+        if(absBeat > currSkipBeat) {
+            beatSkipped = true;
+
+            currSkipDuration = skips.at(currentSkip)->beatDuration * currSpb;
+            currSkipBegin = SDL_GetPerformanceCounter();
+            currSkipStartTimePosition = ((currSkipBegin - songStart) / (double)SDL_GetPerformanceFrequency()) - (offsetMS / 1000.f);
+
+            currSkipTime = skips.at(currentSkip)->skipTime;
+            currSkipSpb = currSpb * (currSkipTime / currSkipDuration);
+            
+            beatSkiptimePassed = false;
+
+            currentSkip++;
+        }
+    }
+}
+
+bool skipCompare(std::shared_ptr<Skip> a, std::shared_ptr<Skip> b) {
+    return a->absBeat < b->absBeat; 
+}
+
+void SongPosition::addSkip(std::shared_ptr<Skip> skip) {
+    skips.push_back(skip);
+    std::sort(skips.begin(), skips.end(), skipCompare);
+    resetCurrskip();
+}
+
+void SongPosition::removeSkip(float absBeat) {
+    for(auto skipIter = skips.begin(); skipIter != skips.end(); skipIter++) {
+        if(std::abs((*skipIter)->absBeat - absBeat) < FLT_EPSILON) {
+            skips.erase(skipIter);
+            resetCurrskip();
+            break;
+        }
+    }
+}
+
+void SongPosition::resetCurrskip() {
+    currentSkip = 0;
+    for(unsigned int i = 0; i < skips.size(); i++) {
+        if(absBeat >= skips.at(i)->absBeat) {
+            currentSkip = i;
+            break;
         }
     }
 }
@@ -103,6 +176,8 @@ void SongPosition::setSongTimePosition(float absTime) {
     prevSectionTime = timeinfo.at(currentSection).absTimeStart;
 
     currSpb = 60.f / timeinfo.at(currentSection).bpm;
+
+    resetCurrskip();
 }
 
 void SongPosition::setSongBeatPosition(float absBeat) {

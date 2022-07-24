@@ -1390,15 +1390,16 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     }
 
                     if(keysPressed[SDL_SCANCODE_RETURN] || keysPressed[SDL_SCANCODE_KP_ENTER]) {
-
                         std::shared_ptr<EditAction> currAction;
                         if(currItem.get()) {
                             auto currSkip = std::dynamic_pointer_cast<Skip>(currItem);
                             currAction = std::make_shared<EditSkipAction>(unsaved, insertBeat, currSkip->skipTime, skipBeats);
                             chartinfo.notes.editSkip(insertBeat, skipBeats);
                         } else {
-                            chartinfo.notes.addSkip(insertBeat, songpos.absBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
+                            auto newSkip = chartinfo.notes.addSkip(insertBeat, songpos.absBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
                             currAction = std::make_shared<PlaceSkipAction>(unsaved, insertBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
+                        
+                            songpos.addSkip(newSkip);
                         }
 
                         editActionsUndo.push(currAction);
@@ -1408,8 +1409,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         unsaved = true;
 
                         leftClickReleased = false;
-                    }
-                    
+                    }                    
                 }
                 break;
             case SequencerItemType::STOP:
@@ -1429,7 +1429,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 
     if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && rightClickedEntity) {
-        auto itemToDelete = chartinfo.notes.containsItemAt(clickedBeat, clickedItemType);\
+        auto itemToDelete = chartinfo.notes.containsItemAt(clickedBeat, clickedItemType);
         if(itemToDelete.get()) {
             chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
             auto deleteAction = std::make_shared<DeleteNoteAction>(unsaved, itemToDelete->absBeat, itemToDelete->beatEnd - itemToDelete->absBeat,
@@ -1437,7 +1437,11 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             editActionsUndo.push(deleteAction);
             emptyActionStack(editActionsRedo);
 
-            unsaved = true;        
+            unsaved = true;
+
+            if(itemToDelete->getItemType() == SequencerItemType::SKIP) {
+                songpos.removeSkip(clickedBeat);
+            }
         }
     }
 

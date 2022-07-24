@@ -96,7 +96,8 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
 
                 BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
 
-                notes.addSkip(absBeat, songpos.absBeat, skipTime, beatDuration, beatpos, endBeatpos);
+                auto skip = notes.addSkip(absBeat, songpos.absBeat, skipTime, beatDuration, beatpos, endBeatpos);
+                songpos.addSkip(skip);
             }
         }
 
