@@ -11,6 +11,7 @@ struct SongPosition {
     void stop();
 
     void update();
+    void updateBPM();
     void updateBeatPos();
     void updateSection();
 
@@ -22,8 +23,11 @@ struct SongPosition {
 
     bool started = false;
     bool paused = false;
+    bool bpmInterpolating = false;
 
     float currSpb = 0.f;
+    float bpmInterpolateStart = 0.f;
+    float bpmInterpolateEnd = 0.f;
 
     float absTime = 0.f;
     float absBeat = 0.f;

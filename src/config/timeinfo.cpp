@@ -1,8 +1,8 @@
 #include "config/timeinfo.hpp"
 
-Timeinfo::Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure, float bpm) :
+Timeinfo::Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure, float bpm, float interpolateBeatDuration) :
         beatpos(beatpos), beatsPerMeasure(beatsPerMeasure), bpm(bpm), absBeatStart(calculateBeatStart(prevTimeinfo)),
-        absTimeStart(calculateTimeStart(prevTimeinfo)) {}
+        absTimeStart(calculateTimeStart(prevTimeinfo)), interpolateBeatDuration(interpolateBeatDuration) {}
 
 float Timeinfo::calculateBeatStart(Timeinfo * prevTimeinfo) {
     auto absMeasure = beatpos.measure + (beatpos.split / (float)beatpos.beatsplit);

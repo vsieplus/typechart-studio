@@ -1,5 +1,6 @@
-#include "config/songposition.hpp"
+#include <float.h>
 
+#include "config/songposition.hpp"
 
 void SongPosition::start() {
     songStart = SDL_GetPerformanceCounter();
@@ -23,10 +24,27 @@ void SongPosition::stop() {
 void SongPosition::update() {
     if(!paused && started) {
         auto now = SDL_GetPerformanceCounter();
-        absTime = (((double)(now - songStart)) / SDL_GetPerformanceFrequency()) - (offsetMS / 1000.f) ;
+        absTime = (((double)(now - songStart)) / SDL_GetPerformanceFrequency()) - (offsetMS / 1000.f);
 
         updateBeatPos();
+        updateBPM();
         updateSection();
+    }
+}
+
+void SongPosition::updateBPM() {
+    if(bpmInterpolating && currentSection < timeinfo.size() - 1) {
+        int nextSection = currentSection + 1;
+
+        float timeUntilNextSection = timeinfo.at(nextSection).absTimeStart - absTime;
+        float bpmInterplationProgress = 1 - (timeUntilNextSection / ((timeinfo.at(nextSection).interpolateBeatDuration) * currSpb));
+        bpmInterplationProgress = std::min(1.f, bpmInterplationProgress);
+        bpmInterplationProgress = std::max(0.f, bpmInterplationProgress);
+
+        float currBpm = bpmInterpolateStart + bpmInterplationProgress * (bpmInterpolateEnd - bpmInterpolateStart);
+        currSpb = 60.f / currBpm;
+        prevSectionTime = absTime;
+        prevSectionBeats = absBeat;
     }
 }
 
@@ -37,13 +55,24 @@ void SongPosition::updateBeatPos() {
 void SongPosition::updateSection() {
     if(currentSection < timeinfo.size() - 1) {
         int nextSection = currentSection + 1;
-        if(absTime >= timeinfo.at(nextSection).absTimeStart) {
+
+        auto & nextTimeinfo = timeinfo.at(nextSection);
+
+        if(!bpmInterpolating && nextTimeinfo.interpolateBeatDuration > FLT_EPSILON) {
+            if(absTime >= nextTimeinfo.absTimeStart - (nextTimeinfo.interpolateBeatDuration * currSpb)) {
+                bpmInterpolating = true;
+                bpmInterpolateStart = timeinfo.at(currentSection).bpm;
+                bpmInterpolateEnd = timeinfo.at(nextSection).bpm;
+            }
+        } else if(absTime >= nextTimeinfo.absTimeStart) {
             currentSection = nextSection;
 
             prevSectionBeats = timeinfo.at(currentSection).absBeatStart;
             prevSectionTime = absTime;
 
             currSpb = 60.f / timeinfo.at(currentSection).bpm;
+
+            bpmInterpolating = false;
         }
     }
 }

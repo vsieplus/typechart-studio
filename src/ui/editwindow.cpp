@@ -347,7 +347,7 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
         // initial section from BPM
         float initialBpm = ::atof(UIbpmtext);
         BeatPos initialSectionStart = {0, 1, 0};
-        newWindow.songpos.timeinfo.push_back(Timeinfo(initialSectionStart, nullptr, 4, initialBpm));
+        newWindow.songpos.timeinfo.push_back(Timeinfo(initialSectionStart, nullptr, 4, initialBpm, 0));
     
         editWindows.push_back(newWindow);
 
@@ -658,6 +658,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     static int newSectionSplit = currSection.beatpos.split;
     static int newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
     static float newSectionBPM = currSection.bpm;
+    static float newSectionInterpolateDuration = 0;
 
     if(ImGui::Button(ICON_FA_PLUS)) {
         newSectionWindowOpen = true;
@@ -668,6 +669,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         newSectionSplit = currSection.beatpos.split;
         newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
         newSectionBPM = currSection.bpm;
+        newSectionInterpolateDuration = 0;
     }
 
     ImGui::SameLine();
@@ -686,6 +688,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         newSectionSplit = currSection.beatpos.split;
         newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
         newSectionBPM = currSection.bpm;
+        newSectionInterpolateDuration = currSection.interpolateBeatDuration;
     }
 
     if(newSectionWindowOpen) {
@@ -722,8 +725,10 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         }
 
         ImGui::InputInt("Beats Per Measure", &newSectionBeatsPerMeasure);
+        ImGui::InputFloat("Beat Interpolation Duration", &newSectionInterpolateDuration, 0.25, 0.5, "%.2f");
 
         newSectionBPM = std::max(0.f, newSectionBPM);
+        newSectionInterpolateDuration = std::max(0.f, newSectionInterpolateDuration);
         newSectionBeatsPerMeasure = std::max(0, newSectionBeatsPerMeasure);
 
         if(ImGui::Button("OK")) {
@@ -749,7 +754,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
             }
 
             if(prevSection) {
-                Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM);
+                Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM, newSectionInterpolateDuration);
                 if(newSectionWindowEdit) {
                     *prevSection = newSection;
                 } else {

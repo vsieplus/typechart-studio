@@ -4,7 +4,7 @@
 #include "config/beatpos.hpp"
 
 struct Timeinfo {
-    Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure, float bpm);
+    Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure, float bpm, float interpolateBeatDuration);
 
     float calculateBeatStart(Timeinfo * prevTimeinfo);
     float calculateTimeStart(Timeinfo * prevTimeinfo);
@@ -16,6 +16,8 @@ struct Timeinfo {
 
     float absBeatStart;
     float absTimeStart;
+
+    float interpolateBeatDuration;
 };
 
 

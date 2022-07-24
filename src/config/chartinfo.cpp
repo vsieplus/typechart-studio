@@ -56,9 +56,14 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
         for(auto & sectionJSON : timeinfo) {
             std::vector<int> pos = sectionJSON["pos"];
             float bpm = sectionJSON["bpm"];
+            float interpolateBeatDuration = 0.f;
             int beatsPerMeasure = sectionJSON["beatsPerMeasure"];
 
-            songpos.timeinfo.push_back(Timeinfo((BeatPos){pos.at(0), pos.at(1), pos.at(2)}, prevTimeinfo, beatsPerMeasure, bpm));
+            if(sectionJSON.contains("interpolateBeatDuration")) {
+                interpolateBeatDuration = sectionJSON["interpolateBeatDuration"];
+            }
+
+            songpos.timeinfo.push_back(Timeinfo((BeatPos){pos.at(0), pos.at(1), pos.at(2)}, prevTimeinfo, beatsPerMeasure, bpm, interpolateBeatDuration));
             prevTimeinfo = &(songpos.timeinfo.back());
         }
 
@@ -195,6 +200,7 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
         sectionJSON["pos"] = { section.beatpos.measure, section.beatpos.beatsplit, section.beatpos.split };
         sectionJSON["bpm"] = section.bpm;
         sectionJSON["beatsPerMeasure"] = section.beatsPerMeasure;
+        sectionJSON["interpolateBeatDuration"] = section.interpolateBeatDuration;
 
         timeinfo.push_back(sectionJSON);
     }
