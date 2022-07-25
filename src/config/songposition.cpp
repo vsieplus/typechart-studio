@@ -29,9 +29,9 @@ void SongPosition::update() {
 
         updateBeatPos(now);
 
-        updateBPM();
+        // updateBPM(); disable for now until figuring out a solution
+        
         updateSection();
-
         updateSkips();
     }
 }
