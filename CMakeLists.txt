@@ -7,7 +7,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g3")
 endif()
 
-project(typechart-studio VERSION 0.2.1)
+project(typechart-studio VERSION 0.2.2)
 configure_file(src/versionfile.h.in versionconfig.h)
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
