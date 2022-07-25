@@ -110,7 +110,7 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
         LIB_EXT="dll"
 
         libs+=( "${winlibs[@]}" )
-        libs+=( "libssp-0" )
+        libs+=( "libssp-0" "libwinpthread-1" )
     elif [[ "${BUILD_SYSTEM}" == "mac" ]]; then
         LIB_DIR="/usr/local/lib"
         LIB_EXT="dylib"
