@@ -53,6 +53,7 @@ struct SongPosition {
     float currSkipSpb = 0.f;
 
     int offsetMS = 0;
+    int currentSkip = 0;
 
     Uint64 currSkipBegin = 0;
 
@@ -60,8 +61,7 @@ struct SongPosition {
     Uint64 pauseCounter = 0;
 
     unsigned int currentSection = 0;
-    unsigned int currentSkip = 0;
-
+    
     std::vector<Timeinfo> timeinfo;
     std::vector<std::shared_ptr<Skip>> skips;
 };

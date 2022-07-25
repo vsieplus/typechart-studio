@@ -100,7 +100,7 @@ void SongPosition::updateSection() {
 }
 
 void SongPosition::updateSkips() {
-    if(!beatSkipped && currentSkip <= skips.size() - 1) {
+    if(!beatSkipped && currentSkip <= (int)(skips.size() - 1)) {
         float currSkipBeat = skips.at(currentSkip)->absBeat;
 
         if(absBeat > currSkipBeat) {
