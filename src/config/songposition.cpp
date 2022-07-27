@@ -141,9 +141,9 @@ void SongPosition::removeSkip(float absBeat) {
 }
 
 void SongPosition::resetCurrskip() {
-    currentSkip = 0;
+    currentSkip = skips.size();
     for(unsigned int i = 0; i < skips.size(); i++) {
-        if(absBeat >= skips.at(i)->absBeat) {
+        if(absBeat <= skips.at(i)->absBeat) {
             currentSkip = i;
             break;
         }
