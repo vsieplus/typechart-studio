@@ -30,10 +30,6 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
             ImGui::EndMenu();
         }
 
-        if(ImGui::BeginMenu("Help")) {
-            ImGui::EndMenu();
-        }
-
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x *.95);
         ImGui::BeginChild("versiontext", ImVec2(0, 0), false);
         ImGui::Text("v%d.%d.%d", TYPECHART_STUDIO_VERSION_MAJOR, TYPECHART_STUDIO_VERSION_MINOR, TYPECHART_STUDIO_VERSION_PATCH);
