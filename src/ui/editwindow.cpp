@@ -32,10 +32,18 @@ namespace fs = std::filesystem;
 using json = nlohmann::json;
 
 const std::map<int, std::string> ID_TO_KEYBOARDLAYOUT = {
-    { 0 , "QWERTY" },
+    { 0, "QWERTY" },
     { 1, "DVORAK" },
     { 2, "AZERTY" },
     { 3, "COLEMAK" }
+};
+
+const std::map<int, std::string> ID_TO_DIFFICULTY = {
+    { 0, "easy" },
+    { 1, "normal" },
+    { 2, "hard" },
+    { 3, "extreme" },
+    { 4, "unknown" }
 };
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -263,6 +271,7 @@ void showSongConfig() {
 static char UItypist[64] = "";
 static int UIlevel = 1;
 static int UIkeyboardLayout = 0;
+static int UIdifficulty = 0;
 
 void showChartConfig() {
     ImGui::Text("Chart configuration");
@@ -274,6 +283,7 @@ void showChartConfig() {
                 "intended to be played with. Charts will then be\n"
                 "accordingly 'translated' to other keyboard layouts\n"
                 "when loaded into Typing Tempo.");
+    ImGui::Combo(ICON_FA_CHESS_PAWN " Difficulty", &UIdifficulty, "easy\0normal\0hard\0expert\0unknown\0");
     ImGui::InputInt(ICON_FA_CHESS_ROOK " Level", &UIlevel);
 }
 
@@ -325,7 +335,7 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     // populate with current song, chart info
     SongInfo songinfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
                                  UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
-    ChartInfo chartinfo = ChartInfo(UIlevel, UItypist, ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout));
+    ChartInfo chartinfo = ChartInfo(UIlevel, UItypist, ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout), ID_TO_DIFFICULTY.at(UIdifficulty));
 
     // attempt to load music
     int musicSourceIdx = audioSystem->loadMusic(UImusicFilepath);

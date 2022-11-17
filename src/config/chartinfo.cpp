@@ -33,8 +33,8 @@ float calculateAbsBeat(BeatPos beatpos, std::vector<Timeinfo> & timeinfo) {
 
 ChartInfo::ChartInfo() {}
 
-ChartInfo::ChartInfo(int level, std::string typist, std::string keyboardLayout) : 
-        level(level), typist(typist), keyboardLayout(keyboardLayout) {}
+ChartInfo::ChartInfo(int level, std::string typist, std::string keyboardLayout, std::string difficulty) : 
+        level(level), typist(typist), keyboardLayout(keyboardLayout), difficulty(difficulty) {}
 
 bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
     savePath = chartPath;
@@ -47,6 +47,7 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
     
         typist = chartinfoJSON["typist"];
         keyboardLayout = chartinfoJSON["keyboard"];
+        difficulty = chartinfoJSON["difficulty"];
         level = chartinfoJSON["level"];
         songpos.offsetMS = chartinfoJSON["offsetMS"];
 
@@ -189,6 +190,7 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
 
     chartinfo["typist"] = typist;
     chartinfo["keyboard"] = keyboardLayout;
+    chartinfo["difficulty"] = difficulty;
     chartinfo["level"] = level;
     chartinfo["offsetMS"] = songpos.offsetMS;
 

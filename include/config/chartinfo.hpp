@@ -12,7 +12,7 @@ class SongPosition;
 
 struct ChartInfo {
     ChartInfo();
-    ChartInfo(int level, std::string typist, std::string keyboardLayout);
+    ChartInfo(int level, std::string typist, std::string keyboardLayout, std::string difficulty);
 
     bool loadChart(std::string chartPath, SongPosition & songpos);
     void saveChart(std::string chartPath, SongPosition & songpos);
@@ -21,6 +21,8 @@ struct ChartInfo {
 
     std::string typist;
     std::string keyboardLayout;
+
+    std::string difficulty;
 
     std::string savePath = "";
 
