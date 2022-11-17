@@ -1409,7 +1409,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         unsaved = true;
 
                         leftClickReleased = false;
-                    }                    
+                    }
                 }
                 break;
             case SequencerItemType::STOP:
