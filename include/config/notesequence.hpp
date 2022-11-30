@@ -196,13 +196,18 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                     case SequencerItemType::MID_NOTE:
                     case SequencerItemType::BOT_NOTE:
                         if(flipMap.find(item->displayText) != flipMap.end()) {
+                            keyFrequencies[item->displayText] -= 1;
                             item->displayText = flipMap.at(item->displayText);
+                            keyFrequencies[item->displayText] += 1;
                         }
                         break;
                     default:
                         break;
                 }
             }
+
+            keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
+            std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
         }
     }
 
