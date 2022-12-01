@@ -9,7 +9,7 @@ void SongPosition::start() {
     prevSectionBeats = 0;
     prevSectionTime = 0;
 
-    currSpb = 60.f / timeinfo.at(currentSection).bpm;
+    currSpb = 60.0 / timeinfo.at(currentSection).bpm;
 
     started = true;
     paused = false;
@@ -35,15 +35,17 @@ void SongPosition::stop() {
 
 void SongPosition::update() {
     if(!paused && started) {
-        auto now = SDL_GetPerformanceCounter();
-        absTime = (((double)(now - songStart)) / SDL_GetPerformanceFrequency()) - (offsetMS / 1000.f);
+        now = SDL_GetPerformanceCounter();
+        absTime = (((double)(now - songStart)) / SDL_GetPerformanceFrequency()) - (offsetMS / 1000.0);
 
-        updateBeatPos(now);
+        updateBeatPos();
 
         // updateBPM(); disable for now until figuring out a solution
         
         updateSection();
         updateSkips();
+
+        //printf("Songpos: %.4f, %.4f\n", absTime, absBeat);
     }
 }
 
@@ -57,13 +59,13 @@ void SongPosition::updateBPM() {
         bpmInterplationProgress = std::max(0.f, bpmInterplationProgress);
 
         float currBpm = bpmInterpolateStart + bpmInterplationProgress * (bpmInterpolateEnd - bpmInterpolateStart);
-        currSpb = 60.f / currBpm;
+        currSpb = 60.0 / currBpm;
         prevSectionTime = absTime;
         prevSectionBeats = absBeat;
     }
 }
 
-void SongPosition::updateBeatPos(uint64_t now) {
+void SongPosition::updateBeatPos() {
     if(beatSkipped) {
         auto timeSinceSkip = (now - currSkipBegin) / (double)SDL_GetPerformanceFrequency();
 
@@ -103,7 +105,7 @@ void SongPosition::updateSection() {
             prevSectionBeats = timeinfo.at(currentSection).absBeatStart;
             prevSectionTime = absTime;
 
-            currSpb = 60.f / timeinfo.at(currentSection).bpm;
+            currSpb = 60.0 / timeinfo.at(currentSection).bpm;
 
             bpmInterpolating = false;
         }
@@ -119,7 +121,7 @@ void SongPosition::updateSkips() {
 
             currSkipDuration = skips.at(currentSkip)->beatDuration * currSpb;
             currSkipBegin = SDL_GetPerformanceCounter();
-            currSkipStartTimePosition = ((currSkipBegin - songStart) / (double)SDL_GetPerformanceFrequency()) - (offsetMS / 1000.f);
+            currSkipStartTimePosition = ((currSkipBegin - songStart) / (double)SDL_GetPerformanceFrequency()) - (offsetMS / 1000.0);
 
             currSkipTime = skips.at(currentSkip)->skipTime;
             currSkipSpb = currSpb * (currSkipTime / currSkipDuration);
@@ -161,15 +163,18 @@ void SongPosition::resetCurrskip() {
     }
 }
 
-void SongPosition::setSongTimePosition(float absTime) {
-    float timeDiff = absTime - this->absTime;
-    // absTime - thisabstime = ((now - songStart_target) / sdlgpf) - ((now - songstart) / sdlgpf)
-    // timeDiff = (now - songstart_t - (now - songstart)) / sdlgpf
-    // timeDiff = (songstart - songstart_t) / sdlgpf
-    // timeDiff * sdlgpf = songstart - songstart_t
+void SongPosition::setSongTimePosition(double absTime) {
+    // absTime - thisabstime = [((now - songstart_t) / sdlgpf)] - [((now - songstart) / sdlgpf)]
+    // timeDiff = [(now - songstart_t - (now - songstart)) / sdlgpf]
+    // timeDiff = [(-songstart_t + songstart) / sdlgpf]
+    // timeDiff * sdlgpf = -songstart_t + songstart
     // songstart_t = songstart - (timeDiff * sdlgpf)
-    float counterDiff = (timeDiff * SDL_GetPerformanceFrequency());
+    double timeDiff = absTime - this->absTime;
+    double counterDiff = (timeDiff * SDL_GetPerformanceFrequency());
     songStart -= counterDiff;
+
+    printf("absTime: %.8f, absTime_t: %.8f\n", this->absTime, absTime);
+    printf("timeDiff: %.8f, Counter diff: %.4f\n", timeDiff, counterDiff);
 
     this->absTime = absTime;
 
@@ -186,30 +191,36 @@ void SongPosition::setSongTimePosition(float absTime) {
     prevSectionBeats = timeinfo.at(currentSection).absBeatStart;
     prevSectionTime = timeinfo.at(currentSection).absTimeStart;
 
-    currSpb = 60.f / timeinfo.at(currentSection).bpm;
+    currSpb = 60.0 / timeinfo.at(currentSection).bpm;
 
     resetCurrskip();
 }
 
-void SongPosition::setSongBeatPosition(float absBeat) {
-    // calculate absTime from absBeat
-    float absBeatTime = 0.f;
-    float prevAbsBeatStart = 0.f;
-    float prevSpb = 60.f / timeinfo.front().bpm;
-    for(auto const & tInfo : timeinfo) {
-        if(absBeat >= tInfo.absBeatStart) {
-            absBeatTime += prevSpb * (tInfo.absBeatStart - prevAbsBeatStart);
+void SongPosition::setSongBeatPosition(double absBeat) {
+    if(!timeinfo.empty()) {
+        // calculate absTime from absBeat
+        double absBeatTime = -(offsetMS / 1000.0);
+        double prevAbsBeatStart = 0.0;
+        double prevSpb = 60.0 / timeinfo.front().bpm;
 
-            prevAbsBeatStart = tInfo.absBeatStart;
-            prevSpb = (60.f / tInfo.bpm);
+        for(auto const & tInfo : timeinfo) {
+            if(absBeat >= tInfo.absBeatStart) {
+                absBeatTime += prevSpb * (tInfo.absBeatStart - prevAbsBeatStart);
+
+                prevAbsBeatStart = tInfo.absBeatStart;
+                prevSpb = (60.0 / tInfo.bpm);
+            } else {
+                break;
+            }
         }
+
+        // add the remainder
+        absBeatTime += prevSpb * (absBeat - prevAbsBeatStart);
+        this->absBeat = absBeat;
+        setSongTimePosition(absBeatTime);
+
+        //printf("Setting song beat pos to %.8f, %.4f\n", absBeat, absBeatTime);
     }
-
-    // add the remainder
-    absBeatTime += prevSpb * (absBeat - prevAbsBeatStart);
-
-    this->absBeat = absBeat;
-    setSongTimePosition(absBeatTime);
 }
 
 void SongPosition::pause() {
@@ -218,7 +229,7 @@ void SongPosition::pause() {
 }
 
 void SongPosition::unpause() {
-    auto now = SDL_GetPerformanceCounter();
+    now = SDL_GetPerformanceCounter();
     songStart += (now - pauseCounter);
 
     paused = false;

@@ -15,7 +15,7 @@ struct SongPosition {
 
     void update();
     void updateBPM();
-    void updateBeatPos(uint64_t now);
+    void updateBeatPos();
     void updateSection();
 
     void updateSkips();
@@ -27,8 +27,8 @@ struct SongPosition {
     void pause();
     void unpause();
 
-    void setSongTimePosition(float absTime);
-    void setSongBeatPosition(float absBeat);
+    void setSongTimePosition(double absTime);
+    void setSongBeatPosition(double absBeat);
 
     bool started = false;
     bool paused = false;
@@ -57,6 +57,7 @@ struct SongPosition {
 
     Uint64 currSkipBegin = 0;
 
+    Uint64 now = 0;
     Uint64 songStart = 0;
     Uint64 pauseCounter = 0;
 
