@@ -297,7 +297,7 @@ void startNewEditWindow() {
     if(!newEditStarted) {
         newEditStarted = true;
 
-        // reset config;    
+        // reset config;
         UIlevel = 1;
         UImusicFilename[0] = '\0';
         UIcoverArtFilename[0] = '\0';
@@ -309,7 +309,7 @@ void startNewEditWindow() {
         UIcoverArtFilepath = "";
 
         UImusicPreviewStart = 0;
-        UImusicPreviewStop = 15;    
+        UImusicPreviewStop = 15;
     }
 }
 
