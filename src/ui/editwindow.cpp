@@ -1074,8 +1074,6 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             songpos.pauseCounter += (songpos.offsetMS / 1000.f) * SDL_GetPerformanceFrequency();
         }
 
-        songpos.setSongBeatPosition(songpos.absBeat);
-
         // snap to the nearest beat split
         if(songpos.absBeat > nextTargetBeat) {
             songpos.setSongBeatPosition(nextTargetBeat);
