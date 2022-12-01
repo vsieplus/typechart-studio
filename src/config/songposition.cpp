@@ -173,8 +173,8 @@ void SongPosition::setSongTimePosition(double absTime) {
     double counterDiff = (timeDiff * SDL_GetPerformanceFrequency());
     songStart -= counterDiff;
 
-    printf("absTime: %.8f, absTime_t: %.8f\n", this->absTime, absTime);
-    printf("timeDiff: %.8f, Counter diff: %.4f\n", timeDiff, counterDiff);
+    //printf("absTime: %.8f, absTime_t: %.8f\n", this->absTime, absTime);
+    //printf("timeDiff: %.8f, Counter diff: %.4f\n", timeDiff, counterDiff);
 
     this->absTime = absTime;
 
