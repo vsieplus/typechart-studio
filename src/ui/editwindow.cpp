@@ -929,7 +929,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     }
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
         ImGui::SetTooltip("Music preview stop");
-    
+
     // clamp to min prevStart, max song length
     if(*previewStop < *previewStart) {
         *previewStop = *previewStart;
@@ -945,7 +945,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         audioSystem->setMusicStop(currWindow.musicSourceIdx, *previewStop);
 
         audioSystem->setStopMusicEarly(currWindow.musicSourceIdx, true);
-        
+
         if(!songpos.started)
             songpos.start();
 
@@ -1038,8 +1038,9 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
 }
 
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, std::vector<bool> & keysPressed,
-                            std::stack<std::shared_ptr<EditAction>> & editActionsUndo, std::stack<std::shared_ptr<EditAction>> & editActionsRedo,
-                            int musicSourceIdx, bool windowFocused) {
+    std::stack<std::shared_ptr<EditAction>> & editActionsUndo, std::stack<std::shared_ptr<EditAction>> & editActionsRedo,
+    int musicSourceIdx, bool windowFocused)
+{
     // let's create the sequencer
     static int currentBeatsplit = 4;
     static int clickedItemType = 0;
@@ -1470,13 +1471,13 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
         bool decrease = io.MouseWheel > 0;
         io.MouseWheel *= (2.f / timelineZoom);
-        int beatsplitChange = std::floor(io.MouseWheel);
+        int beatsplitChange = std::lround(io.MouseWheel);
         if(beatsplitChange == 0)
-            beatsplitChange = 1;
+            beatsplitChange = decrease ? 1 : -1;
 
         int fullBeats = std::floor(songpos.absBeat);
         int fullBeatSplits = (int)((songpos.absBeat - fullBeats) / currentBeatsplitValue + 0.5);
-        float origNearBeat = fullBeats + (fullBeatSplits * (1.f / currentBeatsplit));
+        float origNearBeat = fullBeats + (fullBeatSplits * currentBeatsplitValue);
 
         float targetBeat;
         if(decrease && songpos.absBeat > origNearBeat) {
@@ -1487,12 +1488,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
         if(decrease || (!decrease && songpos.absTime < audioSystem->getMusicLength(musicSourceIdx))) {
             // scroll up, decrease beat, scroll down increase beat
-            songpos.setSongBeatPosition(songpos.absBeat - (beatsplitChange * currentBeatsplitValue));
 
+            //songpos.setSongBeatPosition(songpos.absBeat - (beatsplitChange * currentBeatsplitValue));
             // clamp to nearest split
-            if((decrease && songpos.absBeat < targetBeat) || (!decrease && songpos.absBeat > targetBeat)) {
-                songpos.setSongBeatPosition(targetBeat);
-            }
+            songpos.setSongBeatPosition(targetBeat);
         }
 
         if(songpos.absTime >= 0) {
