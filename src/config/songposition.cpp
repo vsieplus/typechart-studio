@@ -13,11 +13,22 @@ void SongPosition::start() {
 
     started = true;
     paused = false;
+
+    bpmInterpolating = false;
+    beatSkipped = false;
+    beatSkiptimePassed = false;
+
+    currentSkip = 0;
+    currSkipDuration = 0.f;
+    currSkipStartTimePosition = 0.f;
+    currSkipTime = 0.f;
+    currSkipSpb = 0.f;
 }
 
 void SongPosition::stop() {
     absTime = 0.f;
     absBeat = 0.f;
+
     started = false;
     paused = false;
 }
