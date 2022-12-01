@@ -1075,9 +1075,9 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
 
         // snap to the nearest beat split
-        if(songpos.absBeat > nextTargetBeat) {
+        if(songpos.absBeat >= nextTargetBeat) {
             songpos.setSongBeatPosition(nextTargetBeat);
-        } else if(songpos.absBeat < prevTargetBeat) {
+        } else if(songpos.absBeat <= prevTargetBeat) {
             songpos.setSongBeatPosition(prevTargetBeat);
         }
 
