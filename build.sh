@@ -88,6 +88,7 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
     # copy game resources and notices
     cp -r license "${OUT_DIR}"
     cp -r fonts "${OUT_DIR}"
+    cp -r images "${OUT_DIR}"
     cp -r sounds "${OUT_DIR}"
 
     echo "-- Copying libraries"
