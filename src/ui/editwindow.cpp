@@ -591,6 +591,7 @@ void showEditWindowMetadata(EditWindowData & currWindow) {
         ImGui::Text("Typist: %s", currWindow.chartinfo.typist.c_str());
         ImGui::Text("Keyboard: %s", currWindow.chartinfo.keyboardLayout.c_str());
         ImGui::Text("Level: %s", std::to_string(currWindow.chartinfo.level).c_str());
+        ImGui::Text("Difficulty: %s", currWindow.chartinfo.difficulty.c_str());
     }
 
     ImGui::EndChild();
