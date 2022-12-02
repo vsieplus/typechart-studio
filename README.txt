@@ -1,5 +1,5 @@
 This is Typechart Studio, a tool that can create charts for the game Typing Tempo.
-Current Release: v0.2.3
+Current Release: v0.2.4
 
 This program is available for free at -----------.
 
