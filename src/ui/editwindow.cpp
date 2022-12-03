@@ -966,19 +966,19 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
 }
 
 const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
-    {0, "L" ICON_FA_ARROW_UP },
-    {1, "R" ICON_FA_ARROW_UP },
-    {2, ICON_FA_ARROW_UP },
-    {3, ICON_FA_ARROW_LEFT_LONG },
-    {4, "_" },
+    //{0, "L" ICON_FA_ARROW_UP },
+    //{1, "R" ICON_FA_ARROW_UP },
+    //{2, ICON_FA_ARROW_UP },
+    //{3, ICON_FA_ARROW_LEFT_LONG },
+    { 0, "_" },
 };
 
 const std::unordered_map<int, SDL_Scancode> FUNCTION_KEY_COMBO_SCANCODES = {
-    {0, SDL_SCANCODE_LSHIFT },
-    {1, SDL_SCANCODE_RSHIFT },
-    {2, SDL_SCANCODE_CAPSLOCK },
-    {3, SDL_SCANCODE_RETURN },
-    {4, SDL_SCANCODE_SPACE },
+    //{0, SDL_SCANCODE_LSHIFT },
+    //{1, SDL_SCANCODE_RSHIFT },
+    //{2, SDL_SCANCODE_CAPSLOCK },
+    //{3, SDL_SCANCODE_RETURN },
+    { 0, SDL_SCANCODE_SPACE },
 };
 
 int filterInputMiddleKey(ImGuiInputTextCallbackData * data) {
@@ -1342,7 +1342,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                 }
 
                 for(auto & [keyIdx, keyText] : FUNCTION_KEY_COMBO_ITEMS) {
-                    if(keysPressed[FUNCTION_KEY_COMBO_SCANCODES.at(keyIdx)]) {                        
+                    if(keysPressed[FUNCTION_KEY_COMBO_SCANCODES.at(keyIdx)]) {
                         selectedFuncKey = keyIdx;
                         insertKey = true;
                         break;
@@ -1408,7 +1408,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         } else {
                             auto newSkip = chartinfo.notes.addSkip(insertBeat, songpos.absBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
                             currAction = std::make_shared<PlaceSkipAction>(unsaved, insertBeat, skipBeats, endBeat - insertBeat, insertBeatpos, endBeatpos);
-                        
+
                             songpos.addSkip(newSkip);
                         }
 
