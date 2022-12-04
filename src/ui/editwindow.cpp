@@ -995,6 +995,8 @@ int filterInputMiddleKey(ImGuiInputTextCallbackData * data) {
 }
 
 BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<Timeinfo> & timeinfo) {
+    float absMeasure = 0.f;
+
     int measure = 0;
     int measureSplit = 0;
     int split = 0;
@@ -1007,27 +1009,24 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
         // track current measure
         if(absBeat >= time.absBeatStart && i > 0) {
             float prevSectionMeasures = (time.absBeatStart - prevSectionAbsBeat) / prevBeatsPerMeasure;
-            int prevSectionMeasuresFull = std::floor(prevSectionMeasures);
-
-            measure += prevSectionMeasuresFull;
+            absMeasure += prevSectionMeasures;
         }
 
-        // calculate the leftover beats
+        // calculate the leftover beats from the section the note falls within
         bool isLastSection = i == timeinfo.size() - 1;
         bool beatInPrevSection = absBeat < time.absBeatStart; 
         if (beatInPrevSection || isLastSection) {
             int currBeatsPerMeasure = beatInPrevSection ? prevBeatsPerMeasure : time.beatsPerMeasure;
             float currAbsBeat = beatInPrevSection ? prevSectionAbsBeat : time.absBeatStart;
 
-            float leftoverMeasures = (absBeat - currAbsBeat) / currBeatsPerMeasure;
-            int leftoverMeasuresFull = std::floor(leftoverMeasures);
-            float leftoverBeats = (leftoverMeasures - leftoverMeasuresFull) * currBeatsPerMeasure;
-            int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit + 0.5);
-
-            measure += leftoverMeasuresFull;
+            absMeasure += (absBeat - currAbsBeat) / currBeatsPerMeasure;
+            measure = std::floor(absMeasure);
             measureSplit = currentBeatsplit * currBeatsPerMeasure;
+
+            float leftoverBeats = (absMeasure - measure) * currBeatsPerMeasure;
+            int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit + 0.5);
             split = leftoverBeatsplits;
-            break;            
+            break;
         }
 
         prevSectionAbsBeat = time.absBeatStart;
