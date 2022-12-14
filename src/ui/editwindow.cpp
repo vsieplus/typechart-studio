@@ -66,6 +66,7 @@ static char UIcoverArtFilename[128] = "";
 
 static char UItitle[64] = "";
 static char UIartist[64] = "";
+static char UIgenre[64] = "";
 static char UIbpmtext[16] = "";
 
 const char * saveFileFilter = "(*.type){.type}";
@@ -156,6 +157,12 @@ bool loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
         numFound++;
     }
 
+    if(songinfoJSON.contains("genre")) {
+        std::string genre = songinfoJSON["genre"];
+        strcpy(UIgenre, genre.c_str());
+        numFound++;
+    }
+
     if(songinfoJSON.contains("music")) {
         std::string music = songinfoJSON["music"];
         strcpy(UImusicFilename, music.c_str());
@@ -188,7 +195,7 @@ bool loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
         numFound++;
     }
 
-    if(numFound < 5) {
+    if(numFound < 6) {
         ImGui::OpenPopup("incompleteSonginfo");
         popupIncomplete = true;
         return false;
@@ -262,6 +269,7 @@ void showSongConfig() {
 
     ImGui::InputText(ICON_FA_HEADING " Title", UItitle, 64);
     ImGui::InputText(ICON_FA_MICROPHONE " Artist", UIartist, 64);
+    ImGui::InputText(ICON_FA_COMPACT_DISC " Genre", UIgenre, 64);
     ImGui::InputText(ICON_FA_HEART_PULSE " BPM", UIbpmtext, 64);
     ImGui::SameLine();
     HelpMarker("If the song has BPM changes, enter the initial BPM");
@@ -303,6 +311,7 @@ void startNewEditWindow() {
         UIcoverArtFilename[0] = '\0';
         UItitle[0] = '\0';
         UIartist[0] = '\0';
+        UIgenre[0] = '\0';
         UIbpmtext[0] = '\0';
         
         UImusicFilepath = "";
@@ -333,8 +342,8 @@ std::pair<std::string, int> getNextWindowNameAndID() {
 
 void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     // populate with current song, chart info
-    SongInfo songinfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
-                                 UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
+    SongInfo songinfo = SongInfo(UItitle, UIartist, UIgenre, UIbpmtext, UImusicFilename, UIcoverArtFilename,
+        UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
     ChartInfo chartinfo = ChartInfo(UIlevel, UItypist, ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout), ID_TO_DIFFICULTY.at(UIdifficulty));
 
     // attempt to load music
@@ -382,8 +391,8 @@ void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::str
         return;
     }
 
-    SongInfo songinfo = SongInfo(UItitle, UIartist, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
-                                 UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
+    SongInfo songinfo = SongInfo(UItitle, UIartist, UIgenre, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
+        UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
     songinfo.saveDir = chartDir.string();
 
     int musicSourceIdx = audioSystem->loadMusic(UImusicFilepath);
@@ -584,6 +593,7 @@ void showEditWindowMetadata(EditWindowData & currWindow) {
     if(ImGui::CollapsingHeader("Song config", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Title: %s", currWindow.songinfo.title.c_str());
         ImGui::Text("Artist: %s", currWindow.songinfo.artist.c_str());
+        ImGui::Text("Genre: %s", currWindow.songinfo.genre.c_str());
         ImGui::Text("BPM: %s", currWindow.songinfo.bpmtext.c_str());
     }
 

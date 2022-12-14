@@ -4,16 +4,25 @@
 #include <string>
 
 struct SongInfo {
-    SongInfo(std::string title, std::string artist, std::string bpmtext, std::string musicFilename, 
-        std::string coverartFilename, std::string musicFilepath, std::string coverartFilepath, float musicPreviewStart, float musicPreviewStop) : 
-        title(title), artist(artist), bpmtext(bpmtext), musicFilename(musicFilename), coverartFilename(coverartFilename),
-        musicFilepath(musicFilepath), coverartFilepath(coverartFilepath),
-        musicPreviewStart(musicPreviewStart), musicPreviewStop(musicPreviewStop) {}
+    SongInfo(std::string title, std::string artist, std::string genre, std::string bpmtext, std::string musicFilename, 
+        std::string coverartFilename, std::string musicFilepath, std::string coverartFilepath, float musicPreviewStart, float musicPreviewStop)
+        : title(title),
+          artist(artist),
+          genre(genre),
+          bpmtext(bpmtext),
+          musicFilename(musicFilename),
+          coverartFilename(coverartFilename),
+          musicFilepath(musicFilepath),
+          coverartFilepath(coverartFilepath),
+          musicPreviewStart(musicPreviewStart),
+          musicPreviewStop(musicPreviewStop) {}
 
     void saveSonginfo(std::string saveDir, bool initialSaved);
 
     std::string title;
     std::string artist;
+    std::string genre;
+
     std::string bpmtext;
 
     std::string musicFilename;

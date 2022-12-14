@@ -6,6 +6,7 @@
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
+using ordered_json = nlohmann::ordered_json;
 
 namespace fs = std::filesystem;
 
@@ -14,10 +15,11 @@ void SongInfo::saveSonginfo(std::string saveDir, bool initialSaved) {
     fs::path songinfoSavePath = fs::path(saveDir) / fs::path("songinfo.json");
 
     // save simple json file with songinfo metadata
-    json songinfo;
+    ordered_json songinfo;
 
     songinfo["title"] = title;
     songinfo["artist"] = artist;
+    songinfo["genre"] = genre;
     songinfo["music"] = musicFilename;
     songinfo["coverart"] = coverartFilename;
     songinfo["bpmtext"] = bpmtext;
