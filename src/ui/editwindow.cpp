@@ -1255,9 +1255,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         timelineZoom += zoomStep * multiplier;
     }
 
-    if(windowFocused && timelineZoom < zoomStep * 2) {
-        timelineZoom = zoomStep * 2;
-    }
+    timelineZoom = ImMax(timelineZoom, zoomStep);
 
     static bool leftClickedEntity = false;
     static bool leftClickReleased = false;
