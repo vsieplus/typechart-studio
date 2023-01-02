@@ -38,12 +38,27 @@ const std::map<int, std::string> ID_TO_KEYBOARDLAYOUT = {
     { 3, "COLEMAK" }
 };
 
+const std::map<std::string, int> KEYBOARDLAYOUT_TO_ID = {
+    { "QWERTY", 0 },
+    { "DVORAK", 1 },
+    { "AZERTY", 2 },
+    { "COLEMAK", 3 }
+};
+
 const std::map<int, std::string> ID_TO_DIFFICULTY = {
     { 0, "easy" },
     { 1, "normal" },
     { 2, "hard" },
-    { 3, "extreme" },
+    { 3, "expert" },
     { 4, "unknown" }
+};
+
+const std::map<std::string, int> DIFFICULTY_TO_ID = {
+    { "easy", 0 },
+    { "normal", 1 },
+    { "hard", 2 },
+    { "expert", 3 },
+    { "unknown", 4 }
 };
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -273,7 +288,6 @@ void showSongConfig() {
     ImGui::InputText(ICON_FA_HEART_PULSE " BPM", UIbpmtext, 64);
     ImGui::SameLine();
     HelpMarker("If the song has BPM changes, enter the initial BPM");
-    
 }
 
 static char UItypist[64] = "";
@@ -362,6 +376,15 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
         auto artTexture = Texture::loadTexture(UIcoverArtFilepath, renderer);
 
         EditWindowData newWindow = EditWindowData(true, windowID, musicSourceIdx, windowName, artTexture, chartinfo, songinfo);
+        strcpy(newWindow.UItitle, UItitle);
+        strcpy(newWindow.UIartist, UIartist);
+        strcpy(newWindow.UIgenre, UIgenre);
+        strcpy(newWindow.UIbpmtext, UIbpmtext);
+
+        strcpy(newWindow.UItypist, UItypist);
+        newWindow.UIlevel = UIlevel;
+        newWindow.UIkeyboardLayout = UIkeyboardLayout;
+        newWindow.UIdifficulty = UIdifficulty;
 
         // initial section from BPM
         float initialBpm = ::atof(UIbpmtext);
@@ -418,6 +441,17 @@ void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::str
     newWindow.unsaved = false;
     newWindow.songpos = songpos;
     newWindow.initialSaved = true;
+
+    strcpy(newWindow.UItitle, UItitle);
+    strcpy(newWindow.UIartist, UIartist);
+    strcpy(newWindow.UIgenre, UIgenre);
+    strcpy(newWindow.UIbpmtext, UIbpmtext);
+
+    strcpy(newWindow.UItypist, chartinfo.typist.c_str());
+    newWindow.UIlevel = chartinfo.level;
+    newWindow.UIkeyboardLayout = KEYBOARDLAYOUT_TO_ID.at(chartinfo.keyboardLayout);
+    newWindow.UIdifficulty = DIFFICULTY_TO_ID.at(chartinfo.difficulty);
+
     editWindows.push_back(newWindow);
 }
 
@@ -586,25 +620,123 @@ void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos, int 
     }
 }
 
-void showEditWindowMetadata(EditWindowData & currWindow) {
+void EditWindowData::showEditWindowMetadata() {
     // left side bar (child window) to show config info + selected entity info
     ImGui::BeginChild("configInfo", ImVec2(ImGui::GetContentRegionAvail().x * .3f, ImGui::GetContentRegionAvail().y * .35f), true);
 
     if(ImGui::CollapsingHeader("Song config", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Text("Title: %s", currWindow.songinfo.title.c_str());
-        ImGui::Text("Artist: %s", currWindow.songinfo.artist.c_str());
-        ImGui::Text("Genre: %s", currWindow.songinfo.genre.c_str());
-        ImGui::Text("BPM: %s", currWindow.songinfo.bpmtext.c_str());
+        if(editingUItitle) {
+            if(ImGui::InputText(ICON_FA_MUSIC " Title", UItitle, 64, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+                songinfo.title = UItitle;
+                unsaved = true;
+                editingUItitle = false;
+            }
+            if(!ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
+                editingUItitle = false;
+                strcpy(UItitle, songinfo.title.c_str());
+            }
+        } else {
+            ImGui::Text("Title : %s", songinfo.title.c_str());
+            if(ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                editingUItitle = true;
+            }
+        }
+
+        if(editingUIartist) {
+            if(ImGui::InputText(ICON_FA_MICROPHONE " Artist", UIartist, 64, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+                songinfo.artist = UIartist;
+                unsaved = true;
+                editingUIartist = false;
+            }
+            if(!ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
+                editingUIartist = false;
+                strcpy(UIartist, songinfo.artist.c_str());
+            }
+        } else {
+            ImGui::Text("Artist : %s", songinfo.artist.c_str());
+            if(ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                editingUIartist = true;
+            }
+        }
+
+        if(editingUIgenre) {
+            if(ImGui::InputText(ICON_FA_COMPACT_DISC " Genre", UIgenre, 64, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+                songinfo.genre = UIgenre;
+                unsaved = true;
+                editingUIgenre = false;
+            }
+            if(!ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
+                editingUIgenre = false;
+                strcpy(UIgenre, songinfo.genre.c_str());
+            }
+        } else {
+            ImGui::Text("Genre : %s", songinfo.genre.c_str());
+            if(ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                editingUIgenre = true;
+            }
+        }
+
+        if(editingUIbpmtext) {
+            if(ImGui::InputText(ICON_FA_HEART_PULSE " BPM", UIbpmtext, 64, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+                songinfo.bpmtext = UIbpmtext;
+                unsaved = true;
+                editingUIbpmtext = false;
+            }
+            if(!ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
+                editingUIbpmtext = false;
+                strcpy(UIbpmtext, songinfo.bpmtext.c_str());
+            }
+        } else {
+            ImGui::Text("BPM : %s", songinfo.bpmtext.c_str());
+            if(ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                editingUIbpmtext = true;
+            }
+        }
     }
 
     if(ImGui::CollapsingHeader("Chart config", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Text("Typist: %s", currWindow.chartinfo.typist.c_str());
-        ImGui::Text("Keyboard: %s", currWindow.chartinfo.keyboardLayout.c_str());
-        ImGui::Text("Level: %s", std::to_string(currWindow.chartinfo.level).c_str());
-        ImGui::Text("Difficulty: %s", currWindow.chartinfo.difficulty.c_str());
+        if(editingUItypist) {
+            if(ImGui::InputText(ICON_FA_PENCIL " Typist", UItypist, 64, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+                chartinfo.typist = UItypist;
+                unsaved = true;
+                editingUItypist = false;
+            }
+            if(!ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) {
+                editingUItypist = false;
+                strcpy(UItypist, chartinfo.typist.c_str());
+            }
+        } else {
+            ImGui::Text("Typist : %s", chartinfo.typist.c_str());
+            if(ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+                editingUItypist = true;
+            }
+        }
+
+        if(ImGui::Combo(ICON_FA_KEYBOARD " Keyboard", &UIkeyboardLayout, "QWERTY\0DVORAK\0AZERTY\0COLEMAK\0")) {
+            chartinfo.keyboardLayout = ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout);
+            unsaved = true;
+        }
+
+        ImGui::SameLine();
+        HelpMarker("Choose the keyboard layout that this chart is\n"
+                    "intended to be played with. Charts will then be\n"
+                    "accordingly 'translated' to other keyboard layouts\n"
+                    "when loaded into Typing Tempo.");
+
+        if(ImGui::Combo(ICON_FA_CHESS_PAWN " Difficulty", &UIdifficulty, "easy\0normal\0hard\0expert\0unknown\0")) {
+            chartinfo.difficulty = ID_TO_DIFFICULTY.at(UIdifficulty);
+            unsaved = true;
+        }
+
+        if(ImGui::InputInt(ICON_FA_CHESS_ROOK " Level", &UIlevel)) {
+            chartinfo.level = UIlevel;
+            unsaved = true;
+        }
     }
 
     ImGui::EndChild();
+
+    editingSomething = editingUItitle | editingUIartist | editingUIgenre | editingUIbpmtext | editingUItypist;
 }
 
 void removeSection(SongPosition & songpos) {
@@ -879,7 +1011,7 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPosMin, songAudioPosSecs, songLength.first, songLength.second);
 
     ImGui::SameLine();
-    if((currWindow.focused && (ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || keysPressed[SDL_SCANCODE_SPACE])) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) {
+    if((currWindow.focused && !currWindow.editingSomething && (ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || keysPressed[SDL_SCANCODE_SPACE])) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) {
         if(songpos.paused) {
             audioSystem->resumeMusic(currWindow.musicSourceIdx);
             songpos.unpause();
@@ -1541,7 +1673,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
             currWindow.focused = false;
         }
 
-        showEditWindowMetadata(currWindow);
+        currWindow.showEditWindowMetadata();
         ImGui::SameLine();
         showEditWindowChartData(currWindow.artTexture.get(), audioSystem, &currWindow.currTopNotes, currWindow.chartinfo, currWindow.songpos,
             currWindow.unsaved, currWindow.musicSourceIdx);
