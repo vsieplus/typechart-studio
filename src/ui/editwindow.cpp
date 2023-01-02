@@ -1011,7 +1011,9 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     ImGui::Text("%02d:%05.2f/%02d:%05.2f", songAudioPosMin, songAudioPosSecs, songLength.first, songLength.second);
 
     ImGui::SameLine();
-    if((currWindow.focused && !currWindow.editingSomething && (ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || keysPressed[SDL_SCANCODE_SPACE])) && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId)) {
+    if((currWindow.focused && (ImGui::Button(ICON_FA_PLAY "/" ICON_FA_PAUSE) || (!currWindow.editingSomething && keysPressed[SDL_SCANCODE_SPACE]))) 
+        && !ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId))
+    {
         if(songpos.paused) {
             audioSystem->resumeMusic(currWindow.musicSourceIdx);
             songpos.unpause();
