@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.type": "json",
         "*.in": "cpp",
         "any": "cpp",
         "array": "cpp",
@@ -64,6 +65,11 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp"
     }
 }
