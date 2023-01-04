@@ -199,7 +199,7 @@ void SongPosition::setSongTimePosition(double absTime) {
 void SongPosition::setSongBeatPosition(double absBeat) {
     if(!timeinfo.empty()) {
         // calculate absTime from absBeat
-        double absBeatTime = -(offsetMS / 1000.0);
+        double absBeatTime = 0;
         double prevAbsBeatStart = 0.0;
         double prevSpb = 60.0 / timeinfo.front().bpm;
 

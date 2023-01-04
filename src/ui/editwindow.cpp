@@ -1609,11 +1609,12 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             songpos.pauseCounter += (songpos.offsetMS / 1000.f) * SDL_GetPerformanceFrequency();
         }
 
-        bool decrease = io.MouseWheel > 0;
-        io.MouseWheel *= (2.f / timelineZoom);
-        int beatsplitChange = std::lround(io.MouseWheel);
+        float scrollAmt = io.MouseWheel;
+        bool decrease = io.MouseWheel < 0;
+        scrollAmt *= (2.f / timelineZoom);
+        int beatsplitChange = std::lround(scrollAmt);
         if(beatsplitChange == 0)
-            beatsplitChange = decrease ? 1 : -1;
+            beatsplitChange = decrease ? -1 : 1;
 
         int fullBeats = std::floor(songpos.absBeat);
         int fullBeatSplits = (int)((songpos.absBeat - fullBeats) / currentBeatsplitValue + 0.5);
@@ -1624,7 +1625,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             targetBeat = origNearBeat - (beatsplitChange - 1) * currentBeatsplitValue;
         } else {
             targetBeat = origNearBeat - beatsplitChange * currentBeatsplitValue;
+            printf("beatsplit change: %d\n", beatsplitChange);
         }
+
+        printf("origNearBeat: %f, targetBeat: %f\n", origNearBeat, targetBeat);
 
         if(decrease || (!decrease && songpos.absTime < audioSystem->getMusicLength(musicSourceIdx))) {
             // scroll up, decrease beat, scroll down increase beat
