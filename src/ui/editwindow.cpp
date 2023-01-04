@@ -1625,10 +1625,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             targetBeat = origNearBeat - (beatsplitChange - 1) * currentBeatsplitValue;
         } else {
             targetBeat = origNearBeat - beatsplitChange * currentBeatsplitValue;
-            printf("beatsplit change: %d\n", beatsplitChange);
         }
-
-        printf("origNearBeat: %f, targetBeat: %f\n", origNearBeat, targetBeat);
 
         if(decrease || (!decrease && songpos.absTime < audioSystem->getMusicLength(musicSourceIdx))) {
             // scroll up, decrease beat, scroll down increase beat
