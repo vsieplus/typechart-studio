@@ -555,7 +555,7 @@ void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePat
 void startSaveCurrentChart(bool saveAs) {
     if(currentWindow >= 0 && currentWindow < editWindows.size()) {
         auto & editWindow = editWindows.at(currentWindow);
-        if(editWindow.unsaved) {
+        if(saveAs || editWindow.unsaved) {
             // save vs save as
             if(saveAs || !editWindow.initialSaved) {
                 editWindow.initialSaved = false;
