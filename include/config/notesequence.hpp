@@ -19,6 +19,8 @@
 #include "config/stop.hpp"
 #include "config/timeinfo.hpp"
 
+#include "actions/shiftnote.hpp"
+
 #include "systems/audiosystem.hpp"
 
 static const char* SequencerItemTypeNames[] = { "Lane 1 [Top]", "Lane 2 [Middle]", "Lane 3 [Bottom]", "Stops", "Skips" };
@@ -109,7 +111,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }    
     }
 
-    void resetPassed(float songBeat) {        
+    void resetPassed(float songBeat) {
         for(auto & item : myItems) {
             switch(item->getItemType()) {
                 case SequencerItemType::TOP_NOTE:
@@ -125,7 +127,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void update(float songBeat, AudioSystem * audioSystem, bool notesoundEnabled) {        
+    void update(float songBeat, AudioSystem * audioSystem, bool notesoundEnabled) {
         for(auto & item : myItems) {
             switch(item->getItemType()) {
                 case SequencerItemType::TOP_NOTE:
@@ -181,8 +183,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
         keyFrequencies[displayText] += 1;
 
-        keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
-        std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
+        updateKeyFrequencies();
     }
 
     void flipNotes(std::string keyboardLayout, float startBeat, float endBeat, int minItemType, int maxItemType) {
@@ -190,7 +191,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             auto & flipMap = KEYBOARD_FLIP_MAPS.at(keyboardLayout);
 
             auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
-            for(auto & item: items) {
+            for(auto item: items) {
                 switch(item->getItemType()) {
                     case SequencerItemType::TOP_NOTE:
                     case SequencerItemType::MID_NOTE:
@@ -206,11 +207,63 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                 }
             }
 
-            keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
-            std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
+            updateKeyFrequencies();
         }
     }
 
+    void shiftNotes(std::string keyboardLayout, float startBeat, float endBeat, int minItemType, int maxItemType, ShiftNoteAction::ShiftDirection shiftDirection) {
+        if(KEYBOARD_LAYOUTS.find(keyboardLayout) != KEYBOARD_LAYOUTS.end() && KEYBOARD_POSITION_MAPS.find(keyboardLayout) != KEYBOARD_POSITION_MAPS.end()) {
+            auto & keyboardLayoutMap = KEYBOARD_LAYOUTS.at(keyboardLayout);
+            auto & keyboardPositionMap = KEYBOARD_POSITION_MAPS.at(keyboardLayout);
+
+            auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
+            for(auto item: items) {
+                auto itemKey = item->displayText;
+
+                switch(item->getItemType()) {
+                    case SequencerItemType::TOP_NOTE:
+                    case SequencerItemType::MID_NOTE:
+                    case SequencerItemType::BOT_NOTE:
+                        if(keyboardPositionMap.find(itemKey) != keyboardPositionMap.end()) {
+                            auto keyPos = keyboardPositionMap.at(itemKey);
+                            int keyRow = keyPos.first;
+                            int keyCol = keyPos.second;
+
+                            int newRow = keyRow;
+                            int newCol = keyCol;
+                            switch(shiftDirection) {
+                                case ShiftNoteAction::ShiftDirection::ShiftUp:
+                                    newRow = keyRow - 1;
+                                    break;
+                                case ShiftNoteAction::ShiftDirection::ShiftDown:
+                                    newRow = keyRow + 1;
+                                    break;
+                                case ShiftNoteAction::ShiftDirection::ShiftLeft:
+                                    newCol = keyCol - 1;
+                                    break;
+                                case ShiftNoteAction::ShiftDirection::ShiftRight:
+                                    newCol = keyCol + 1;
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            newRow = std::max(0, std::min(newRow, 3));
+                            newCol = std::max(0, std::min(newCol, 9));
+
+                            auto newKey = keyboardLayoutMap[newRow][newCol];
+                            keyFrequencies[itemKey] -= 1;
+                            item->displayText = newKey;
+                            keyFrequencies[newKey] += 1;
+                        }
+                    default:
+                        break;
+                }
+            }
+
+            updateKeyFrequencies();
+        }
+    }
 
     void addStop(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
         std::shared_ptr<Stop> newStop = std::make_shared<Stop>(absBeat, songBeat, beatDuration, beatpos, endBeatpos);
@@ -257,8 +310,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                 keyFrequencies[oldText] -= 1;
                 keyFrequencies[displayText] += 1;
 
-                keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
-                std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
+                updateKeyFrequencies();
 
                 break;
             }
@@ -352,8 +404,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             }
         }
 
-        keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
-        std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
+        updateKeyFrequencies();
     }
 
     void deleteItem(float absBeat, int itemType) {
@@ -386,8 +437,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                         keyFrequencies.erase(seqItem->displayText);
                     }
 
-                    keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
-                    std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
+                    updateKeyFrequencies();
                 }
 
                 myItems.erase(iter);
@@ -454,6 +504,10 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             }
         }
 
+        updateKeyFrequencies();
+    }
+
+    void updateKeyFrequencies() {
         keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
         std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), cmpSecond);
     }

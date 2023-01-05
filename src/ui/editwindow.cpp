@@ -21,6 +21,7 @@
 #include "actions/placenote.hpp"
 #include "actions/placestop.hpp"
 #include "actions/placeskip.hpp"
+#include "actions/shiftnote.hpp"
 
 #include "ui/preferences.hpp"
 #include "ui/editwindow.hpp"
@@ -1386,6 +1387,28 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             chartinfo.notes.flipNotes(chartinfo.keyboardLayout, insertBeat, endBeat, insertItemType, insertItemTypeEnd);
             unsaved = true;
             activateFlip = false;
+        }
+
+        // shift notes up one row
+        ShiftNoteAction::ShiftDirection shiftDirection = ShiftNoteAction::ShiftDirection::ShiftNone;
+        if(keysPressed[SDL_GetScancodeFromKey(SDLK_UP)]) {
+            shiftDirection = ShiftNoteAction::ShiftDirection::ShiftUp;
+        } else if(keysPressed[SDL_GetScancodeFromKey(SDLK_DOWN)]) {
+            shiftDirection = ShiftNoteAction::ShiftDirection::ShiftDown;
+        } else if(keysPressed[SDL_GetScancodeFromKey(SDLK_LEFT)]) {
+            shiftDirection = ShiftNoteAction::ShiftDirection::ShiftLeft;
+        } else if(keysPressed[SDL_GetScancodeFromKey(SDLK_RIGHT)]) {
+            shiftDirection = ShiftNoteAction::ShiftDirection::ShiftRight;
+        }
+
+        if(shiftDirection != ShiftNoteAction::ShiftDirection::ShiftNone) {
+            auto shiftAction = std::make_shared<ShiftNoteAction>(unsaved, insertItemType, insertItemTypeEnd, insertBeat, endBeat,
+                chartinfo.keyboardLayout, shiftDirection);
+            editActionsUndo.push(shiftAction);
+            emptyActionStack(editActionsRedo);
+
+            chartinfo.notes.shiftNotes(chartinfo.keyboardLayout, insertBeat, endBeat, insertItemType, insertItemTypeEnd, shiftDirection);
+            unsaved = true;
         }
 
         if(keysPressed[SDL_SCANCODE_DELETE]) {
