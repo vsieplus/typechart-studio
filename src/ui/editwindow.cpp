@@ -1301,30 +1301,33 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     static ImGuiInputTextFlags addItemFlags = 0;
     static ImGuiInputTextCallbackData addItemCallbackData;
     if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && leftClickedEntity && !ImGui::IsPopupOpen(addItemPopup)) {
-        insertBeat = clickedBeat;
-        insertItemType = clickedItemType;
-        haveSelection = false;
+        if(haveSelection) {
+            haveSelection = false;
+        } else {
+            insertBeat = clickedBeat;
+            insertItemType = clickedItemType;
 
-        insertBeatpos = calculateBeatpos(clickedBeat, currentBeatsplit, songpos.timeinfo);
-        
-        addItemFlags = ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_EnterReturnsTrue;
+            insertBeatpos = calculateBeatpos(clickedBeat, currentBeatsplit, songpos.timeinfo);
+            
+            addItemFlags = ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_EnterReturnsTrue;
 
-        switch (insertItemType) {
-            case SequencerItemType::TOP_NOTE:
-                addItemFlags |= ImGuiInputTextFlags_CharsDecimal;
-                break;                
-            case SequencerItemType::MID_NOTE:
-                addItemFlags |= ImGuiInputTextFlags_CallbackCharFilter;
-                break;
-            case SequencerItemType::BOT_NOTE:
-                addItemFlags = 0;
-                break;
-            default:
-                break;
+            switch (insertItemType) {
+                case SequencerItemType::TOP_NOTE:
+                    addItemFlags |= ImGuiInputTextFlags_CharsDecimal;
+                    break;                
+                case SequencerItemType::MID_NOTE:
+                    addItemFlags |= ImGuiInputTextFlags_CallbackCharFilter;
+                    break;
+                case SequencerItemType::BOT_NOTE:
+                    addItemFlags = 0;
+                    break;
+                default:
+                    break;
+            }
+            startedNote = true;
         }
 
         leftClickedEntity = false;
-        startedNote = true;
     }
 
     static int insertItemTypeEnd = 0;
@@ -1607,7 +1610,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(itemToDelete.get()) {
             chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
             auto deleteAction = std::make_shared<DeleteNoteAction>(unsaved, itemToDelete->absBeat, itemToDelete->beatEnd - itemToDelete->absBeat,
-                                                                   itemToDelete->beatpos, itemToDelete->endBeatpos, itemToDelete->getItemType(), itemToDelete->displayText);
+                itemToDelete->beatpos, itemToDelete->endBeatpos, itemToDelete->getItemType(), itemToDelete->displayText);
             editActionsUndo.push(deleteAction);
             emptyActionStack(editActionsRedo);
 
