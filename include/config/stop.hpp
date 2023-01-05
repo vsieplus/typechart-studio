@@ -12,6 +12,8 @@ struct Stop : public NoteSequenceItem {
         return SequencerItemType::STOP;
     }
 
+    void setItemType(SequencerItemType type) override {}
+
     float beatDuration;
 };
 

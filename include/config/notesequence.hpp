@@ -219,8 +219,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
             for(auto item: items) {
                 auto itemKey = item->displayText;
+                auto itemType = item->getItemType();
 
-                switch(item->getItemType()) {
+                switch(itemType) {
                     case SequencerItemType::TOP_NOTE:
                     case SequencerItemType::MID_NOTE:
                     case SequencerItemType::BOT_NOTE:
@@ -246,6 +247,14 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                                     break;
                                 default:
                                     break;
+                            }
+
+                            if(itemType == SequencerItemType::TOP_NOTE && newRow > 0) {
+                                item->setItemType(SequencerItemType::MID_NOTE);
+                            }
+
+                            if(itemType == SequencerItemType::MID_NOTE && newRow < 1) {
+                                item->setItemType(SequencerItemType::TOP_NOTE);
                             }
 
                             newRow = std::max(0, std::min(newRow, 3));

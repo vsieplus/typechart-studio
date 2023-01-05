@@ -53,6 +53,10 @@ struct Note : public NoteSequenceItem {
         return itemType;
     }
 
+    void setItemType(SequencerItemType type) override { 
+        itemType = type;
+    }
+
     NoteType noteType;
     NoteSplit noteSplit;
 

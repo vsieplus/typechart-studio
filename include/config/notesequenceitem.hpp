@@ -99,6 +99,7 @@ struct NoteSequenceItem {
         absBeat(absBeat), beatEnd(beatEnd), beatpos(beatpos), endBeatpos(endBeatpos), passed(absBeat < songBeat) {}
 
     virtual SequencerItemType getItemType() const = 0;
+    virtual void setItemType(SequencerItemType type) = 0;
 
     float absBeat;
     float beatEnd;
