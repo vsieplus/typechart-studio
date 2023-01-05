@@ -1301,9 +1301,12 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     static ImGuiInputTextFlags addItemFlags = 0;
     static ImGuiInputTextCallbackData addItemCallbackData;
     if(windowFocused && !ImGuiFileDialog::Instance()->IsOpened() && leftClickedEntity && !ImGui::IsPopupOpen(addItemPopup)) {
+        bool hadSelection = haveSelection;
         if(haveSelection) {
             haveSelection = false;
-        } else {
+        }
+
+        if(!hadSelection || leftClickShift) {
             insertBeat = clickedBeat;
             insertItemType = clickedItemType;
 

@@ -438,7 +438,7 @@ namespace ImSequencer
             draw_list->AddRectFilled(ImVec2(contentMin.x, contentMin.y + ItemHeight * *selectedEntry + customHeight), ImVec2(contentMin.x + canvas_size.x, contentMin.y + ItemHeight * (*selectedEntry + 1) + customHeight), 0x801080FF, 1.f);
          }
 
-         if(haveSelection && !(*leftClickedEntity) && windowFocused) {
+         if(haveSelection && (!(*leftClickedEntity)) && windowFocused) {
             unsigned int selectCol = darkTheme ? 0xFF3A3636 + 0x80201008 : 0xFF767A93 + 0x80201008;
 
             ImVec2 startSel(contentMin.x + legendWidth - firstFrameUsed * framePixelWidth + firstClickedBeat * framePixelWidth, contentMin.y + selectStartY);
