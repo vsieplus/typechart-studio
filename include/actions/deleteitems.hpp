@@ -7,7 +7,7 @@
 class DeleteItemsAction : public EditAction {
     public:
         DeleteItemsAction(bool unsaved, int beatsplit, int itemTypeStart, int itemTypeEnd, float startBeat, float endBeat, 
-                          std::vector<std::shared_ptr<NoteSequenceItem>> & items);
+            std::vector<std::shared_ptr<NoteSequenceItem>> & items);
 
         virtual void undoAction(EditWindowData * editWindow) override;
         virtual void redoAction(EditWindowData * editWindow) override;

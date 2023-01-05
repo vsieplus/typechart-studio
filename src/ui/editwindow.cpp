@@ -1439,8 +1439,14 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
     if(windowFocused && (activatePaste || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_v)]))) {
         if(!copiedItems.empty()) {
-            auto overwrittenItems = chartinfo.notes.getItems(hoveredBeat, hoveredBeat + (copiedItems.back()->absBeat - copiedItems.front()->absBeat), insertItemType, insertItemTypeEnd);
+            auto hoveredBeatEnd = hoveredBeat + (copiedItems.back()->beatEnd - copiedItems.front()->absBeat);
+            auto overwrittenItems = chartinfo.notes.getItems(hoveredBeat, hoveredBeatEnd, insertItemType, insertItemTypeEnd);
             chartinfo.notes.insertItems(hoveredBeat, songpos.absBeat, currentBeatsplit, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
+
+            if(!overwrittenItems.empty()) {
+                auto delAction = std::make_shared<DeleteItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, hoveredBeat, hoveredBeatEnd, overwrittenItems);
+                editActionsUndo.push(delAction);
+            }
 
             auto insAction = std::make_shared<InsertItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, hoveredBeat, copiedItems, overwrittenItems);
             editActionsUndo.push(insAction);
