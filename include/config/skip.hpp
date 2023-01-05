@@ -11,6 +11,8 @@ struct Skip : public NoteSequenceItem {
         return SequencerItemType::SKIP;
     }
 
+    void setItemType(SequencerItemType type) override {}
+
     float skipTime;
     float beatDuration;
 };
