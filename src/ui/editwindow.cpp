@@ -740,8 +740,8 @@ void EditWindowData::showEditWindowMetadata() {
     editingSomething = editingUItitle | editingUIartist | editingUIgenre | editingUIbpmtext | editingUItypist;
 }
 
-void removeSection(SongPosition & songpos) {
-    auto currSectionBeatpos = songpos.timeinfo.at(songpos.currentSection).beatpos;
+void removeSection(SongPosition & songpos, int sectionIndex) {
+    auto currSectionBeatpos = songpos.timeinfo.at(sectionIndex).beatpos;
 
     Timeinfo * prevSection = nullptr;
 
@@ -764,6 +764,49 @@ void removeSection(SongPosition & songpos) {
     songpos.setSongBeatPosition(songpos.absBeat);
 }
 
+bool addSection(int newSectionBeatsPerMeasure, float newSectionBPM, float newSectionInterpolateDuration, bool & unsaved, SongPosition & songpos, BeatPos newBeatpos) {
+    Timeinfo * prevSection = nullptr;
+
+    for(auto & section : songpos.timeinfo) {
+        if(newBeatpos == section.beatpos) {
+            ImGui::OpenPopup("Invalid input");
+            return false;
+        } else if(section.beatpos < newBeatpos || section.beatpos == songpos.timeinfo.back().beatpos) {
+            prevSection = &section;
+        }
+    }
+
+    if(prevSection) {
+        Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM, newSectionInterpolateDuration);
+        songpos.timeinfo.push_back(newSection);
+
+        std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
+        prevSection = &(songpos.timeinfo.front());
+
+        // update following section(s) time start after adding new section
+        for(auto & section : songpos.timeinfo) {
+            if(*(prevSection) < section) {
+                section.absTimeStart = section.calculateTimeStart(prevSection);
+                prevSection = &section;
+            }
+        }
+
+        songpos.setSongBeatPosition(songpos.absBeat);
+        unsaved = true;
+
+        return true;
+    }
+
+    return false;
+}
+
+bool editSection(int origSectionIndex, int newSectionBeatsPerMeasure, float newSectionBPM, float newSectionInterpolateDuration,
+    bool & unsaved, SongPosition & songpos, BeatPos newBeatpos)
+{
+    // remove original section, add new section
+    removeSection(songpos, origSectionIndex);
+    return addSection(newSectionBeatsPerMeasure, newSectionBPM, newSectionInterpolateDuration, unsaved, songpos, newBeatpos);
+}
 
 static float getKeyFrequencies(void * data, int i) {
     ChartInfo * chartinfo = (ChartInfo *)data;
@@ -807,6 +850,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 
     auto currSection = songpos.timeinfo.at(songpos.currentSection);
 
+    static int origSectionIndex = 0;
     static int newSectionMeasure = currSection.beatpos.measure;
     static int newSectionBeatsplit = currSection.beatpos.beatsplit;
     static int newSectionSplit = currSection.beatpos.split;
@@ -834,7 +878,8 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
             invalidDeletion = true;
             ImGui::OpenPopup("Invalid deletion");
         } else {
-            removeSection(songpos);
+            removeSection(songpos, songpos.currentSection);
+            unsaved = true;
         }
     }
 
@@ -854,10 +899,13 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
         newSectionBPM = currSection.bpm;
         newSectionInterpolateDuration = currSection.interpolateBeatDuration;
+
+        origSectionIndex = songpos.currentSection;
     }
 
     if(newSectionWindowOpen) {
-        ImGui::Begin("New Section", &newSectionWindowOpen);
+        auto windowEditTitle = newSectionWindowEdit ? "Edit Section" : "New Section";
+        ImGui::Begin(windowEditTitle, &newSectionWindowOpen);
 
         static bool invalidInput = false;
 
@@ -899,48 +947,11 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         if(ImGui::Button("OK")) {
             BeatPos newBeatpos = { newSectionMeasure, newSectionBeatsplit, newSectionSplit };
 
-            Timeinfo * prevSection = nullptr;
-
-            for(auto & section : songpos.timeinfo) {
-                if(newBeatpos == section.beatpos && newSectionWindowEdit) {
-                    prevSection = &section;
-                } else if(section.beatpos < newBeatpos || section.beatpos == songpos.timeinfo.back().beatpos) {
-                    prevSection = &section;
-                }
-                
-                if(newBeatpos == section.beatpos) {
-                    if(!newSectionWindowEdit) {
-                        invalidInput = true;
-                        ImGui::OpenPopup("Invalid input");
-                        prevSection = nullptr;
-                    }
-                    break;
-                }
-            }
-
-            if(prevSection) {
-                Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM, newSectionInterpolateDuration);
-                if(newSectionWindowEdit) {
-                    *prevSection = newSection;
-                } else {
-                    songpos.timeinfo.push_back(newSection);
-                }
-
-                std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
-                prevSection = &(songpos.timeinfo.front());
-
-                // update following section(s) time start after adding new section
-                for(auto & section : songpos.timeinfo) {
-                    if(*(prevSection) < section) {
-                        section.absTimeStart = section.calculateTimeStart(prevSection);
-                        prevSection = &section;
-                    }
-                }
-                
-                newSectionWindowOpen = false;
-                songpos.setSongBeatPosition(songpos.absBeat);
-                unsaved = true;
-            }
+            invalidInput = newSectionWindowEdit ?
+                !editSection(origSectionIndex, newSectionBeatsPerMeasure, newSectionBPM, newSectionInterpolateDuration, unsaved, songpos, newBeatpos) :
+                !addSection(newSectionBeatsPerMeasure, newSectionBPM, newSectionInterpolateDuration, unsaved, songpos, newBeatpos);
+            
+            newSectionWindowOpen = invalidInput;
         }
 
         ImGui::SameLine();
