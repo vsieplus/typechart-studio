@@ -186,9 +186,9 @@ void Editor::update() {
         audioSystem.update(window);
 
         // new imgui frame
-		ImGui_ImplSDLRenderer_NewFrame();
-		ImGui_ImplSDL2_NewFrame();
-		ImGui::NewFrame();
+        ImGui_ImplSDLRenderer_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
 
         showMenuBar(menuFont, renderer, &audioSystem);
         showInitEditWindow(&audioSystem, renderer);
