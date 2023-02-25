@@ -6,7 +6,7 @@ class SDL_Renderer;
 
 // all the imgui menubar functions
 void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audioSystem);
-void showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem);
+std::string showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem);
 void showEditMenu();
 void showOptionMenu();
 

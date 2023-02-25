@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
-#include <filesystem>
 #include <float.h>
 #include <fstream>
 #include <map>
@@ -29,7 +28,6 @@
 
 #include "systems/audiosystem.hpp"
 
-namespace fs = std::filesystem;
 using json = nlohmann::json;
 
 const std::map<int, std::string> ID_TO_KEYBOARDLAYOUT = {
@@ -154,7 +152,7 @@ bool loadSonginfo(std::string songinfoPath, std::string songinfoDir) {
         in >> songinfoJSON;
         popupInvalidJSON = false;
     } catch(...) {
-        ImGui::OpenPopup("invalidJSON");
+        ImGui::OpenPopup("Invalid json");
         popupInvalidJSON = true;
         return false;
     }
@@ -364,7 +362,7 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     // attempt to load music
     int musicSourceIdx = audioSystem->loadMusic(UImusicFilepath);
     if(musicSourceIdx == -1) {
-        ImGui::OpenPopup("failedToLoadMusic");
+        ImGui::OpenPopup("Failed to load music");
         popupFailedToLoadMusic = true;
         return;
     } else {
@@ -398,21 +396,24 @@ void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     }
 }
 
-void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::string chartPath) {
-    fs::path chartDir = fs::path(chartPath).parent_path();
+std::string loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, fs::path chartPath) {
+    fs::path chartDir = chartPath.parent_path();
 
     // try to load songinfo, chart info
     std::string songinfoPath = (chartDir / fs::path("songinfo.json")).string();
     if(!fs::exists(songinfoPath)) {
-        ImGui::OpenPopup("noSonginfoFound");
-        return;
+        return "No Songinfo found";
     }
-    
+
+    if(!fs::exists(chartPath)) {
+        return "No Chart found";
+    }
+
     ChartInfo chartinfo;
     SongPosition songpos;
 
     if(!loadSonginfo(songinfoPath, chartDir.string())) {
-        return;
+        return "Invalid json";
     }
 
     SongInfo songinfo = SongInfo(UItitle, UIartist, UIgenre, UIbpmtext, UImusicFilename, UIcoverArtFilename, 
@@ -422,14 +423,12 @@ void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::str
     int musicSourceIdx = audioSystem->loadMusic(UImusicFilepath);
 
     if(musicSourceIdx == -1) {
-        ImGui::OpenPopup("failedToLoadMusic");
         popupFailedToLoadMusic = true;
-        return;
+        return "Failed to load music";
     }
 
     if(!chartinfo.loadChart(chartPath, songpos)) {
-        ImGui::OpenPopup("failedToOpenChart");
-        return;
+        return "Failed to open Chart";
     }
 
     auto newWindowData = getNextWindowNameAndID();
@@ -454,15 +453,23 @@ void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::str
     newWindow.UIdifficulty = DIFFICULTY_TO_ID.at(chartinfo.difficulty);
 
     editWindows.push_back(newWindow);
+
+    return "";
 }
 
 void showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem) {
+    bool popupFromOpenChart = false;
+
     if(ImGuiFileDialog::Instance()->Display("openChart", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             std::string chartPath = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string chartDir = ImGuiFileDialog::Instance()->GetCurrentPath();
 
-            loadEditWindow(renderer, audioSystem, chartPath);
+            auto popupID = loadEditWindow(renderer, audioSystem, fs::path(chartPath));
+            if(popupID.size() > 0) {
+                ImGui::OpenPopup(popupID.c_str());
+                popupFromOpenChart = true;
+            }
 
             lastChartOpenDir = chartDir;
 
@@ -472,11 +479,26 @@ void showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem) {
         ImGuiFileDialog::Instance()->Close();
     }
 
-    if(ImGui::BeginPopupModal("noSonginfoFound")) {
+    if(ImGui::BeginPopupModal("No Songinfo found")) {
         ImGui::Text("No songinfo.json found in the selected chart's directory");
         ImGui::SameLine();
         if(ImGui::Button("OK")) {
-            startOpenChart();
+            if(popupFromOpenChart) {
+                startOpenChart();
+            }
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+
+    if(ImGui::BeginPopupModal("No Chart found")) {
+        ImGui::Text("The selected chart file could not be located");
+        ImGui::SameLine();
+        if(ImGui::Button("OK")) {
+            if(popupFromOpenChart) {
+                startOpenChart();
+            }
             ImGui::CloseCurrentPopup();
         }
 
@@ -487,18 +509,22 @@ void showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem) {
         ImGui::Text("Failed to load selected songinfo.json file");
         ImGui::SameLine();
         if(ImGui::Button("OK")) {
-            startOpenChart();
+            if(popupFromOpenChart) {
+                startOpenChart();
+            }
             ImGui::CloseCurrentPopup();
         }
 
         ImGui::EndPopup();
     }
 
-    if(ImGui::BeginPopupModal("failedToOpenChart")) {
+    if(ImGui::BeginPopupModal("Failed to open Chart")) {
         ImGui::Text("Failed to load selected chart file");
         ImGui::SameLine();
         if(ImGui::Button("OK")) {
-            startOpenChart();
+            if(popupFromOpenChart) {
+                startOpenChart();
+            }
             ImGui::CloseCurrentPopup();
         }
 
@@ -526,11 +552,11 @@ void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
         ImGui::Text("The chosen song configuration file was incomplete");
         ImGui::EndPopup();
     }
-    if(ImGui::BeginPopupModal("invalidJSON", &popupInvalidJSON)) {
+    if(ImGui::BeginPopupModal("Invalid json", &popupInvalidJSON)) {
         ImGui::Text("Unable to read the selected JSON file");
         ImGui::EndPopup();
     }
-    if(ImGui::BeginPopupModal("failedToLoadMusic", &popupFailedToLoadMusic)) {
+    if(ImGui::BeginPopupModal("Failed to load music", &popupFailedToLoadMusic)) {
         ImGui::Text("Unable to load the selected music");
         ImGui::EndPopup();
     }
@@ -548,7 +574,7 @@ void closeWindow(EditWindowData & currWindow, std::vector<EditWindowData>::itera
 void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePath, std::string saveDir) {
     currWindow.songinfo.saveSonginfo(saveDir, currWindow.initialSaved);
     currWindow.chartinfo.saveChart(chartSavePath, currWindow.songpos);
-    
+
     currWindow.initialSaved = true;
     currWindow.unsaved = false;
 }
@@ -560,14 +586,13 @@ void startSaveCurrentChart(bool saveAs) {
             // save vs save as
             if(saveAs || !editWindow.initialSaved) {
                 editWindow.initialSaved = false;
-                ImGuiFileDialog::Instance()->OpenModal("saveChart", "Save current chart", saveFileFilter, Preferences::Instance().getSaveDir(), "Untitled.type",
-                                                        1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+                ImGuiFileDialog::Instance()->OpenModal("saveChart", "Save current chart", saveFileFilter, Preferences::Instance().getSaveDir(),
+                    "Untitled.type", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
             } else {
                 saveCurrentChartFiles(editWindow, editWindow.chartinfo.savePath, editWindow.songinfo.saveDir);
             }
         }
     }
-
 }
 
 bool tryCloseEditWindow(EditWindowData & currWindow, std::vector<EditWindowData>::iterator & iter, AudioSystem * audioSystem) {
@@ -1706,8 +1731,10 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed) {
     static bool updatedName = false;
     static ImVec2 sizeBeforeUpdate;
+    static ImVec2 currWindowSize;
 
     unsigned int i = 0;
+    EditWindowData * currentWindowPtr = nullptr;
     for(auto iter = editWindows.begin(); iter != editWindows.end();) {
         auto & currWindow = *iter;
         currWindow.songpos.update();
@@ -1722,10 +1749,11 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
         }
 
         ImGui::Begin(currWindow.name.c_str(), &(currWindow.open), windowFlags);
-        ImVec2 currWindowSize = ImGui::GetWindowSize();
 
         if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
             currentWindow = i;
+            currentWindowPtr = &currWindow;
+            currWindowSize = ImGui::GetWindowSize();
             currWindow.focused = true;
         } else {
             currWindow.focused = false;
@@ -1738,11 +1766,11 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
         ImGui::Separator();
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, 
-                              currWindow.chartinfo.notes, keysPressed, currWindow);
+            currWindow.chartinfo.notes, keysPressed, currWindow);
         ImGui::Separator();
 
         showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, keysPressed,
-                               currWindow.editActionsUndo, currWindow.editActionsRedo, currWindow.musicSourceIdx, currWindow.focused);
+            currWindow.editActionsUndo, currWindow.editActionsRedo, currWindow.musicSourceIdx, currWindow.focused);
 
         ImGui::End();
 
@@ -1751,29 +1779,29 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
             closedCurrwindow = tryCloseEditWindow(currWindow, iter, audioSystem);
         }
 
-        if(ImGuiFileDialog::Instance()->Display("saveChart", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
-            if (ImGuiFileDialog::Instance()->IsOk()) {
-                std::string chartSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
-                std::string chartSaveFilename = ImGuiFileDialog::Instance()->GetCurrentFileName();
-                std::string saveDir = ImGuiFileDialog::Instance()->GetCurrentPath();
-
-                saveCurrentChartFiles(currWindow, chartSavePath, saveDir);
-                currWindow.name = chartSaveFilename;
-
-                updatedName = true;
-                sizeBeforeUpdate = currWindowSize;
-
-                Preferences::Instance().addMostRecentFile(chartSavePath);
-                lastChartSaveDir = saveDir;
-            }
-
-            ImGuiFileDialog::Instance()->Close();
-        }
-
         if(!closedCurrwindow) {
             i++;
             iter++;
         }
+    }
+
+    if(ImGuiFileDialog::Instance()->Display("saveChart", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
+        if(ImGuiFileDialog::Instance()->IsOk() && currentWindowPtr) {
+            std::string chartSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string chartSaveFilename = ImGuiFileDialog::Instance()->GetCurrentFileName();
+            std::string saveDir = ImGuiFileDialog::Instance()->GetCurrentPath();
+
+            saveCurrentChartFiles(*currentWindowPtr, chartSavePath, saveDir);
+            currentWindowPtr->name = chartSaveFilename;
+
+            updatedName = true;
+            sizeBeforeUpdate = currWindowSize;
+
+            Preferences::Instance().addMostRecentFile(chartSavePath);
+            lastChartSaveDir = saveDir;
+        }
+
+        ImGuiFileDialog::Instance()->Close();
     }
 
     if(activateUndo) {

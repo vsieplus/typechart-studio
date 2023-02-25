@@ -7,6 +7,10 @@
 #include <string>
 #include <vector>
 
+
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #include "actions/editaction.hpp"
 #include "config/chartinfo.hpp"
 #include "config/songinfo.hpp"
@@ -80,7 +84,7 @@ void setFlip();
 void initLastDirPaths();
 
 void startOpenChart();
-void loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, std::string chartPath);
+std::string loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, fs::path chartPath);
 void showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem);
 
 void startNewEditWindow();

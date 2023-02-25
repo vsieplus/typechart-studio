@@ -14,9 +14,11 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
     if(menuFont)
         ImGui::PushFont(menuFont);
 
+    std::string popupID = "";
+
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
-            showFileMenu(renderer, audioSystem);
+            popupID = showFileMenu(renderer, audioSystem);
             ImGui::EndMenu();
         }
 
@@ -38,11 +40,17 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
         ImGui::EndMainMenuBar();
     }
 
+    if(popupID.size() > 0) {
+        ImGui::OpenPopup(popupID.c_str());
+    }
+
     if(menuFont)
         ImGui::PopFont();
 }
 
-void showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem) {
+std::string showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem) {
+    std::string popupID = "";
+
     if(ImGui::MenuItem("New", "Ctrl+N")) {
         startNewEditWindow();
     }
@@ -53,9 +61,10 @@ void showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem) {
 
     if(ImGui::BeginMenu("Recent")) {
         for(auto & recentPath : Preferences::Instance().getMostRecentFiles()) {
-            auto labelName = fs::path(recentPath.c_str()).parent_path().stem().string() + "/" + fs::path(recentPath.c_str()).filename().string();
+            fs::path fsRecentPath(recentPath.c_str());
+            auto labelName = fsRecentPath.parent_path().stem().string() + "/" + fsRecentPath.filename().string();
             if(ImGui::MenuItem(labelName.c_str())) {
-                loadEditWindow(renderer, audioSystem, recentPath);
+                popupID = loadEditWindow(renderer, audioSystem, fsRecentPath);
             }
         }
         ImGui::EndMenu();
@@ -68,6 +77,8 @@ void showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem) {
     if(ImGui::MenuItem("Save As...")) {
         startSaveCurrentChart(true);
     }
+
+    return popupID;
 }
 
 void showEditMenu() {
