@@ -828,8 +828,19 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 
     ImGui::SameLine();
     // remove the selected section
+    static bool invalidDeletion = false;
     if(ImGui::Button(ICON_FA_MINUS) && songpos.timeinfo.size() > 1) {
-        removeSection(songpos);
+        if(songpos.currentSection == 0) {
+            invalidDeletion = true;
+            ImGui::OpenPopup("Invalid deletion");
+        } else {
+            removeSection(songpos);
+        }
+    }
+
+    if(invalidDeletion && ImGui::BeginPopup("Invalid deletion")) {
+        ImGui::Text("Cannot delete the first section.");
+        ImGui::EndPopup();
     }
 
     ImGui::SameLine();
