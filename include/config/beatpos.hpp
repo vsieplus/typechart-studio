@@ -8,6 +8,7 @@ struct BeatPos {
 };
 
 bool operator==(const BeatPos & lhs, const BeatPos & rhs);
+bool operator!=(const BeatPos & lhs, const BeatPos & rhs);
 bool operator<(const BeatPos & lhs, const BeatPos & rhs);
 
 #endif // BEATPOS_HPP
