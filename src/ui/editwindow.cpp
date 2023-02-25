@@ -858,8 +858,9 @@ static const char * getKeyFrequencyLabels(void * data, int i) {
     }
 }
 
-void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, int * currTopNotes, 
-        ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, int musicSourceIdx) {
+void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, int * currTopNotes, ChartInfo & chartinfo, SongPosition & songpos,
+    bool & unsaved, int musicSourceIdx)
+{
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
     ImGui::Image(artTexture, ImVec2(ImGui::GetContentRegionAvail().y, ImGui::GetContentRegionAvail().y));
@@ -1104,16 +1105,20 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     if(ImGui::SliderFloat("##prevstart", previewStart, 0.f, musicLengthSecs, "%05.2f")) {
         currWindow.unsaved = true;
     }
-    if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
-        ImGui::SetTooltip("Music preview start");
 
-    // clamp to max prevStop, min 0
+    if(ImGui::IsItemHovered() && !ImGui::IsItemActive()) {
+        ImGui::SetTooltip("Music preview start");
+    }
+
+    // update max prev stop if needed, clamp
     if(*previewStart > *previewStop) {
-        *previewStart = *previewStop;
+        *previewStop = *previewStart;
     }
 
     if(*previewStart < 0) {
         *previewStart = 0;
+    } else if(*previewStart > musicLengthSecs) {
+        *previewStart = musicLengthSecs;
     }
 
     ImGui::SameLine();
@@ -1121,14 +1126,19 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
     if(ImGui::SliderFloat("##prevstop", previewStop, 0.f, musicLengthSecs, "%05.2f")) {
         currWindow.unsaved = true;
     }
-    if(ImGui::IsItemHovered() && !ImGui::IsItemActive())
-        ImGui::SetTooltip("Music preview stop");
 
-    // clamp to min prevStart, max song length
-    if(*previewStop < *previewStart) {
-        *previewStop = *previewStart;
+    if(ImGui::IsItemHovered() && !ImGui::IsItemActive()) {
+        ImGui::SetTooltip("Music preview stop");
     }
-    if(*previewStop > musicLengthSecs) {
+
+    // update min prevStart, clamp
+    if(*previewStop < *previewStart) {
+        *previewStart = *previewStop;
+    }
+
+    if(*previewStop < 0) {
+        *previewStop = 0;
+    } else if(*previewStop > musicLengthSecs) {
         *previewStop = musicLengthSecs;
     }
 
