@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "actions/editaction.hpp"
+#include "config/notesequenceitem.hpp"
 
 const std::unordered_map<std::string, std::vector<std::vector<std::string>>> KEYBOARD_LAYOUTS = {
     { "QWERTY", {
@@ -44,8 +45,8 @@ class ShiftNoteAction : public EditAction {
             ShiftNone
         };
 
-        ShiftNoteAction(bool unsaved, int minItemType, int maxItemType, float startBeat,
-            float endBeat, std::string keyboardLayout, ShiftDirection shiftDirection);
+        ShiftNoteAction(bool unsaved, int minItemType, int maxItemType, float startBeat, float endBeat, std::string keyboardLayout,
+            ShiftDirection shiftDirection, std::vector<std::shared_ptr<NoteSequenceItem>> items);
         virtual void undoAction(EditWindowData * editWindow) override;
         virtual void redoAction(EditWindowData * editWindow) override;
     private:
@@ -55,6 +56,8 @@ class ShiftNoteAction : public EditAction {
         std::string keyboardLayout;
 
         ShiftDirection shiftDirection;
+
+        std::vector<std::shared_ptr<NoteSequenceItem>> items;
 };
 
 #endif // SHIFTNOTE_HPP

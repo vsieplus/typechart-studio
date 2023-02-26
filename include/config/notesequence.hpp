@@ -211,67 +211,95 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void shiftNotes(std::string keyboardLayout, float startBeat, float endBeat, int minItemType, int maxItemType, ShiftNoteAction::ShiftDirection shiftDirection) {
+    std::vector<std::shared_ptr<NoteSequenceItem>> shiftNotes(std::string keyboardLayout, float startBeat, float endBeat,
+        int minItemType, int maxItemType, ShiftNoteAction::ShiftDirection shiftDirection)
+    {
+        auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
+        return shiftItems(keyboardLayout, startBeat, endBeat, items, shiftDirection);
+    }
+
+    std::vector<std::shared_ptr<NoteSequenceItem>> shiftItems(std::string keyboardLayout, float startBeat, float endBeat,
+        const std::vector<std::shared_ptr<NoteSequenceItem>> & items, ShiftNoteAction::ShiftDirection shiftDirection)
+    {
+        std::vector<std::shared_ptr<NoteSequenceItem>> shiftedItems;
+
         if(KEYBOARD_LAYOUTS.find(keyboardLayout) != KEYBOARD_LAYOUTS.end() && KEYBOARD_POSITION_MAPS.find(keyboardLayout) != KEYBOARD_POSITION_MAPS.end()) {
             auto & keyboardLayoutMap = KEYBOARD_LAYOUTS.at(keyboardLayout);
             auto & keyboardPositionMap = KEYBOARD_POSITION_MAPS.at(keyboardLayout);
 
-            auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
             for(auto item: items) {
-                auto itemKey = item->displayText;
-                auto itemType = item->getItemType();
-
-                switch(itemType) {
-                    case SequencerItemType::TOP_NOTE:
-                    case SequencerItemType::MID_NOTE:
-                    case SequencerItemType::BOT_NOTE:
-                        if(keyboardPositionMap.find(itemKey) != keyboardPositionMap.end()) {
-                            auto keyPos = keyboardPositionMap.at(itemKey);
-                            int keyRow = keyPos.first;
-                            int keyCol = keyPos.second;
-
-                            int newRow = keyRow;
-                            int newCol = keyCol;
-                            switch(shiftDirection) {
-                                case ShiftNoteAction::ShiftDirection::ShiftUp:
-                                    newRow = keyRow - 1;
-                                    break;
-                                case ShiftNoteAction::ShiftDirection::ShiftDown:
-                                    newRow = keyRow + 1;
-                                    break;
-                                case ShiftNoteAction::ShiftDirection::ShiftLeft:
-                                    newCol = keyCol - 1;
-                                    break;
-                                case ShiftNoteAction::ShiftDirection::ShiftRight:
-                                    newCol = keyCol + 1;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            if(itemType == SequencerItemType::TOP_NOTE && newRow > 0) {
-                                item->setItemType(SequencerItemType::MID_NOTE);
-                            }
-
-                            if(itemType == SequencerItemType::MID_NOTE && newRow < 1) {
-                                item->setItemType(SequencerItemType::TOP_NOTE);
-                            }
-
-                            newRow = std::max(0, std::min(newRow, 3));
-                            newCol = std::max(0, std::min(newCol, 9));
-
-                            auto newKey = keyboardLayoutMap[newRow][newCol];
-                            keyFrequencies[itemKey] -= 1;
-                            item->displayText = newKey;
-                            keyFrequencies[newKey] += 1;
-                        }
-                    default:
-                        break;
+                auto shifted = shiftNoteSequenceItem(shiftDirection, item, keyboardLayoutMap, keyboardPositionMap);
+                if(shifted) {
+                    shiftedItems.push_back(item);
                 }
             }
 
             updateKeyFrequencies();
         }
+
+        return shiftedItems;
+    }
+
+    bool shiftNoteSequenceItem(ShiftNoteAction::ShiftDirection shiftDirection, std::shared_ptr<NoteSequenceItem> item,
+        const std::vector<std::vector<std::string>> & keyboardLayoutMap, const std::unordered_map<std::string, std::pair<int, int>> & keyboardPositionMap)
+    {
+        auto itemKey = item->displayText;
+        auto itemType = item->getItemType();
+
+        switch(itemType) {
+            case SequencerItemType::TOP_NOTE:
+            case SequencerItemType::MID_NOTE:
+            case SequencerItemType::BOT_NOTE:
+                if(keyboardPositionMap.find(itemKey) != keyboardPositionMap.end()) {
+                    auto keyPos = keyboardPositionMap.at(itemKey);
+                    int keyRow = keyPos.first;
+                    int keyCol = keyPos.second;
+
+                    int newRow = keyRow;
+                    int newCol = keyCol;
+                    switch(shiftDirection) {
+                        case ShiftNoteAction::ShiftDirection::ShiftUp:
+                            newRow = keyRow - 1;
+                            break;
+                        case ShiftNoteAction::ShiftDirection::ShiftDown:
+                            newRow = keyRow + 1;
+                            break;
+                        case ShiftNoteAction::ShiftDirection::ShiftLeft:
+                            newCol = keyCol - 1;
+                            break;
+                        case ShiftNoteAction::ShiftDirection::ShiftRight:
+                            newCol = keyCol + 1;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    newRow = std::max(0, std::min(newRow, 3));
+                    newCol = std::max(0, std::min(newCol, 9));
+
+                    if(newRow == keyRow && newCol == keyCol) {
+                        return false;
+                    }
+
+                    if(itemType == SequencerItemType::TOP_NOTE && newRow > 0) {
+                        item->setItemType(SequencerItemType::MID_NOTE);
+                    }
+
+                    if(itemType == SequencerItemType::MID_NOTE && newRow < 1) {
+                        item->setItemType(SequencerItemType::TOP_NOTE);
+                    }
+
+                    auto newKey = keyboardLayoutMap[newRow][newCol];
+                    keyFrequencies[itemKey] -= 1;
+                    item->displayText = newKey;
+                    keyFrequencies[newKey] += 1;
+                }
+                break;
+            default:
+                break;
+        }
+
+        return true;
     }
 
     void addStop(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
@@ -345,7 +373,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     void insertItems(float insertBeat, float songBeat, int currentBeatsplit, int minItemType, int maxItemType,
-                     const std::vector<Timeinfo> & timeinfo, std::vector<std::shared_ptr<NoteSequenceItem>> items) {
+        const std::vector<Timeinfo> & timeinfo, std::vector<std::shared_ptr<NoteSequenceItem>> items)
+    {
         if(!items.empty()) {
             float firstBeat = items.front()->absBeat;
             deleteItems(insertBeat, insertBeat + (items.back()->beatEnd - firstBeat), minItemType, maxItemType);

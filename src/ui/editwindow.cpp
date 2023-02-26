@@ -1457,7 +1457,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             activateFlip = false;
         }
 
-        // shift notes up one row
+        // shift notes up, down, left, right
         ShiftNoteAction::ShiftDirection shiftDirection = ShiftNoteAction::ShiftDirection::ShiftNone;
         if(keysPressed[SDL_GetScancodeFromKey(SDLK_UP)]) {
             shiftDirection = ShiftNoteAction::ShiftDirection::ShiftUp;
@@ -1470,12 +1470,13 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
 
         if(shiftDirection != ShiftNoteAction::ShiftDirection::ShiftNone) {
+            auto items = chartinfo.notes.shiftNotes(chartinfo.keyboardLayout, insertBeat, endBeat, insertItemType, insertItemTypeEnd, shiftDirection);
+
             auto shiftAction = std::make_shared<ShiftNoteAction>(unsaved, insertItemType, insertItemTypeEnd, insertBeat, endBeat,
-                chartinfo.keyboardLayout, shiftDirection);
+                chartinfo.keyboardLayout, shiftDirection, items);
             editActionsUndo.push(shiftAction);
             emptyActionStack(editActionsRedo);
 
-            chartinfo.notes.shiftNotes(chartinfo.keyboardLayout, insertBeat, endBeat, insertItemType, insertItemTypeEnd, shiftDirection);
             unsaved = true;
         }
 
