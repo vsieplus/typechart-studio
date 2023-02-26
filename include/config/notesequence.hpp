@@ -436,6 +436,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                     }
                 }
 
+                // in case dangling pointers in undo/redo stack refer to this item
+                seqItem->deleted = true;
+
                 iter = myItems.erase(iter);
             } else {
                 iter++;
@@ -477,6 +480,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
                     updateKeyFrequencies();
                 }
+
+                // in case dangling pointers in undo/redo stack refer to this item
+                seqItem->deleted = true;
 
                 myItems.erase(iter);
                 break;

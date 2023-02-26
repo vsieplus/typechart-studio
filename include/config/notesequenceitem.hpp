@@ -110,9 +110,11 @@ struct NoteSequenceItem {
     std::string displayText = "";
 
     bool passed;
+    bool deleted;
 };
 
 bool operator<(const std::shared_ptr<NoteSequenceItem> & lhs, const std::shared_ptr<NoteSequenceItem> & rhs);
+bool operator==(const NoteSequenceItem & lhs, const NoteSequenceItem & rhs);
 bool operator<(const NoteSequenceItem & lhs, const NoteSequenceItem & rhs);
 
 #endif // NOTESEQUENCEITEM_HPP
