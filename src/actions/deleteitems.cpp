@@ -1,14 +1,19 @@
 #include "actions/deleteitems.hpp"
 #include "ui/editwindow.hpp"
 
-DeleteItemsAction::DeleteItemsAction(bool unsaved, int beatsplit, int itemTypeStart, int itemTypeEnd, float startBeat, float endBeat,
-        std::list<std::shared_ptr<NoteSequenceItem>> & items) : 
-    EditAction(unsaved), beatsplit(beatsplit), itemTypeStart(itemTypeStart), itemTypeEnd(itemTypeEnd), startBeat(startBeat), endBeat(endBeat), items(items) {}
+DeleteItemsAction::DeleteItemsAction(bool unsaved, int itemTypeStart, int itemTypeEnd, float startBeat, float endBeat,
+    std::list<std::shared_ptr<NoteSequenceItem>> & items) : 
+        EditAction(unsaved),
+        itemTypeStart(itemTypeStart),
+        itemTypeEnd(itemTypeEnd),
+        startBeat(startBeat),
+        endBeat(endBeat),
+        items(items) {}
 
 void DeleteItemsAction::undoAction(EditWindowData * editWindow) {
     EditAction::undoAction(editWindow);
     if(!items.empty()) {
-        editWindow->chartinfo.notes.insertItems(items.front()->absBeat, editWindow->songpos.absBeat, beatsplit, itemTypeStart, 
+        editWindow->chartinfo.notes.insertItems(items.front()->absBeat, editWindow->songpos.absBeat, itemTypeStart, 
             itemTypeEnd, editWindow->songpos.timeinfo, items);
     }
 }

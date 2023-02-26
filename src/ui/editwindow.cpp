@@ -876,7 +876,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 
     static int origSectionIndex = 0;
     static int newSectionMeasure = currSection.beatpos.measure;
-    static int newSectionBeatsplit = currSection.beatpos.beatsplit;
+    static int newSectionMeasureSplit = currSection.beatpos.measureSplit;
     static int newSectionSplit = currSection.beatpos.split;
     static int newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
     static float newSectionBPM = currSection.bpm;
@@ -887,7 +887,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         newSectionWindowEdit = false;
 
         newSectionMeasure = currSection.beatpos.measure;
-        newSectionBeatsplit = currSection.beatpos.beatsplit;
+        newSectionMeasureSplit = currSection.beatpos.measureSplit;
         newSectionSplit = currSection.beatpos.split;
         newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
         newSectionBPM = currSection.bpm;
@@ -918,7 +918,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         newSectionWindowEdit = true;
 
         newSectionMeasure = currSection.beatpos.measure;
-        newSectionBeatsplit = currSection.beatpos.beatsplit;
+        newSectionMeasureSplit = currSection.beatpos.measureSplit;
         newSectionSplit = currSection.beatpos.split;
         newSectionBeatsPerMeasure = currSection.beatsPerMeasure;
         newSectionBPM = currSection.bpm;
@@ -942,11 +942,11 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
                    "These 'absolute' beats are based off of the song's initial bpm");
 
         ImGui::InputInt("Measure", &newSectionMeasure);
-        ImGui::InputInt("Beatsplit", &newSectionBeatsplit);
+        ImGui::InputInt("MeasureSplit", &newSectionMeasureSplit);
         ImGui::InputInt("Split", &newSectionSplit);
 
         newSectionMeasure = std::max(0, newSectionMeasure);
-        newSectionBeatsplit = std::max(0, newSectionBeatsplit);
+        newSectionMeasureSplit = std::max(0, newSectionMeasureSplit);
         newSectionSplit = std::max(0, newSectionSplit);
 
         ImGui::Separator();
@@ -969,7 +969,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
         newSectionBeatsPerMeasure = std::max(0, newSectionBeatsPerMeasure);
 
         if(ImGui::Button("OK")) {
-            BeatPos newBeatpos = { newSectionMeasure, newSectionBeatsplit, newSectionSplit };
+            BeatPos newBeatpos = { newSectionMeasure, newSectionMeasureSplit, newSectionSplit };
 
             invalidInput = newSectionWindowEdit ?
                 !editSection(origSectionIndex, newSectionBeatsPerMeasure, newSectionBPM, newSectionInterpolateDuration, unsaved, songpos, newBeatpos) :
@@ -997,8 +997,8 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
             Timeinfo currSection = songpos.timeinfo.at(i);
 
             char sectionDesc[256];
-            snprintf(sectionDesc, 256, "[%d,%d,%d] : BPM: %.1f, Beats / measure: %d", currSection.beatpos.measure, currSection.beatpos.beatsplit, currSection.beatpos.split,
-                     currSection.bpm, currSection.beatsPerMeasure);
+            snprintf(sectionDesc, 256, "[%d,%d,%d] : BPM: %.1f, Beats / measure: %d", currSection.beatpos.measure, currSection.beatpos.measureSplit,
+                currSection.beatpos.split, currSection.bpm, currSection.beatsPerMeasure);
 
             bool isSelected = i == songpos.currentSection;
 
@@ -1294,7 +1294,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
     auto currBeatpos = calculateBeatpos(songpos.absBeat, currentBeatsplit, songpos.timeinfo);
     ImGui::SameLine();
-    ImGui::Text("[Pos]: [%d, %d, %d]", std::max(0, currBeatpos.measure), std::max(0, currBeatpos.beatsplit), std::max(0, currBeatpos.split));
+    ImGui::Text("[Pos]: [%d, %d, %d]", std::max(0, currBeatpos.measure), std::max(0, currBeatpos.measureSplit), std::max(0, currBeatpos.split));
 
     ImGui::SameLine();
     ImGui::Text("Zoom " ICON_FA_MAGNIFYING_GLASS ": ");
@@ -1434,7 +1434,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             chartinfo.notes.deleteItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
 
             if(!copiedItems.empty()) {
-                auto delAction = std::make_shared<DeleteItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, insertBeat, endBeat, copiedItems);
+                auto delAction = std::make_shared<DeleteItemsAction>(unsaved, insertItemType, insertItemTypeEnd, insertBeat, endBeat, copiedItems);
                 editActionsUndo.push(delAction);
                 emptyActionStack(editActionsRedo);
 
@@ -1485,7 +1485,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             chartinfo.notes.deleteItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
 
             if(!deletedItems.empty()) {
-                auto delAction = std::make_shared<DeleteItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, insertBeat, endBeat, deletedItems);
+                auto delAction = std::make_shared<DeleteItemsAction>(unsaved, insertItemType, insertItemTypeEnd, insertBeat, endBeat, deletedItems);
                 editActionsUndo.push(delAction);
                 emptyActionStack(editActionsRedo);
 
@@ -1504,14 +1504,14 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         if(!copiedItems.empty()) {
             auto hoveredBeatEnd = hoveredBeat + (copiedItems.back()->beatEnd - copiedItems.front()->absBeat);
             auto overwrittenItems = chartinfo.notes.getItems(hoveredBeat, hoveredBeatEnd, insertItemType, insertItemTypeEnd);
-            chartinfo.notes.insertItems(hoveredBeat, songpos.absBeat, currentBeatsplit, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
+            chartinfo.notes.insertItems(hoveredBeat, songpos.absBeat, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
 
             if(!overwrittenItems.empty()) {
-                auto delAction = std::make_shared<DeleteItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, hoveredBeat, hoveredBeatEnd, overwrittenItems);
+                auto delAction = std::make_shared<DeleteItemsAction>(unsaved, insertItemType, insertItemTypeEnd, hoveredBeat, hoveredBeatEnd, overwrittenItems);
                 editActionsUndo.push(delAction);
             }
 
-            auto insAction = std::make_shared<InsertItemsAction>(unsaved, currentBeatsplit, insertItemType, insertItemTypeEnd, hoveredBeat, copiedItems, overwrittenItems);
+            auto insAction = std::make_shared<InsertItemsAction>(unsaved, insertItemType, insertItemTypeEnd, hoveredBeat, copiedItems, overwrittenItems);
             editActionsUndo.push(insAction);
             emptyActionStack(editActionsRedo);
 

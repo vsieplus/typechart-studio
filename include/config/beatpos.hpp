@@ -3,7 +3,7 @@
 
 struct BeatPos {
     int measure;
-    int beatsplit;
+    int measureSplit;
     int split;
 };
 

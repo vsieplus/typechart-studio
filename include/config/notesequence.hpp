@@ -42,9 +42,8 @@ const std::unordered_map<int, NoteSplit> DENOMINATOR_TO_NOTESPLIT = {
     { 96, NoteSplit::NINETYSIXTH }
 };
 
-inline BeatPos calculateBeatpos2(float absBeat, int currentBeatsplit, const std::vector<Timeinfo> & timeinfo) {
+inline BeatPos calculateBeatpos2(float absBeat, int measureSplit, const std::vector<Timeinfo> & timeinfo) {
     int measure = 0;
-    int measureSplit = 0;
     int split = 0;
 
     int prevBeatsPerMeasure = 0;
@@ -65,6 +64,7 @@ inline BeatPos calculateBeatpos2(float absBeat, int currentBeatsplit, const std:
         bool beatInPrevSection = absBeat < time.absBeatStart; 
         if (beatInPrevSection || isLastSection) {
             int currBeatsPerMeasure = beatInPrevSection ? prevBeatsPerMeasure : time.beatsPerMeasure;
+            int currentBeatsplit = measureSplit / currBeatsPerMeasure;
             float currAbsBeat = beatInPrevSection ? prevSectionAbsBeat : time.absBeatStart;
 
             float leftoverMeasures = (absBeat - currAbsBeat) / currBeatsPerMeasure;
@@ -73,9 +73,8 @@ inline BeatPos calculateBeatpos2(float absBeat, int currentBeatsplit, const std:
             int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit);
 
             measure += leftoverMeasuresFull;
-            measureSplit = currentBeatsplit * currBeatsPerMeasure;
             split = leftoverBeatsplits;
-            break;            
+            break;
         }
 
         prevSectionAbsBeat = time.absBeatStart;
@@ -372,7 +371,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         return currItems;
     }
 
-    void insertItems(float insertBeat, float songBeat, int currentBeatsplit, int minItemType, int maxItemType,
+    void insertItems(float insertBeat, float songBeat, int minItemType, int maxItemType,
         const std::vector<Timeinfo> & timeinfo, std::list<std::shared_ptr<NoteSequenceItem>> items)
     {
         if(!items.empty()) {
@@ -383,8 +382,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                 float currBeat = insertBeat + (item->absBeat - firstBeat);
                 float currEndBeat = insertBeat + (item->beatEnd - firstBeat);
 
-                BeatPos currBeatpos = calculateBeatpos2(currBeat, currentBeatsplit, timeinfo);
-                BeatPos currEndBeatpos = calculateBeatpos2(currEndBeat, currentBeatsplit, timeinfo);;
+                BeatPos currBeatpos = calculateBeatpos2(currBeat, item->beatpos.measureSplit, timeinfo);
+                BeatPos currEndBeatpos = calculateBeatpos2(currEndBeat, item->endBeatpos.measureSplit, timeinfo);;
 
                 switch(item->getItemType()) {
                     case SequencerItemType::TOP_NOTE:

@@ -15,8 +15,8 @@ float calculateAbsBeat(BeatPos beatpos, std::vector<Timeinfo> & timeinfo) {
     
     for(auto & section: timeinfo) {
         if(beatpos < section.beatpos || section.absBeatStart == timeinfo.back().absBeatStart) {
-            float prevSectionMeasure = prevSectionBeatpos.measure + (prevSectionBeatpos.split / (float)prevSectionBeatpos.beatsplit);
-            float currSectionMeasure = beatpos.measure + (beatpos.split / (float)beatpos.beatsplit);
+            float prevSectionMeasure = prevSectionBeatpos.measure + (prevSectionBeatpos.split / (float)prevSectionBeatpos.measureSplit);
+            float currSectionMeasure = beatpos.measure + (beatpos.split / (float)beatpos.measureSplit);
 
             float currSectionBeats = (currSectionMeasure - prevSectionMeasure) * prevSectionBeatsPerMeasure;
             absBeat += currSectionBeats;
@@ -200,7 +200,7 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
 
     for(auto & section : songpos.timeinfo) {
         ordered_json sectionJSON;
-        sectionJSON["pos"] = { section.beatpos.measure, section.beatpos.beatsplit, section.beatpos.split };
+        sectionJSON["pos"] = { section.beatpos.measure, section.beatpos.measureSplit, section.beatpos.split };
         sectionJSON["bpm"] = section.bpm;
         sectionJSON["beatsPerMeasure"] = section.beatsPerMeasure;
         sectionJSON["interpolateBeatDuration"] = section.interpolateBeatDuration;
@@ -218,7 +218,7 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
 
     for(auto & item : notes.myItems) {
         ordered_json itemJSON;
-        ordered_json itemBeatpos = {item->beatpos.measure, item->beatpos.beatsplit, item->beatpos.split};
+        ordered_json itemBeatpos = {item->beatpos.measure, item->beatpos.measureSplit, item->beatpos.split};
 
         switch(item->getItemType()) {
             case SequencerItemType::STOP:
@@ -258,7 +258,7 @@ void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
                     if(currNoteType == NoteType::KEYHOLDSTART) {
                         ordered_json item2JSON;
 
-                        item2JSON["pos"] = {currNote->endBeatpos.measure, currNote->endBeatpos.beatsplit, currNote->endBeatpos.split};
+                        item2JSON["pos"] = {currNote->endBeatpos.measure, currNote->endBeatpos.measureSplit, currNote->endBeatpos.split};
                         item2JSON["key"] = keyText;
                         item2JSON["type"] = (int)(NoteType::KEYHOLDRELEASE);
                         notesJSON.push_back(item2JSON);

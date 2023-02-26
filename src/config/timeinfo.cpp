@@ -5,12 +5,12 @@ Timeinfo::Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure
         absTimeStart(calculateTimeStart(prevTimeinfo)), interpolateBeatDuration(interpolateBeatDuration) {}
 
 float Timeinfo::calculateBeatStart(Timeinfo * prevTimeinfo) {
-    auto absMeasure = beatpos.measure + (beatpos.split / (float)beatpos.beatsplit);
+    auto absMeasure = beatpos.measure + (beatpos.split / (float)beatpos.measureSplit);
 
     if(!prevTimeinfo) {
         return absMeasure * beatsPerMeasure;
     } else {
-        auto prevAbsMeasure = prevTimeinfo->beatpos.measure + ((float)prevTimeinfo->beatpos.split / prevTimeinfo->beatpos.beatsplit);
+        auto prevAbsMeasure = prevTimeinfo->beatpos.measure + ((float)prevTimeinfo->beatpos.split / prevTimeinfo->beatpos.measureSplit);
         auto absMeasureDiff = absMeasure - prevAbsMeasure;
 
         return prevTimeinfo->absBeatStart + (absMeasureDiff * prevTimeinfo->beatsPerMeasure);
