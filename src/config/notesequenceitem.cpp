@@ -12,6 +12,5 @@ bool operator==(const NoteSequenceItem & lhs, const NoteSequenceItem & rhs) {
     return (lhs.absBeat == rhs.absBeat) && 
         (lhs.beatEnd == rhs.beatEnd) && 
         (lhs.beatpos == rhs.beatpos) && 
-        (lhs.endBeatpos == rhs.endBeatpos) && 
-        (lhs.displayText == rhs.displayText);
+        (lhs.endBeatpos == rhs.endBeatpos);
 }

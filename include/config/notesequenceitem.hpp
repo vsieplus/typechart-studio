@@ -101,16 +101,16 @@ struct NoteSequenceItem {
     virtual SequencerItemType getItemType() const = 0;
     virtual void setItemType(SequencerItemType type) = 0;
 
-    float absBeat;
-    float beatEnd;
+    float absBeat = 0.f;
+    float beatEnd = 0.f;
 
     BeatPos beatpos;
     BeatPos endBeatpos;
 
     std::string displayText = "";
 
-    bool passed;
-    bool deleted;
+    bool passed = false;
+    bool deleted = false;
 };
 
 bool operator<(const std::shared_ptr<NoteSequenceItem> & lhs, const std::shared_ptr<NoteSequenceItem> & rhs);

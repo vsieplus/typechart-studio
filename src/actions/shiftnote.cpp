@@ -45,7 +45,7 @@ void ShiftNoteAction::reconcileDeletedItems(EditWindowData * editWindow) {
         if(item && item->deleted) {
             std::shared_ptr<NoteSequenceItem> replacementItem = nullptr;
             for(auto note : editWindow->chartinfo.notes.myItems) {
-                if(note && (note == item)) {
+                if(note && (*note == *item)) {
                     replacementItem = note;
                     break;
                 }
@@ -54,9 +54,10 @@ void ShiftNoteAction::reconcileDeletedItems(EditWindowData * editWindow) {
             itemIter = items.erase(itemIter);
             if(replacementItem) {
                 itemIter = items.insert(itemIter, replacementItem);
+                itemIter++;
             }
         } else {
-            ++itemIter;
+            itemIter++;
         }
     }
 }
