@@ -7,6 +7,9 @@ struct BeatPos {
     int split;
 };
 
+BeatPos operator+(const BeatPos & lhs, const BeatPos & rhs);
+BeatPos operator-(const BeatPos & lhs, const BeatPos & rhs);
+
 bool operator==(const BeatPos & lhs, const BeatPos & rhs);
 bool operator!=(const BeatPos & lhs, const BeatPos & rhs);
 bool operator<(const BeatPos & lhs, const BeatPos & rhs);
