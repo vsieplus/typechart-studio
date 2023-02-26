@@ -7,3 +7,11 @@ bool operator<(const std::shared_ptr<NoteSequenceItem> & lhs, const std::shared_
 bool operator<(const NoteSequenceItem & lhs, const NoteSequenceItem & rhs) {
     return lhs.absBeat < rhs.absBeat;
 }
+
+bool operator==(const NoteSequenceItem & lhs, const NoteSequenceItem & rhs) {
+    return (lhs.absBeat == rhs.absBeat) && 
+        (lhs.beatEnd == rhs.beatEnd) && 
+        (lhs.beatpos == rhs.beatpos) && 
+        (lhs.endBeatpos == rhs.endBeatpos) && 
+        (lhs.displayText == rhs.displayText);
+}

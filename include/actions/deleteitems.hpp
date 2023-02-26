@@ -1,13 +1,15 @@
 #ifndef DELETEITEMS_HPP
 #define DELETEITEMS_HPP
 
+#include <list>
+
 #include "actions/editaction.hpp"
 #include "config/notesequence.hpp"
 
 class DeleteItemsAction : public EditAction {
     public:
         DeleteItemsAction(bool unsaved, int beatsplit, int itemTypeStart, int itemTypeEnd, float startBeat, float endBeat, 
-            std::vector<std::shared_ptr<NoteSequenceItem>> & items);
+            std::list<std::shared_ptr<NoteSequenceItem>> & items);
 
         virtual void undoAction(EditWindowData * editWindow) override;
         virtual void redoAction(EditWindowData * editWindow) override;
@@ -19,7 +21,8 @@ class DeleteItemsAction : public EditAction {
         float startBeat;
         float endBeat;
 
-        std::vector<std::shared_ptr<NoteSequenceItem>> items;
+        std::list<std::shared_ptr<NoteSequenceItem>> items;
 };
 
 #endif // DELETEITEMS_HPP
+

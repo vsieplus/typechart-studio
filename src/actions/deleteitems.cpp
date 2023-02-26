@@ -1,9 +1,8 @@
 #include "actions/deleteitems.hpp"
 #include "ui/editwindow.hpp"
 
-
 DeleteItemsAction::DeleteItemsAction(bool unsaved, int beatsplit, int itemTypeStart, int itemTypeEnd, float startBeat, float endBeat,
-        std::vector<std::shared_ptr<NoteSequenceItem>> & items) : 
+        std::list<std::shared_ptr<NoteSequenceItem>> & items) : 
     EditAction(unsaved), beatsplit(beatsplit), itemTypeStart(itemTypeStart), itemTypeEnd(itemTypeEnd), startBeat(startBeat), endBeat(endBeat), items(items) {}
 
 void DeleteItemsAction::undoAction(EditWindowData * editWindow) {

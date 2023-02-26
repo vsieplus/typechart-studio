@@ -211,17 +211,17 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    std::vector<std::shared_ptr<NoteSequenceItem>> shiftNotes(std::string keyboardLayout, float startBeat, float endBeat,
+    std::list<std::shared_ptr<NoteSequenceItem>> shiftNotes(std::string keyboardLayout, float startBeat, float endBeat,
         int minItemType, int maxItemType, ShiftNoteAction::ShiftDirection shiftDirection)
     {
         auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
         return shiftItems(keyboardLayout, startBeat, endBeat, items, shiftDirection);
     }
 
-    std::vector<std::shared_ptr<NoteSequenceItem>> shiftItems(std::string keyboardLayout, float startBeat, float endBeat,
-        const std::vector<std::shared_ptr<NoteSequenceItem>> & items, ShiftNoteAction::ShiftDirection shiftDirection)
+    std::list<std::shared_ptr<NoteSequenceItem>> shiftItems(std::string keyboardLayout, float startBeat, float endBeat,
+        const std::list<std::shared_ptr<NoteSequenceItem>> & items, ShiftNoteAction::ShiftDirection shiftDirection)
     {
-        std::vector<std::shared_ptr<NoteSequenceItem>> shiftedItems;
+        std::list<std::shared_ptr<NoteSequenceItem>> shiftedItems;
 
         if(KEYBOARD_LAYOUTS.find(keyboardLayout) != KEYBOARD_LAYOUTS.end() && KEYBOARD_POSITION_MAPS.find(keyboardLayout) != KEYBOARD_POSITION_MAPS.end()) {
             auto & keyboardLayoutMap = KEYBOARD_LAYOUTS.at(keyboardLayout);
@@ -354,8 +354,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    std::vector<std::shared_ptr<NoteSequenceItem>> getItems(float startBeat, float endBeat, int minItemType, int maxItemType) {
-        std::vector<std::shared_ptr<NoteSequenceItem>> currItems;
+    std::list<std::shared_ptr<NoteSequenceItem>> getItems(float startBeat, float endBeat, int minItemType, int maxItemType) {
+        std::list<std::shared_ptr<NoteSequenceItem>> currItems;
 
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
             auto & seqItem = *iter;
@@ -373,7 +373,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     void insertItems(float insertBeat, float songBeat, int currentBeatsplit, int minItemType, int maxItemType,
-        const std::vector<Timeinfo> & timeinfo, std::vector<std::shared_ptr<NoteSequenceItem>> items)
+        const std::vector<Timeinfo> & timeinfo, std::list<std::shared_ptr<NoteSequenceItem>> items)
     {
         if(!items.empty()) {
             float firstBeat = items.front()->absBeat;

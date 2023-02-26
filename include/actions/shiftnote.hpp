@@ -1,9 +1,10 @@
 #ifndef SHIFTNOTE_HPP
 #define SHIFTNOTE_HPP
 
-#include <vector>
+#include <list>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "actions/editaction.hpp"
 #include "config/notesequenceitem.hpp"
@@ -46,7 +47,7 @@ class ShiftNoteAction : public EditAction {
         };
 
         ShiftNoteAction(bool unsaved, int minItemType, int maxItemType, float startBeat, float endBeat, std::string keyboardLayout,
-            ShiftDirection shiftDirection, std::vector<std::shared_ptr<NoteSequenceItem>> items);
+            ShiftDirection shiftDirection, std::list<std::shared_ptr<NoteSequenceItem>> items);
         virtual void undoAction(EditWindowData * editWindow) override;
         virtual void redoAction(EditWindowData * editWindow) override;
     private:
@@ -57,7 +58,9 @@ class ShiftNoteAction : public EditAction {
 
         ShiftDirection shiftDirection;
 
-        std::vector<std::shared_ptr<NoteSequenceItem>> items;
+        std::list<std::shared_ptr<NoteSequenceItem>> items;
+
+        void reconcileDeletedItems(EditWindowData * editWindow);
 };
 
 #endif // SHIFTNOTE_HPP

@@ -1423,7 +1423,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
     }
 
     // copy, cut, delete selection of notes
-    static std::vector<std::shared_ptr<NoteSequenceItem>> copiedItems;
+    static std::list<std::shared_ptr<NoteSequenceItem>> copiedItems;
     if(windowFocused && haveSelection) {
         if(activateCopy || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_c)])) {
             copiedItems = chartinfo.notes.getItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);

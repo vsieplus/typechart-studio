@@ -2,8 +2,8 @@
 #include "ui/editwindow.hpp"
 
 InsertItemsAction::InsertItemsAction(bool unsaved, int beatsplit, int itemTypeStart, int itemTypeEnd, float startBeat,
-        std::vector<std::shared_ptr<NoteSequenceItem>> & itemsInserted,
-        std::vector<std::shared_ptr<NoteSequenceItem>> & itemsDeleted) : 
+        std::list<std::shared_ptr<NoteSequenceItem>> & itemsInserted,
+        std::list<std::shared_ptr<NoteSequenceItem>> & itemsDeleted) : 
     EditAction(unsaved), beatsplit(beatsplit), itemTypeStart(itemTypeStart), itemTypeEnd(itemTypeEnd), startBeat(startBeat),
     itemsInserted(itemsInserted), itemsDeleted(itemsDeleted) {}
 
