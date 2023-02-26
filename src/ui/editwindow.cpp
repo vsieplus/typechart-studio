@@ -859,7 +859,7 @@ static const char * getKeyFrequencyLabels(void * data, int i) {
 }
 
 void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem, int * currTopNotes, ChartInfo & chartinfo, SongPosition & songpos,
-    bool & unsaved, int musicSourceIdx)
+    bool & unsaved, bool & newSectionWindowOpen, bool & newSectionWindowEdit, int musicSourceIdx)
 {
     ImGui::BeginChild("chartData", ImVec2(0, ImGui::GetContentRegionAvail().y * .35f), true);
     
@@ -870,11 +870,8 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
 
     ImGui::Text("Chart Sections");
     ImGui::SameLine();
-    
-    // add a section
-    static bool newSectionWindowOpen = false;
-    static bool newSectionWindowEdit = false;
 
+    // add a section
     auto currSection = songpos.timeinfo.at(songpos.currentSection);
 
     static int origSectionIndex = 0;
@@ -919,7 +916,7 @@ void showEditWindowChartData(SDL_Texture * artTexture, AudioSystem * audioSystem
     if(ImGui::Button("Edit")) {
         newSectionWindowOpen = true;
         newSectionWindowEdit = true;
-        
+
         newSectionMeasure = currSection.beatpos.measure;
         newSectionBeatsplit = currSection.beatpos.beatsplit;
         newSectionSplit = currSection.beatpos.split;
@@ -1778,7 +1775,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
         currWindow.showEditWindowMetadata();
         ImGui::SameLine();
         showEditWindowChartData(currWindow.artTexture.get(), audioSystem, &currWindow.currTopNotes, currWindow.chartinfo, currWindow.songpos,
-            currWindow.unsaved, currWindow.musicSourceIdx);
+            currWindow.unsaved, currWindow.newSection, currWindow.newSectionEdit, currWindow.musicSourceIdx);
 
         ImGui::Separator();
         showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, 

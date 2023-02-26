@@ -29,6 +29,8 @@ struct EditWindowData {
     bool unsaved = true;
     bool initialSaved = false;
     bool focused = false;
+    bool newSection = false;
+    bool newSectionEdit = false;
 
     bool editingUItitle = false;
     bool editingUIartist = false;
