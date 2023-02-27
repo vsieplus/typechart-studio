@@ -1372,13 +1372,13 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             insertItemType = clickedItemType;
 
             insertBeatpos = calculateBeatpos(clickedBeat, currentBeatsplit, songpos.timeinfo);
-            
+
             addItemFlags = ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_EnterReturnsTrue;
 
             switch (insertItemType) {
                 case SequencerItemType::TOP_NOTE:
                     addItemFlags |= ImGuiInputTextFlags_CharsDecimal;
-                    break;                
+                    break;
                 case SequencerItemType::MID_NOTE:
                     addItemFlags |= ImGuiInputTextFlags_CallbackCharFilter;
                     break;
@@ -1673,7 +1673,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
                 break;
         }
-    
+
         ImGui::EndPopup();
     }
 
@@ -1826,11 +1826,14 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
     if(activateUndo) {
         if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).editActionsUndo.empty()) {
-            auto action = editWindows.at(currentWindow).editActionsUndo.top();
-            action->undoAction(&editWindows.at(currentWindow));
+            auto & currEditWindow = editWindows.at(currentWindow);
 
-            editWindows.at(currentWindow).editActionsRedo.push(action);
-            editWindows.at(currentWindow).editActionsUndo.pop();
+            auto action = currEditWindow.editActionsUndo.top();
+
+            action->undoAction(&currEditWindow);
+
+            currEditWindow.editActionsRedo.push(action);
+            currEditWindow.editActionsUndo.pop();
         }
 
         activateUndo = false;
@@ -1838,12 +1841,14 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
     if(activateRedo) {
         if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).editActionsRedo.empty()) {
-            auto action = editWindows.at(currentWindow).editActionsRedo.top();
-            action->redoAction(&editWindows.at(currentWindow));
+            auto & currEditWindow = editWindows.at(currentWindow);
 
-            editWindows.at(currentWindow).editActionsUndo.push(action);
-            editWindows.at(currentWindow).editActionsRedo.pop();
-            editWindows.at(currentWindow).unsaved = true;
+            auto action = currEditWindow.editActionsRedo.top();
+            action->redoAction(&currEditWindow);
+
+            currEditWindow.editActionsUndo.push(action);
+            currEditWindow.editActionsRedo.pop();
+            currEditWindow.unsaved = true;
         }
 
         activateRedo = false;
