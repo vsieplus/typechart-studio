@@ -361,7 +361,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, SDL_Renderer* renderer)
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(window, &info))
-        ImGui::GetMainViewport()->PlatformHandleRaw = (void*)info.info.win.window;
+        //ImGui::GetMainViewport()->PlatformHandleRaw = (void*)info.info.win.window;
 #else
     (void)window;
 #endif

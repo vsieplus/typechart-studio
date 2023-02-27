@@ -93,7 +93,7 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
 
     echo "-- Copying libraries"
     # copy appropriate dynamic libraries
-    libs=("libsndfile" "libogg" "libvorbis" "libopus" "libFLAC")
+    libs=("libsndfile" "libogg" "libvorbis" "libopus" "libFLAC" "libpng16-16" "libjpeg-9" "libwepb-7" "libtiff-5")
     winlibs=("SDL2" "SDL2_image" "OpenAL32" "zlib1" "libmpg123-0" "libmp3lame-0")
     if [[ "${BUILD_SYSTEM}" == "linux" ]]; then
         LIB_DIR="/usr/local/lib"
@@ -136,7 +136,7 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
     if [[ "${BUILD_SYSTEM}" == "linux" ]]; then
         for linuxlib in ${linuxlibs[@]}; do
             cp -L "/usr/lib/x86_64-linux-gnu/${linuxlib}" "${OUT_DIR}"
-        done        
+        done
 
         mv "${OUT_DIR}/libSDL2-2.0.so.0.18.2" "${OUT_DIR}/libSDL2-2.0.so.0"
         mv "${OUT_DIR}/libSDL2_image-2.0.so.0.2.3" "${OUT_DIR}/libSDL2_image-2.0.so.0"
