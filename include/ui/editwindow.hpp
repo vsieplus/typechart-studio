@@ -41,16 +41,17 @@ struct EditWindowData {
 
     int ID;
     int musicSourceIdx;
-    
+    int lastSavedActionIndex = 0;
+
+    int UIlevel = 1;
+    int UIkeyboardLayout = 0;
+    int UIdifficulty = 0;
+
     char UItitle[64] = "";
     char UIartist[64] = "";
     char UIgenre[64] = "";
     char UIbpmtext[16] = "";
-
     char UItypist[64] = "";
-    int UIlevel = 1;
-    int UIkeyboardLayout = 0;
-    int UIdifficulty = 0;
 
     std::string name;
 

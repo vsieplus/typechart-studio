@@ -578,6 +578,8 @@ void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePat
     currWindow.initialSaved = true;
     currWindow.unsaved = false;
     currWindow.name = chartSaveFilename;
+
+    currWindow.lastSavedActionIndex = currWindow.editActionsUndo.size();
 }
 
 void startSaveCurrentChart(bool saveAs) {
@@ -1834,6 +1836,8 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
 
             currEditWindow.editActionsRedo.push(action);
             currEditWindow.editActionsUndo.pop();
+
+            currEditWindow.unsaved = (int)currEditWindow.editActionsUndo.size() != currEditWindow.lastSavedActionIndex;
         }
 
         activateUndo = false;
