@@ -571,7 +571,7 @@ void closeWindow(EditWindowData & currWindow, std::vector<EditWindowData>::itera
     iter = editWindows.erase(iter);
 }
 
-void saveCurrentChartFiles(EditWindowData & currWindow, std::string chartSavePath, std::string chartSaveFilename, std::string saveDir) {
+void saveCurrentChartFiles(EditWindowData & currWindow, fs::path chartSavePath, std::string chartSaveFilename, std::string saveDir) {
     currWindow.songinfo.saveSonginfo(saveDir, currWindow.initialSaved);
     currWindow.chartinfo.saveChart(chartSavePath, currWindow.songpos);
 
@@ -1812,7 +1812,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
                 updatedName = true;
             }
 
-            saveCurrentChartFiles(currEditWindow, chartSavePath, chartSaveFilename, saveDir);
+            saveCurrentChartFiles(currEditWindow, fs::path(chartSavePath), chartSaveFilename, saveDir);
 
             Preferences::Instance().addMostRecentFile(chartSavePath);
             lastChartSaveDir = saveDir;

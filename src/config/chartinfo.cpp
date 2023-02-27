@@ -36,7 +36,7 @@ ChartInfo::ChartInfo() {}
 ChartInfo::ChartInfo(int level, std::string typist, std::string keyboardLayout, std::string difficulty) : 
         level(level), typist(typist), keyboardLayout(keyboardLayout), difficulty(difficulty) {}
 
-bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
+bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
     savePath = chartPath;
 
     ordered_json chartinfoJSON;
@@ -183,7 +183,7 @@ bool ChartInfo::loadChart(std::string chartPath, SongPosition & songpos) {
     return true;
 }
 
-void ChartInfo::saveChart(std::string chartPath, SongPosition & songpos) {
+void ChartInfo::saveChart(fs::path chartPath, SongPosition & songpos) {
     savePath = chartPath;
 
     ordered_json chartinfo;

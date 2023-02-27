@@ -3,6 +3,9 @@
 
 #include <string>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #include "config/note.hpp"
 #include "config/notesequence.hpp"
 #include "config/stop.hpp"
@@ -14,8 +17,8 @@ struct ChartInfo {
     ChartInfo();
     ChartInfo(int level, std::string typist, std::string keyboardLayout, std::string difficulty);
 
-    bool loadChart(std::string chartPath, SongPosition & songpos);
-    void saveChart(std::string chartPath, SongPosition & songpos);
+    bool loadChart(fs::path chartPath, SongPosition & songpos);
+    void saveChart(fs::path chartPath, SongPosition & songpos);
 
     int level;
 
@@ -24,7 +27,7 @@ struct ChartInfo {
 
     std::string difficulty;
 
-    std::string savePath = "";
+    fs::path savePath = "";
 
     NoteSequence notes;
 };
