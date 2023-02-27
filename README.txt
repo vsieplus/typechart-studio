@@ -1,5 +1,5 @@
 This is Typechart Studio, a tool that can create charts for the game Typing Tempo.
-Current Release: v0.2.4
+Current Release: v0.2.5
 
 You can download Typing Tempo from the following locations:
     itch.io:    https://rainbeatgames.itch.io/typing-tempo
