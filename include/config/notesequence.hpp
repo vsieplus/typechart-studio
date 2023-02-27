@@ -61,8 +61,8 @@ inline BeatPos calculateBeatpos2(float absBeat, int measureSplit, const std::vec
 
         // calculate the leftover beats
         bool isLastSection = i == timeinfo.size() - 1;
-        bool beatInPrevSection = absBeat < time.absBeatStart; 
-        if (beatInPrevSection || isLastSection) {
+        bool beatInPrevSection = absBeat < time.absBeatStart;
+        if(beatInPrevSection || isLastSection) {
             int currBeatsPerMeasure = beatInPrevSection ? prevBeatsPerMeasure : time.beatsPerMeasure;
             int currentBeatsplit = measureSplit / currBeatsPerMeasure;
             float currAbsBeat = beatInPrevSection ? prevSectionAbsBeat : time.absBeatStart;
@@ -376,27 +376,29 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     {
         if(!items.empty()) {
             float firstBeat = items.front()->absBeat;
+            BeatPos firstBeatPos = items.front()->beatpos;
+            BeatPos insertBeatPos = calculateBeatpos2(insertBeat, firstBeatPos.measureSplit, timeinfo);
+
             deleteItems(insertBeat, insertBeat + (items.back()->beatEnd - firstBeat), minItemType, maxItemType);
             
-            for(auto item: items) {
+            for(auto item : items) {
                 float currBeat = insertBeat + (item->absBeat - firstBeat);
-                float currEndBeat = insertBeat + (item->beatEnd - firstBeat);
 
-                BeatPos currBeatpos = calculateBeatpos2(currBeat, item->beatpos.measureSplit, timeinfo);
-                BeatPos currEndBeatpos = calculateBeatpos2(currEndBeat, item->endBeatpos.measureSplit, timeinfo);;
+                BeatPos currBeatPos = insertBeatPos + (item->beatpos - firstBeatPos);
+                BeatPos currEndBeatPos = insertBeatPos + (item->endBeatpos - firstBeatPos);
 
                 switch(item->getItemType()) {
                     case SequencerItemType::TOP_NOTE:
                     case SequencerItemType::MID_NOTE:
                     case SequencerItemType::BOT_NOTE:
-                        addNote(currBeat, songBeat, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos, item->getItemType(), item->displayText);
+                        addNote(currBeat, songBeat, item->beatEnd - item->absBeat, currBeatPos, currEndBeatPos, item->getItemType(), item->displayText);
                         break;
                     case SequencerItemType::STOP:
-                        addStop(currBeat, songBeat, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos);
+                        addStop(currBeat, songBeat, item->beatEnd - item->absBeat, currBeatPos, currEndBeatPos);
                         break;
                     case SequencerItemType::SKIP:
                         auto currSkip = std::dynamic_pointer_cast<Skip>(item);
-                        addSkip(currBeat, songBeat, currSkip->skipTime, item->beatEnd - item->absBeat, currBeatpos, currEndBeatpos);
+                        addSkip(currBeat, songBeat, currSkip->skipTime, item->beatEnd - item->absBeat, currBeatPos, currEndBeatPos);
                         break;
                 }
             }
