@@ -1752,6 +1752,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
 void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed) {
     static bool updatedName = false;
+    static ImVec2 sizeBeforeUpdate = editWindowSize;
     static ImVec2 currWindowSize = ImVec2(0, 0);
 
     unsigned int i = 0;
@@ -1764,8 +1765,8 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
         if(!currWindow.open)    windowFlags |= ImGuiWindowFlags_NoInputs;
 
         if(updatedName) {
-            ImGui::SetNextWindowSize(currWindowSize);
             updatedName = false;
+            ImGui::SetNextWindowSize(sizeBeforeUpdate);
         }
 
         ImGui::Begin(currWindow.name.c_str(), &(currWindow.open), windowFlags);
@@ -1814,6 +1815,7 @@ void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed)
             EditWindowData & currEditWindow = editWindows.at(currentWindow);
             if(currEditWindow.name != chartSaveFilename) {
                 updatedName = true;
+                sizeBeforeUpdate = currWindowSize;
             }
 
             saveCurrentChartFiles(currEditWindow, fs::path(chartSavePath), chartSaveFilename, saveDir);
