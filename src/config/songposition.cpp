@@ -145,7 +145,8 @@ void SongPosition::addSkip(std::shared_ptr<Skip> skip) {
 
 void SongPosition::removeSkip(float absBeat) {
     for(auto skipIter = skips.begin(); skipIter != skips.end();) {
-        if(std::abs((*skipIter)->absBeat - absBeat) < FLT_EPSILON) {
+        auto currSkip = *skipIter;
+        if(currSkip->absBeat <= absBeat && absBeat <= currSkip->absBeat + currSkip->beatDuration) {
             skipIter = skips.erase(skipIter);
             resetCurrskip();
             break;
