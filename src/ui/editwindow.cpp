@@ -535,7 +535,7 @@ void showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem) {
 void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     if(newEditStarted) {
         ImGui::SetNextWindowSize(newEditWindowSize);
-        ImGui::Begin("New Chart", &newEditStarted);
+        ImGui::Begin("New Chart", &newEditStarted, ImGuiWindowFlags_NoResize);
 
         showSongConfig();
         ImGui::Separator();
