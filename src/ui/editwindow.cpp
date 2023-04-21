@@ -286,7 +286,7 @@ void showSongConfig() {
     ImGui::InputText(ICON_FA_COMPACT_DISC " Genre", UIgenre, 64);
     ImGui::InputText(ICON_FA_HEART_PULSE " BPM", UIbpmtext, 64);
     ImGui::SameLine();
-    HelpMarker("If the song has BPM changes, enter the initial BPM");
+    HelpMarker("If the song has BPM changes, enter the initial BPM.\nYou will be able to add BPM changes later.");
 }
 
 static char UItypist[64] = "";
