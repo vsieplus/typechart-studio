@@ -433,7 +433,7 @@ std::string loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, f
 
     auto newWindowData = getNextWindowNameAndID();
     auto windowID = newWindowData.second;
-    std::string windowName = fs::path(chartinfo.savePath).filename().string();
+    std::string windowName = fs::path(chartinfo.savePath).filename().string() + "(" + songinfo.title + " - " + songinfo.artist + ")";
 
     auto artTexture = Texture::loadTexture(songinfo.coverartFilepath, renderer);
 
