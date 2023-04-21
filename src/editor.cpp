@@ -20,7 +20,7 @@ const std::string PROGRAM_NAME = "Typechart Studio";
 const std::string PREFERENCES_PATH = "preferences.json";
 
 const fs::path FONTS_DIR = fs::path("fonts");
-const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("Sen-Regular.ttf");
+const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("NotoSans-Regular.ttf");
 const fs::path ICON_FONT_PATH = FONTS_DIR / fs::path("fa-solid-900.ttf");
 
 const fs::path IMAGES_DIR = fs::path("images");
