@@ -132,7 +132,7 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
     fi
 
     # linux specific
-    linuxlibs=( "libopenal.so.1" "libsndio.so.7.0" )
+    linuxlibs=( "libopenal.so.1" "libsndio.so.7" )
     if [[ "${BUILD_SYSTEM}" == "linux" ]]; then
         for linuxlib in ${linuxlibs[@]}; do
             cp -L "/usr/lib/x86_64-linux-gnu/${linuxlib}" "${OUT_DIR}"
