@@ -25,35 +25,35 @@ void Preferences::showPreferencesWindow(AudioSystem * audioSystem) {
         strncpy(inputDirStr, inputDir.c_str(), 256);
 
         ImGui::InputText("Default Input Directory", inputDirStr, 256, ImGuiInputTextFlags_ReadOnly);
-        ImGui::SameLine();
-        if(ImGui::Button("Browse...##inputdir")) {
-            ImGuiFileDialog::Instance()->OpenDialog("chooseInputDir", "Choose Default Input Directory", nullptr, Preferences::inputDir);
-        }
+        // ImGui::SameLine();
+        // if(ImGui::Button("Browse...##inputdir")) {
+        //     ImGuiFileDialog::Instance()->OpenDialog("chooseInputDir", "Choose Default Input Directory", nullptr, Preferences::inputDir);
+        // }
 
-        if(ImGuiFileDialog::Instance()->Display("chooseInputDir", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
-            if (ImGuiFileDialog::Instance()->IsOk()) {
-                inputDir = ImGuiFileDialog::Instance()->GetFilePathName();
-            }
+        // if(ImGuiFileDialog::Instance()->Display("chooseInputDir", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
+        //     if (ImGuiFileDialog::Instance()->IsOk()) {
+        //         inputDir = ImGuiFileDialog::Instance()->GetFilePathName();
+        //     }
 
-            ImGuiFileDialog::Instance()->Close();
-        }
+        //     ImGuiFileDialog::Instance()->Close();
+        // }
 
         char saveDirStr[256];
         strncpy(saveDirStr, saveDir.c_str(), 256);
 
         ImGui::InputText("Default Save Directory", saveDirStr, 256, ImGuiInputTextFlags_ReadOnly);
-        ImGui::SameLine();
-        if(ImGui::Button("Browse...##outputdir")) {
-            ImGuiFileDialog::Instance()->OpenDialog("chooseOutputDir", "Choose Default Output Directory", nullptr, Preferences::saveDir.c_str());
-        }
+        // ImGui::SameLine();
+        // if(ImGui::Button("Browse...##outputdir")) {
+        //     ImGuiFileDialog::Instance()->OpenDialog("chooseOutputDir", "Choose Default Output Directory", nullptr, Preferences::saveDir.c_str());
+        // }
 
-        if(ImGuiFileDialog::Instance()->Display("chooseOutputDir", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
-            if (ImGuiFileDialog::Instance()->IsOk()) {
-                saveDir = ImGuiFileDialog::Instance()->GetFilePathName();
-            }
+        // if(ImGuiFileDialog::Instance()->Display("chooseOutputDir", ImGuiWindowFlags_NoCollapse, minFDSize, maxFDSize)) {
+        //     if (ImGuiFileDialog::Instance()->IsOk()) {
+        //         saveDir = ImGuiFileDialog::Instance()->GetFilePathName();
+        //     }
 
-            ImGuiFileDialog::Instance()->Close();
-        }
+        //     ImGuiFileDialog::Instance()->Close();
+        // }
 
         if(ImGui::SliderFloat("Music volume", &musicVolume, 0.f, 1.f)) {
             audioSystem->setMusicVolume(Preferences::musicVolume);
