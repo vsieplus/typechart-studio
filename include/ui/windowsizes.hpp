@@ -3,8 +3,8 @@
 
 #include "imgui.h"
 
-const int SCREEN_WIDTH = 1920;
-const int SCREEN_HEIGHT = 1080;
+const int SCREEN_WIDTH = 1280;
+const int SCREEN_HEIGHT = 720;
 
 // default window sizes
 inline ImVec2 maxFDSize = ImVec2(SCREEN_WIDTH*3.f/4, SCREEN_HEIGHT*3.f/4);
