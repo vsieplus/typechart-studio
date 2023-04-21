@@ -1587,13 +1587,15 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     ImGui::EndCombo();
                 }
 
-                for(auto & [keyIdx, keyText] : FUNCTION_KEY_COMBO_ITEMS) {
-                    if(keysPressed[FUNCTION_KEY_COMBO_SCANCODES.at(keyIdx)]) {
-                        selectedFuncKey = keyIdx;
-                        insertKey = true;
-                        break;
-                    }
-                }
+                insertKey = true;
+
+                // for(auto & [keyIdx, keyText] : FUNCTION_KEY_COMBO_ITEMS) {
+                //     if(keysPressed[FUNCTION_KEY_COMBO_SCANCODES.at(keyIdx)]) {
+                //         selectedFuncKey = keyIdx;
+                //         insertKey = true;
+                //         break;
+                //     }
+                // }
 
                 if(insertKey) {
                     std::string keyText = FUNCTION_KEY_COMBO_ITEMS.at(selectedFuncKey);
