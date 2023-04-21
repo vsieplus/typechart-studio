@@ -1380,7 +1380,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
             insertBeatpos = calculateBeatpos(clickedBeat, currentBeatsplit, songpos.timeinfo);
 
-            addItemFlags = ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_EnterReturnsTrue;
+            addItemFlags = ImGuiInputTextFlags_CharsUppercase;
 
             switch (insertItemType) {
                 case SequencerItemType::TOP_NOTE:
