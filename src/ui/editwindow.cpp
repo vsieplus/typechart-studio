@@ -769,6 +769,11 @@ void EditWindowData::showEditWindowMetadata() {
 }
 
 void removeSection(SongPosition & songpos, int sectionIndex) {
+    if(songpos.timeinfo.size() == 1) {
+        songpos.timeinfo.clear();
+        return;
+    }
+
     auto currSectionBeatpos = songpos.timeinfo.at(sectionIndex).beatpos;
 
     Timeinfo * prevSection = nullptr;
@@ -804,28 +809,24 @@ bool addSection(int newSectionBeatsPerMeasure, float newSectionBPM, float newSec
         }
     }
 
-    if(prevSection) {
-        Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM, newSectionInterpolateDuration);
-        songpos.timeinfo.push_back(newSection);
+    Timeinfo newSection = Timeinfo(newBeatpos, prevSection, newSectionBeatsPerMeasure, newSectionBPM, newSectionInterpolateDuration);
+    songpos.timeinfo.push_back(newSection);
 
-        std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
-        prevSection = &(songpos.timeinfo.front());
+    std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
+    prevSection = &(songpos.timeinfo.front());
 
-        // update following section(s) time start after adding new section
-        for(auto & section : songpos.timeinfo) {
-            if(*(prevSection) < section) {
-                section.absTimeStart = section.calculateTimeStart(prevSection);
-                prevSection = &section;
-            }
+    // update following section(s) time start after adding new section
+    for(auto & section : songpos.timeinfo) {
+        if(*(prevSection) < section) {
+            section.absTimeStart = section.calculateTimeStart(prevSection);
+            prevSection = &section;
         }
-
-        songpos.setSongBeatPosition(songpos.absBeat);
-        unsaved = true;
-
-        return true;
     }
 
-    return false;
+    songpos.setSongBeatPosition(songpos.absBeat);
+    unsaved = true;
+
+    return true;
 }
 
 bool editSection(int origSectionIndex, int newSectionBeatsPerMeasure, float newSectionBPM, float newSectionInterpolateDuration,
