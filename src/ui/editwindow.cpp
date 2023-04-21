@@ -1105,19 +1105,21 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         currWindow.unsaved = true;
     }
 
+    if(ImGui::IsItemDeactivatedAfterEdit()) {
+        // update max prev stop if needed, clamp
+        if(*previewStart > *previewStop) {
+            *previewStop = *previewStart;
+        }
+
+        if(*previewStart < 0) {
+            *previewStart = 0;
+        } else if(*previewStart > musicLengthSecs) {
+            *previewStart = musicLengthSecs;
+        }
+    }
+
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive()) {
         ImGui::SetTooltip("Music preview start");
-    }
-
-    // update max prev stop if needed, clamp
-    if(*previewStart > *previewStop) {
-        *previewStop = *previewStart;
-    }
-
-    if(*previewStart < 0) {
-        *previewStart = 0;
-    } else if(*previewStart > musicLengthSecs) {
-        *previewStart = musicLengthSecs;
     }
 
     ImGui::SameLine();
@@ -1126,19 +1128,21 @@ void showEditWindowToolbar(AudioSystem * audioSystem, float * previewStart, floa
         currWindow.unsaved = true;
     }
 
+    if(ImGui::IsItemDeactivatedAfterEdit()) {
+        // update min prevStart, clamp
+        if(*previewStop < *previewStart) {
+            *previewStart = *previewStop;
+        }
+
+        if(*previewStop < 0) {
+            *previewStop = 0;
+        } else if(*previewStop > musicLengthSecs) {
+            *previewStop = musicLengthSecs;
+        }
+    }
+
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive()) {
         ImGui::SetTooltip("Music preview stop");
-    }
-
-    // update min prevStart, clamp
-    if(*previewStop < *previewStart) {
-        *previewStart = *previewStop;
-    }
-
-    if(*previewStop < 0) {
-        *previewStop = 0;
-    } else if(*previewStop > musicLengthSecs) {
-        *previewStop = musicLengthSecs;
     }
 
     ImGui::SameLine();
