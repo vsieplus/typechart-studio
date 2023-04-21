@@ -13,7 +13,7 @@ namespace fs = std::filesystem;
 
 #include <SDL2/SDL_image.h>
 
-const int MENU_FONT_SIZE = 24;
+const int MENU_FONT_SIZE = 28;
 
 const std::string PROGRAM_NAME = "Typechart Studio";
 
