@@ -240,7 +240,7 @@ void ChartInfo::saveChart(fs::path chartPath, SongPosition & songpos) {
             case SequencerItemType::MID_NOTE:
             case SequencerItemType::BOT_NOTE:
                 {
-                    auto currNote = std::dynamic_pointer_cast<Note>(item);   
+                    auto currNote = std::dynamic_pointer_cast<Note>(item);
                     NoteType currNoteType = currNote->noteType;
 
                     itemJSON["pos"] = itemBeatpos;
