@@ -4,7 +4,6 @@ releases/*
 .vscode/*
 
 imgui.ini
-imgui
 *.o
 
 todo.txt
