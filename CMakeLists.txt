@@ -15,7 +15,6 @@ message(STATUS "System name: ${CMAKE_SYSTEM_NAME}")
 
 add_subdirectory(src)
 add_subdirectory(include)
-add_subdirectory(json)
 
 set(BUILD_DIRS "build/linux/Debug" "build/linux/Release" "build/windows32/Debug" "build/windows32/Release"
     "build/windows64/Debug" "build/windows64/Release" )
@@ -27,7 +26,6 @@ find_package(OpenAL REQUIRED)
 INCLUDE(FindPkgConfig)
 PKG_SEARCH_MODULE(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
 
-set(NLOHMANN_JSON_LIBRARIES "nlohmann_json::nlohmann_json")
 set(SNDFILE_LIBRARIES "sndfile")
 
 # IMGUI
@@ -67,7 +65,6 @@ target_link_libraries(${PROJECT_NAME}
     ${SDL2IMAGE_LIBRARIES}
     ${OPENAL_LIBRARY}
     ${SNDFILE_LIBRARIES}
-    ${NLOHMANN_JSON_LIBRARIES}
 )
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
