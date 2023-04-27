@@ -45,4 +45,4 @@ Thanks to everyone who has contributed to this project!
 
 ## License
 
-Typechart Studio is licensed under the [zlib license](license/LICENSE.TypechartStudio.txt). See [license/](license/) for a full list of licenses of the dependencies used by Typechart Studio.
+Typechart Studio is licensed under the [zlib license](LICENSE). See [license/](license/) for a full list of licenses of the dependencies used by Typechart Studio.
