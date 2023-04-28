@@ -24,4 +24,3 @@ class DeleteItemsAction : public EditAction {
 };
 
 #endif // DELETEITEMS_HPP
-
