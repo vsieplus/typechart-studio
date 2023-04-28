@@ -34,6 +34,7 @@ set(IMGUI_DIR ${EXTERNAL_DIR}/imgui)
 set(IMGUI_FD_DIR ${EXTERNAL_DIR}/ImGuiFileDialog)
 set(IMGUIZMO_DIR ${EXTERNAL_DIR}/ImGuizmo)
 set(ICNFNTCPP_DIR ${EXTERNAL_DIR}/IconFontCppHeaders)
+set(JSON_DIR ${EXTERNAL_DIR}/nlohmann)
 
 target_sources(${PROJECT_NAME}
                 PRIVATE
@@ -57,6 +58,7 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC ${IMGUI_FD_DIR}
     PUBLIC ${IMGUIZMO_DIR}
     PUBLIC ${ICNFNTCPP_DIR}
+    PUBLIC ${JSON_DIR}
     PUBLIC ${OPENAL_INCLUDE_DIR}
     PUBLIC ${BUILD_DIRS}
 )

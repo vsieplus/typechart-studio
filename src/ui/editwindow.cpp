@@ -5,7 +5,7 @@
 #include <fstream>
 #include <map>
 
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 
 #include "imgui.h"
 #include "ImGuiFileDialog.h"

@@ -4,7 +4,7 @@
 
 #include <fstream>
 #include <memory>
-#include <nlohmann/json.hpp>
+#include <json.hpp>
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
 
