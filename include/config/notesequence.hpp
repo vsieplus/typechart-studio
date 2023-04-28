@@ -82,7 +82,7 @@ inline BeatPos calculateBeatpos2(float absBeat, int measureSplit, const std::vec
         i++;
     }
 
-    return (BeatPos){measure, measureSplit, split};
+    return BeatPos(measure, measureSplit, split);
 }
 
 struct NoteSequence : public ImSequencer::SequenceInterface {

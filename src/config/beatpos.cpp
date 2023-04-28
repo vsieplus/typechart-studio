@@ -2,6 +2,10 @@
 
 #include <numeric>
 
+BeatPos::BeatPos() {}
+
+BeatPos::BeatPos(int measure, int measureSplit, int split) : measure(measure), measureSplit(measureSplit), split(split) {}
+
 BeatPos operator+(const BeatPos & lhs, const BeatPos & rhs) {
     // make sure lhs / rhs measuresplit have the same denominator
     int measureSplit = lhs.measureSplit;

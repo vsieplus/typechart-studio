@@ -30,6 +30,8 @@ struct SongPosition {
     void setSongTimePosition(double absTime);
     void setSongBeatPosition(double absBeat);
 
+    float calculateAbsBeat(BeatPos beatpos);
+
     bool started = false;
     bool paused = false;
     bool bpmInterpolating = false;

@@ -1241,7 +1241,7 @@ BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<
         i++;
     }
 
-    return (BeatPos){measure, measureSplit, split};
+    return BeatPos(measure, measureSplit, split);
 }
 
 void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, bool & unsaved, std::vector<bool> & keysPressed,

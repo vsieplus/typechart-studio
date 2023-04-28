@@ -8,29 +8,6 @@
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
 
-float calculateAbsBeat(BeatPos beatpos, std::vector<Timeinfo> & timeinfo) {
-    float absBeat = 0.f;
-    int prevSectionBeatsPerMeasure = 4;
-    BeatPos prevSectionBeatpos = {0, 1, 0};
-    
-    for(auto & section: timeinfo) {
-        if(beatpos < section.beatpos || section.absBeatStart == timeinfo.back().absBeatStart) {
-            float prevSectionMeasure = prevSectionBeatpos.measure + (prevSectionBeatpos.split / (float)prevSectionBeatpos.measureSplit);
-            float currSectionMeasure = beatpos.measure + (beatpos.split / (float)beatpos.measureSplit);
-
-            float currSectionBeats = (currSectionMeasure - prevSectionMeasure) * prevSectionBeatsPerMeasure;
-            absBeat += currSectionBeats;
-            break;
-        } else {
-            absBeat = section.absBeatStart;
-            prevSectionBeatpos = section.beatpos;
-            prevSectionBeatsPerMeasure = section.beatsPerMeasure;
-        }
-    }
-
-    return absBeat;
-}
-
 ChartInfo::ChartInfo() {}
 
 ChartInfo::ChartInfo(int level, std::string typist, std::string keyboardLayout, std::string difficulty) : 
@@ -64,8 +41,13 @@ bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
                 interpolateBeatDuration = sectionJSON["interpolateBeatDuration"];
             }
 
-            songpos.timeinfo.push_back(Timeinfo((BeatPos){pos.at(0), pos.at(1), pos.at(2)}, prevTimeinfo, beatsPerMeasure, bpm, interpolateBeatDuration));
-            prevTimeinfo = &(songpos.timeinfo.back());
+            if(pos.size() == constants::NUM_BEATPOS_ELEMENTS) {
+                auto sectionStartPos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
+                auto sectionTimeInfo = Timeinfo(sectionStartPos, prevTimeinfo, beatsPerMeasure, bpm, interpolateBeatDuration);
+
+                songpos.timeinfo.push_back(sectionTimeInfo);
+                prevTimeinfo = &(songpos.timeinfo.back());
+            }
         }
 
         std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
@@ -76,12 +58,14 @@ bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
                 std::vector<int> pos = stopJSON["pos"];
                 float beatDuration = stopJSON["duration"];
 
-                BeatPos beatpos = (BeatPos){pos.at(0), pos.at(1), pos.at(2)};
-                float absBeat = calculateAbsBeat(beatpos, songpos.timeinfo);
+                if(pos.size() == constants::NUM_BEATPOS_ELEMENTS) {
+                    BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
+                    float absBeat = songpos.calculateAbsBeat(beatpos);
 
-                BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
+                    BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
 
-                notes.addStop(absBeat, songpos.absBeat, beatDuration, beatpos, endBeatpos);
+                    notes.addStop(absBeat, songpos.absBeat, beatDuration, beatpos, endBeatpos);
+                }
             }
         }
 
@@ -92,13 +76,15 @@ bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
                 float beatDuration = skipJSON["duration"];
                 float skipTime = skipJSON["skiptime"];
 
-                BeatPos beatpos = (BeatPos){pos.at(0), pos.at(1), pos.at(2)};
-                float absBeat = calculateAbsBeat(beatpos, songpos.timeinfo);
+                if(pos.size() == constants::NUM_BEATPOS_ELEMENTS) {
+                    BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
+                    float absBeat = songpos.calculateAbsBeat(beatpos);
 
-                BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
+                    BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
 
-                auto skip = notes.addSkip(absBeat, songpos.absBeat, skipTime, beatDuration, beatpos, endBeatpos);
-                songpos.addSkip(skip);
+                    auto skip = notes.addSkip(absBeat, songpos.absBeat, skipTime, beatDuration, beatpos, endBeatpos);
+                    songpos.addSkip(skip);
+                }
             }
         }
 
@@ -114,11 +100,11 @@ bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
             }
 
             std::vector<int> pos = noteJSON["pos"];
-            if(pos.size() != 3) {
+            if(pos.size() != constants::NUM_BEATPOS_ELEMENTS) {
                 continue;
             }
 
-            BeatPos beatpos = (BeatPos){pos.at(0), pos.at(1), pos.at(2)};
+            BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
             BeatPos endBeatpos = beatpos;
             std::string keyText = noteJSON["key"];
             if(STR_TO_FUNCTION_KEY.find(keyText) != STR_TO_FUNCTION_KEY.end()) {
@@ -141,14 +127,16 @@ bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
 
                         if(nextNoteKeyText == keyText && nextNoteType == NoteType::KEYHOLDRELEASE) {
                             std::vector<int> nextNotepos = nextNoteJSON["pos"];
-                            endBeatpos = (BeatPos) { nextNotepos.at(0), nextNotepos.at(1), nextNotepos.at(2) };
-                            break;
+                            if(nextNotepos.size() == constants::NUM_BEATPOS_ELEMENTS) {
+                                endBeatpos = (BeatPos) { nextNotepos.at(0), nextNotepos.at(1), nextNotepos.at(2) };
+                                break;
+                            }
                         }
                     }
 
                     break;
                 case NoteType::KEYHOLDRELEASE:
-                    continue;                    
+                    continue;
             }
 
             SequencerItemType itemType;
@@ -166,8 +154,8 @@ bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
                 return false;
             }
 
-            float absBeat = calculateAbsBeat(beatpos, songpos.timeinfo);
-            float absBeatEnd = calculateAbsBeat(endBeatpos, songpos.timeinfo);
+            float absBeat = songpos.calculateAbsBeat(beatpos);
+            float absBeatEnd = songpos.calculateAbsBeat(endBeatpos);
 
             float beatDuration = absBeatEnd - absBeat;
 

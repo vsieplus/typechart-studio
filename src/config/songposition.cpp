@@ -226,6 +226,29 @@ void SongPosition::setSongBeatPosition(double absBeat) {
     }
 }
 
+float SongPosition::calculateAbsBeat(BeatPos beatpos) {
+    float absBeat = 0.f;
+    int prevSectionBeatsPerMeasure = 4;
+    BeatPos prevSectionBeatpos = {0, 1, 0};
+
+    for(auto & section: timeinfo) {
+        if(beatpos < section.beatpos || section.absBeatStart == timeinfo.back().absBeatStart) {
+            float prevSectionMeasure = prevSectionBeatpos.measure + (prevSectionBeatpos.split / (float)prevSectionBeatpos.measureSplit);
+            float currSectionMeasure = beatpos.measure + (beatpos.split / (float)beatpos.measureSplit);
+
+            float currSectionBeats = (currSectionMeasure - prevSectionMeasure) * prevSectionBeatsPerMeasure;
+            absBeat += currSectionBeats;
+            break;
+        } else {
+            absBeat = section.absBeatStart;
+            prevSectionBeatpos = section.beatpos;
+            prevSectionBeatsPerMeasure = section.beatsPerMeasure;
+        }
+    }
+
+    return absBeat;
+}
+
 void SongPosition::pause() {
     pauseCounter = SDL_GetPerformanceCounter();
     paused = true;

@@ -3,6 +3,10 @@
 
 #include "config/beatpos.hpp"
 
+namespace constants {
+    const int DEFAULT_BEATS_PER_MEASURE = 4;
+}
+
 struct Timeinfo {
     Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure, float bpm, float interpolateBeatDuration);
 
