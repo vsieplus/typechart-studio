@@ -6,6 +6,10 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#include <json.hpp>
+using json = nlohmann::json;
+using ordered_json = nlohmann::ordered_json;
+
 #include "config/note.hpp"
 #include "config/notesequence.hpp"
 #include "config/stop.hpp"
@@ -17,10 +21,22 @@ struct ChartInfo {
     ChartInfo();
     ChartInfo(int level, std::string typist, std::string keyboardLayout, std::string difficulty);
 
+    // load chart data from the given path
     bool loadChart(fs::path chartPath, SongPosition & songpos);
+
+    // load chart metadata from the given json
+    void loadChartMetadata(ordered_json chartinfoJSON);
+
+    // load chart data
+    void loadChartTimeInfo(ordered_json chartinfoJSON, SongPosition & songpos);
+    void loadChartStops(ordered_json chartinfoJSON, SongPosition & songpos);
+    void loadChartSkips(ordered_json chartinfoJSON, SongPosition & songpos);
+    void loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpos);
+
     void saveChart(fs::path chartPath, SongPosition & songpos);
 
     int level;
+    int offsetMS;
 
     std::string typist;
     std::string keyboardLayout;

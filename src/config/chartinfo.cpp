@@ -1,17 +1,159 @@
 #include "config/chartinfo.hpp"
+#include "config/constants.hpp"
 #include "config/songposition.hpp"
 #include "ui/editwindow.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <memory>
-#include <json.hpp>
-using json = nlohmann::json;
-using ordered_json = nlohmann::ordered_json;
 
 ChartInfo::ChartInfo() {}
 
 ChartInfo::ChartInfo(int level, std::string typist, std::string keyboardLayout, std::string difficulty) : 
         level(level), typist(typist), keyboardLayout(keyboardLayout), difficulty(difficulty) {}
+
+void ChartInfo::loadChartMetadata(ordered_json chartinfoJSON) {
+    typist = chartinfoJSON.value(constants::TYPIST_KEY, constants::TYPIST_VALUE_DEFAULT);
+    keyboardLayout = chartinfoJSON.value(constants::KEYBOARD_KEY, constants::KEYBOARD_VALUE_DEFAULT);
+    difficulty = chartinfoJSON.value(constants::DIFFICULTY_KEY, constants::DIFFICULTY_VALUE_DEFAULT);
+    level = chartinfoJSON.value(constants::LEVEL_KEY, constants::LEVEL_VALUE_DEFAULT);
+    offsetMS = chartinfoJSON.value(constants::OFFSET_KEY, constants::OFFSET_VALUE_DEFAULT);
+}
+
+void ChartInfo::loadChartTimeInfo(ordered_json chartinfoJSON, SongPosition & songpos) {
+    std::vector<ordered_json> timeinfo = chartinfoJSON[constants::TIMEINFO_KEY];
+    Timeinfo * prevTimeinfo = nullptr;
+
+    for(auto & sectionJSON : timeinfo) {
+        std::vector<int> pos = sectionJSON[constants::POS_KEY];
+
+        float bpm = sectionJSON.value(constants::BPM_KEY, constants::BPM_VALUE_DEFAULT);
+        float interpolateBeatDuration = sectionJSON.value(constants::INTERPOLATE_BEAT_DURATION_KEY, constants::INTERPOLATE_BEAT_DURATION_VALUE_DEFAULT);
+        int beatsPerMeasure = sectionJSON.value(constants::BEATS_PER_MEASURE_KEY, constants::BEATS_PER_MEASURE_VALUE_DEFAULT);
+
+        if(pos.size() == constants::NUM_BEATPOS_ELEMENTS) {
+            auto sectionStartPos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
+            auto sectionTimeInfo = Timeinfo(sectionStartPos, prevTimeinfo, beatsPerMeasure, bpm, interpolateBeatDuration);
+
+            songpos.timeinfo.push_back(sectionTimeInfo);
+            prevTimeinfo = &(songpos.timeinfo.back());
+        }
+    }
+
+    std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
+}
+
+void ChartInfo::loadChartStops(ordered_json chartinfoJSON, SongPosition & songpos) {
+    std::vector<ordered_json> stopsJSON = chartinfoJSON[constants::STOPS_KEY];
+    for(auto & stopJSON : stopsJSON) {
+        std::vector<int> pos = stopJSON[constants::POS_KEY];
+        float beatDuration = stopJSON.value(constants::DURATION_KEY, constants::DURATION_VALUE_DEFAULT);
+
+        if(pos.size() == constants::NUM_BEATPOS_ELEMENTS) {
+            BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
+            float absBeat = songpos.calculateAbsBeat(beatpos);
+
+            BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
+
+            notes.addStop(absBeat, songpos.absBeat, beatDuration, beatpos, endBeatpos);
+        }
+    }
+}
+
+void ChartInfo::loadChartSkips(ordered_json chartinfoJSON, SongPosition & songpos) {
+    std::vector<ordered_json> skipsJSON = chartinfoJSON[constants::SKIPS_KEY];
+    for(auto & skipJSON : skipsJSON) {
+        std::vector<int> pos = skipJSON[constants::POS_KEY];
+        float beatDuration = skipJSON.value(constants::DURATION_KEY, constants::DURATION_VALUE_DEFAULT);
+        float skipTime = skipJSON.value(constants::SKIPTIME_KEY, constants::SKIPTIME_VALUE_DEFAULT);
+
+        if(pos.size() == constants::NUM_BEATPOS_ELEMENTS) {
+            BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
+            float absBeat = songpos.calculateAbsBeat(beatpos);
+
+            BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
+
+            auto skip = notes.addSkip(absBeat, songpos.absBeat, skipTime, beatDuration, beatpos, endBeatpos);
+            songpos.addSkip(skip);
+        }
+    }
+}
+
+void ChartInfo::loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpos) {
+    std::vector<ordered_json> notesJSON = chartinfoJSON[constants::NOTES_KEY];
+    for(auto iter = notesJSON.begin(); iter != notesJSON.end(); iter++) {
+        auto & noteJSON = *iter;
+
+        auto noteType = (NoteType)(noteJSON.value(constants::NOTE_TYPE_KEY, constants::NOTE_TYPE_VALUE_DEFAULT));
+        
+        // release notes handled separately below
+        if(noteType == NoteType::KEYHOLDRELEASE) {
+            continue;
+        }
+
+        std::vector<int> pos = noteJSON[constants::POS_KEY];
+        if(pos.size() != constants::NUM_BEATPOS_ELEMENTS) {
+            continue;
+        }
+
+        BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
+        BeatPos endBeatpos = beatpos;
+        std::string keyText = noteJSON[constants::NOTE_KEY_KEY];
+        if(STR_TO_FUNCTION_KEY.find(keyText) != STR_TO_FUNCTION_KEY.end()) {
+            keyText = STR_TO_FUNCTION_KEY.at(keyText);
+        }
+
+        switch(noteType) {
+            case NoteType::KEYPRESS:
+                break;
+            case NoteType::KEYHOLDSTART:
+                // find next matching release note
+                for(auto nIter = std::next(iter); nIter != notesJSON.end(); nIter++) {
+                    auto & nextNoteJSON = *nIter;
+
+                    NoteType nextNoteType = (NoteType)(nextNoteJSON.value(constants::NOTE_TYPE_KEY, constants::NOTE_TYPE_VALUE_DEFAULT));
+                    std::string nextNoteKeyText = nextNoteJSON[constants::NOTE_KEY_KEY];
+                    if(STR_TO_FUNCTION_KEY.find(nextNoteKeyText) != STR_TO_FUNCTION_KEY.end()) {
+                        nextNoteKeyText = STR_TO_FUNCTION_KEY.at(nextNoteKeyText);
+                    }
+
+                    if(nextNoteKeyText == keyText && nextNoteType == NoteType::KEYHOLDRELEASE) {
+                        std::vector<int> nextNotepos = nextNoteJSON[constants::POS_KEY];
+                        if(nextNotepos.size() == constants::NUM_BEATPOS_ELEMENTS) {
+                            endBeatpos = (BeatPos) { nextNotepos.at(0), nextNotepos.at(1), nextNotepos.at(2) };
+                            break;
+                        }
+                    }
+                }
+
+                break;
+            case NoteType::KEYHOLDRELEASE:
+                continue;
+        }
+
+        SequencerItemType itemType;
+        if(MIDDLE_ROW_KEYS.find(keyboardLayout) != MIDDLE_ROW_KEYS.end()) {
+            auto & validKeys = MIDDLE_ROW_KEYS.at(keyboardLayout);
+            if(FUNCTION_KEY_TO_STR.find(keyText) != FUNCTION_KEY_TO_STR.end()) {
+                itemType = SequencerItemType::BOT_NOTE;
+            } else if(validKeys.find(keyText.at(0)) != validKeys.end()) {
+                itemType = SequencerItemType::MID_NOTE;
+            } else if(keyText.length() == 1 && isdigit(keyText.at(0))) {
+                itemType = SequencerItemType::TOP_NOTE;
+            }
+        } else {
+            // unsupported keyboard layout
+            throw std::runtime_error("Unsupported keyboard layout");
+        }
+
+        float absBeat = songpos.calculateAbsBeat(beatpos);
+        float absBeatEnd = songpos.calculateAbsBeat(endBeatpos);
+
+        float beatDuration = absBeatEnd - absBeat;
+
+        notes.addNote(absBeat, songpos.absBeat, beatDuration, beatpos, endBeatpos, itemType, keyText);
+    }
+}
 
 bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
     savePath = chartPath;
@@ -21,147 +163,19 @@ bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
     try {
         std::ifstream in(chartPath);
         in >> chartinfoJSON;
-    
-        typist = chartinfoJSON["typist"];
-        keyboardLayout = chartinfoJSON["keyboard"];
-        difficulty = chartinfoJSON["difficulty"];
-        level = chartinfoJSON["level"];
-        songpos.offsetMS = chartinfoJSON["offsetMS"];
 
-        std::vector<ordered_json> timeinfo = chartinfoJSON["timeinfo"];
-        Timeinfo * prevTimeinfo = nullptr;
-        
-        for(auto & sectionJSON : timeinfo) {
-            std::vector<int> pos = sectionJSON["pos"];
-            float bpm = sectionJSON["bpm"];
-            float interpolateBeatDuration = 0.f;
-            int beatsPerMeasure = sectionJSON["beatsPerMeasure"];
+        loadChartMetadata(chartinfoJSON);
+        songpos.offsetMS = offsetMS;
 
-            if(sectionJSON.contains("interpolateBeatDuration")) {
-                interpolateBeatDuration = sectionJSON["interpolateBeatDuration"];
-            }
-
-            if(pos.size() == constants::NUM_BEATPOS_ELEMENTS) {
-                auto sectionStartPos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
-                auto sectionTimeInfo = Timeinfo(sectionStartPos, prevTimeinfo, beatsPerMeasure, bpm, interpolateBeatDuration);
-
-                songpos.timeinfo.push_back(sectionTimeInfo);
-                prevTimeinfo = &(songpos.timeinfo.back());
-            }
-        }
-
-        std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
-
-        if(!chartinfoJSON["stops"].empty()) {
-            std::vector<ordered_json> stopsJSON = chartinfoJSON["stops"];
-            for(auto & stopJSON : stopsJSON) {
-                std::vector<int> pos = stopJSON["pos"];
-                float beatDuration = stopJSON["duration"];
-
-                if(pos.size() == constants::NUM_BEATPOS_ELEMENTS) {
-                    BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
-                    float absBeat = songpos.calculateAbsBeat(beatpos);
-
-                    BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
-
-                    notes.addStop(absBeat, songpos.absBeat, beatDuration, beatpos, endBeatpos);
-                }
-            }
-        }
-
-        if(!chartinfoJSON["skips"].empty()) {
-            std::vector<ordered_json> skipsJSON = chartinfoJSON["skips"];
-            for(auto & skipJSON : skipsJSON) {
-                std::vector<int> pos = skipJSON["pos"];
-                float beatDuration = skipJSON["duration"];
-                float skipTime = skipJSON["skiptime"];
-
-                if(pos.size() == constants::NUM_BEATPOS_ELEMENTS) {
-                    BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
-                    float absBeat = songpos.calculateAbsBeat(beatpos);
-
-                    BeatPos endBeatpos = calculateBeatpos(absBeat + beatDuration, pos.at(1), songpos.timeinfo);
-
-                    auto skip = notes.addSkip(absBeat, songpos.absBeat, skipTime, beatDuration, beatpos, endBeatpos);
-                    songpos.addSkip(skip);
-                }
-            }
-        }
-
-        std::vector<ordered_json> notesJSON = chartinfoJSON["notes"];
-        for(auto iter = notesJSON.begin(); iter != notesJSON.end(); iter++) {
-            auto & noteJSON = *iter;
-
-            NoteType noteType = (NoteType)(noteJSON["type"].get<int>());
-            
-            // release notes handled separately below
-            if(noteType == NoteType::KEYHOLDRELEASE) {
-                continue;
-            }
-
-            std::vector<int> pos = noteJSON["pos"];
-            if(pos.size() != constants::NUM_BEATPOS_ELEMENTS) {
-                continue;
-            }
-
-            BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
-            BeatPos endBeatpos = beatpos;
-            std::string keyText = noteJSON["key"];
-            if(STR_TO_FUNCTION_KEY.find(keyText) != STR_TO_FUNCTION_KEY.end()) {
-                keyText = STR_TO_FUNCTION_KEY.at(keyText);
-            }
-
-            switch(noteType) {
-                case NoteType::KEYPRESS:
-                    break;
-                case NoteType::KEYHOLDSTART:
-                    // find next matching release note
-                    for(auto nIter = std::next(iter); nIter != notesJSON.end(); nIter++) {
-                        auto & nextNoteJSON = *nIter;
-
-                        NoteType nextNoteType = (NoteType)(nextNoteJSON["type"].get<int>());
-                        std::string nextNoteKeyText = nextNoteJSON["key"];
-                        if(STR_TO_FUNCTION_KEY.find(nextNoteKeyText) != STR_TO_FUNCTION_KEY.end()) {
-                            nextNoteKeyText = STR_TO_FUNCTION_KEY.at(nextNoteKeyText);
-                        }
-
-                        if(nextNoteKeyText == keyText && nextNoteType == NoteType::KEYHOLDRELEASE) {
-                            std::vector<int> nextNotepos = nextNoteJSON["pos"];
-                            if(nextNotepos.size() == constants::NUM_BEATPOS_ELEMENTS) {
-                                endBeatpos = (BeatPos) { nextNotepos.at(0), nextNotepos.at(1), nextNotepos.at(2) };
-                                break;
-                            }
-                        }
-                    }
-
-                    break;
-                case NoteType::KEYHOLDRELEASE:
-                    continue;
-            }
-
-            SequencerItemType itemType;
-            if(MIDDLE_ROW_KEYS.find(keyboardLayout) != MIDDLE_ROW_KEYS.end()) {
-                auto & validKeys = MIDDLE_ROW_KEYS.at(keyboardLayout);
-                if(FUNCTION_KEY_TO_STR.find(keyText) != FUNCTION_KEY_TO_STR.end()) {
-                    itemType = SequencerItemType::BOT_NOTE;
-                } else if(validKeys.find(keyText.at(0)) != validKeys.end()) {
-                    itemType = SequencerItemType::MID_NOTE;
-                } else if(keyText.length() == 1 && isdigit(keyText.at(0))) {
-                    itemType = SequencerItemType::TOP_NOTE;
-                }
-            } else {
-                // unsupported keyboard layout
-                return false;
-            }
-
-            float absBeat = songpos.calculateAbsBeat(beatpos);
-            float absBeatEnd = songpos.calculateAbsBeat(endBeatpos);
-
-            float beatDuration = absBeatEnd - absBeat;
-
-            notes.addNote(absBeat, songpos.absBeat, beatDuration, beatpos, endBeatpos, itemType, keyText);
-        }
-    } catch(...) {
+        loadChartTimeInfo(chartinfoJSON, songpos);
+        loadChartStops(chartinfoJSON, songpos);
+        loadChartSkips(chartinfoJSON, songpos);
+        loadChartNotes(chartinfoJSON, songpos);
+    } catch(const nlohmann::detail::parse_error & e) {
+        std::cerr << "Error parsing chart file: " << e.what() << std::endl;
+        return false;
+    } catch(const std::runtime_error & e) {
+        std::cerr << "Error loading chart file: " << e.what() << std::endl;
         return false;
     }
 
