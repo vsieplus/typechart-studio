@@ -1,5 +1,6 @@
 #include "config/chartinfo.hpp"
 #include "config/constants.hpp"
+#include "config/notemaps.hpp"
 #include "config/songposition.hpp"
 #include "ui/editwindow.hpp"
 
@@ -11,6 +12,36 @@ ChartInfo::ChartInfo() {}
 
 ChartInfo::ChartInfo(int level, std::string typist, std::string keyboardLayout, std::string difficulty) : 
         level(level), typist(typist), keyboardLayout(keyboardLayout), difficulty(difficulty) {}
+
+bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
+    savePath = chartPath;
+
+    ordered_json chartinfoJSON;
+
+    try {
+        std::ifstream in(chartPath);
+        in >> chartinfoJSON;
+
+        loadChartMetadata(chartinfoJSON);
+        songpos.offsetMS = offsetMS;
+
+        loadChartTimeInfo(chartinfoJSON, songpos);
+        loadChartStops(chartinfoJSON, songpos);
+        loadChartSkips(chartinfoJSON, songpos);
+        loadChartNotes(chartinfoJSON, songpos);
+    } catch(const nlohmann::detail::parse_error & e) {
+        std::cerr << "Error parsing chart file: " << e.what() << std::endl;
+        return false;
+    } catch(const std::runtime_error & e) {
+        std::cerr << "Error loading chart file: " << e.what() << std::endl;
+        return false;
+    }
+
+    std::sort(notes.myItems.begin(), notes.myItems.end());
+    notes.resetItemCounts();
+
+    return true;
+}
 
 void ChartInfo::loadChartMetadata(ordered_json chartinfoJSON) {
     typist = chartinfoJSON.value(constants::TYPIST_KEY, constants::TYPIST_VALUE_DEFAULT);
@@ -98,9 +129,9 @@ void ChartInfo::loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpo
 
         BeatPos beatpos = BeatPos(pos.at(0), pos.at(1), pos.at(2));
         BeatPos endBeatpos = beatpos;
-        std::string keyText = noteJSON[constants::NOTE_KEY_KEY];
-        if(STR_TO_FUNCTION_KEY.find(keyText) != STR_TO_FUNCTION_KEY.end()) {
-            keyText = STR_TO_FUNCTION_KEY.at(keyText);
+        std::string keyText = noteJSON.value(constants::NOTE_KEY_KEY, constants::NOTE_KEY_VALUE_DEFAULT);
+        if(notemaps::STR_TO_FUNCTION_KEY.find(keyText) != notemaps::STR_TO_FUNCTION_KEY.end()) {
+            keyText = notemaps::STR_TO_FUNCTION_KEY.at(keyText);
         }
 
         switch(noteType) {
@@ -113,8 +144,8 @@ void ChartInfo::loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpo
 
                     NoteType nextNoteType = (NoteType)(nextNoteJSON.value(constants::NOTE_TYPE_KEY, constants::NOTE_TYPE_VALUE_DEFAULT));
                     std::string nextNoteKeyText = nextNoteJSON[constants::NOTE_KEY_KEY];
-                    if(STR_TO_FUNCTION_KEY.find(nextNoteKeyText) != STR_TO_FUNCTION_KEY.end()) {
-                        nextNoteKeyText = STR_TO_FUNCTION_KEY.at(nextNoteKeyText);
+                    if(notemaps::STR_TO_FUNCTION_KEY.find(nextNoteKeyText) != notemaps::STR_TO_FUNCTION_KEY.end()) {
+                        nextNoteKeyText = notemaps::STR_TO_FUNCTION_KEY.at(nextNoteKeyText);
                     }
 
                     if(nextNoteKeyText == keyText && nextNoteType == NoteType::KEYHOLDRELEASE) {
@@ -134,7 +165,7 @@ void ChartInfo::loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpo
         SequencerItemType itemType;
         if(MIDDLE_ROW_KEYS.find(keyboardLayout) != MIDDLE_ROW_KEYS.end()) {
             auto & validKeys = MIDDLE_ROW_KEYS.at(keyboardLayout);
-            if(FUNCTION_KEY_TO_STR.find(keyText) != FUNCTION_KEY_TO_STR.end()) {
+            if(notemaps::FUNCTION_KEY_TO_STR.find(keyText) != notemaps::FUNCTION_KEY_TO_STR.end()) {
                 itemType = SequencerItemType::BOT_NOTE;
             } else if(validKeys.find(keyText.at(0)) != validKeys.end()) {
                 itemType = SequencerItemType::MID_NOTE;
@@ -155,62 +186,41 @@ void ChartInfo::loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpo
     }
 }
 
-bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
-    savePath = chartPath;
-
-    ordered_json chartinfoJSON;
-
-    try {
-        std::ifstream in(chartPath);
-        in >> chartinfoJSON;
-
-        loadChartMetadata(chartinfoJSON);
-        songpos.offsetMS = offsetMS;
-
-        loadChartTimeInfo(chartinfoJSON, songpos);
-        loadChartStops(chartinfoJSON, songpos);
-        loadChartSkips(chartinfoJSON, songpos);
-        loadChartNotes(chartinfoJSON, songpos);
-    } catch(const nlohmann::detail::parse_error & e) {
-        std::cerr << "Error parsing chart file: " << e.what() << std::endl;
-        return false;
-    } catch(const std::runtime_error & e) {
-        std::cerr << "Error loading chart file: " << e.what() << std::endl;
-        return false;
-    }
-
-    std::sort(notes.myItems.begin(), notes.myItems.end());
-    notes.resetItemCounts();
-
-    return true;
-}
-
-void ChartInfo::saveChart(fs::path chartPath, SongPosition & songpos) {
-    savePath = chartPath;
-
+ordered_json ChartInfo::saveChartMetadata(SongPosition & songpos) {
     ordered_json chartinfo;
 
-    chartinfo["typist"] = typist;
-    chartinfo["keyboard"] = keyboardLayout;
-    chartinfo["difficulty"] = difficulty;
-    chartinfo["level"] = level;
-    chartinfo["offsetMS"] = songpos.offsetMS;
+    chartinfo[constants::TYPIST_KEY] = typist;
+    chartinfo[constants::KEYBOARD_KEY] = keyboardLayout;
+    chartinfo[constants::DIFFICULTY_KEY] = difficulty;
+    chartinfo[constants::LEVEL_KEY] = level;
+    chartinfo[constants::OFFSET_KEY] = songpos.offsetMS;
 
+    return chartinfo;
+}
+
+ordered_json ChartInfo::saveChartTimeInfo(SongPosition & songpos) {
     ordered_json timeinfo;
 
     std::sort(songpos.timeinfo.begin(), songpos.timeinfo.end());
 
     for(auto & section : songpos.timeinfo) {
         ordered_json sectionJSON;
-        sectionJSON["pos"] = { section.beatpos.measure, section.beatpos.measureSplit, section.beatpos.split };
-        sectionJSON["bpm"] = section.bpm;
-        sectionJSON["beatsPerMeasure"] = section.beatsPerMeasure;
-        sectionJSON["interpolateBeatDuration"] = section.interpolateBeatDuration;
+        sectionJSON[constants::POS_KEY] = { section.beatpos.measure, section.beatpos.measureSplit, section.beatpos.split };
+        sectionJSON[constants::BPM_KEY] = section.bpm;
+        sectionJSON[constants::BEATS_PER_MEASURE_KEY] = section.beatsPerMeasure;
+        sectionJSON[constants::INTERPOLATE_BEAT_DURATION_KEY] = section.interpolateBeatDuration;
 
         timeinfo.push_back(sectionJSON);
     }
 
-    chartinfo["timeinfo"] = timeinfo;
+    return timeinfo;
+}
+
+void ChartInfo::saveChart(fs::path chartPath, SongPosition & songpos) {
+    savePath = chartPath;
+
+    auto chartinfoJSON = saveChartMetadata(songpos);
+    chartinfoJSON[constants::TIMEINFO_KEY] = saveChartTimeInfo(songpos);
 
     ordered_json stopsJSON = ordered_json::array();
     ordered_json skipsJSON = ordered_json::array();
@@ -224,17 +234,19 @@ void ChartInfo::saveChart(fs::path chartPath, SongPosition & songpos) {
 
         switch(item->getItemType()) {
             case SequencerItemType::STOP:
-                itemJSON["pos"] = itemBeatpos;
-                itemJSON["duration"] = item->beatEnd - item->absBeat;
-                stopsJSON.push_back(itemJSON);
+                {
+                    itemJSON[constants::POS_KEY] = itemBeatpos;
+                    itemJSON[constants::DURATION_KEY] = item->beatEnd - item->absBeat;
+                    stopsJSON.push_back(itemJSON);
+                }
                 break;
             case SequencerItemType::SKIP:
                 {
                     auto currSkip = std::dynamic_pointer_cast<Skip>(item);
 
-                    itemJSON["pos"] = itemBeatpos;
-                    itemJSON["duration"] = currSkip->beatEnd - currSkip->absBeat;
-                    itemJSON["skiptime"] = currSkip->skipTime;
+                    itemJSON[constants::POS_KEY] = itemBeatpos;
+                    itemJSON[constants::DURATION_KEY] = currSkip->beatEnd - currSkip->absBeat;
+                    itemJSON[constants::SKIPTIME_KEY] = currSkip->skipTime;
                     skipsJSON.push_back(itemJSON);
                 }
                 break;
@@ -245,24 +257,24 @@ void ChartInfo::saveChart(fs::path chartPath, SongPosition & songpos) {
                     auto currNote = std::dynamic_pointer_cast<Note>(item);
                     NoteType currNoteType = currNote->noteType;
 
-                    itemJSON["pos"] = itemBeatpos;
+                    itemJSON[constants::POS_KEY] = itemBeatpos;
 
                     std::string keyText = currNote->displayText;
-                    if (FUNCTION_KEY_TO_STR.find(currNote->displayText) != FUNCTION_KEY_TO_STR.end()) {
-                        keyText = FUNCTION_KEY_TO_STR.at(currNote->displayText);
+                    if (notemaps::FUNCTION_KEY_TO_STR.find(currNote->displayText) != notemaps::FUNCTION_KEY_TO_STR.end()) {
+                        keyText = notemaps::FUNCTION_KEY_TO_STR.at(currNote->displayText);
                     }
 
-                    itemJSON["key"] = keyText;
-                    itemJSON["type"] = (int)currNoteType;
+                    itemJSON[constants::NOTE_KEY_KEY] = keyText;
+                    itemJSON[constants::NOTE_TYPE_KEY] = (int)currNoteType;
                     notesJSON.push_back(itemJSON);
 
                     // add release note if hold start
                     if(currNoteType == NoteType::KEYHOLDSTART) {
                         ordered_json item2JSON;
 
-                        item2JSON["pos"] = {currNote->endBeatpos.measure, currNote->endBeatpos.measureSplit, currNote->endBeatpos.split};
-                        item2JSON["key"] = keyText;
-                        item2JSON["type"] = (int)(NoteType::KEYHOLDRELEASE);
+                        item2JSON[constants::POS_KEY] = {currNote->endBeatpos.measure, currNote->endBeatpos.measureSplit, currNote->endBeatpos.split};
+                        item2JSON[constants::NOTE_KEY_KEY] = keyText;
+                        item2JSON[constants::NOTE_TYPE_KEY] = (int)(NoteType::KEYHOLDRELEASE);
                         notesJSON.push_back(item2JSON);
                     }
                 }
@@ -270,11 +282,11 @@ void ChartInfo::saveChart(fs::path chartPath, SongPosition & songpos) {
         }
     }
 
-    chartinfo["stops"] = stopsJSON;
-    chartinfo["skips"] = skipsJSON;
-    chartinfo["notes"] = notesJSON;
+    chartinfoJSON[constants::STOPS_KEY] = stopsJSON;
+    chartinfoJSON[constants::SKIPS_KEY] = skipsJSON;
+    chartinfoJSON[constants::NOTES_KEY] = notesJSON;
 
     // write to file
     std::ofstream file(savePath.c_str());
-    file << std::setw(4) << chartinfo << std::endl;
+    file << std::setw(4) << chartinfoJSON << std::endl;
 }

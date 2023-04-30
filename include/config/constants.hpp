@@ -34,6 +34,7 @@ namespace constants {
     const std::string NOTES_KEY = "notes";
     const std::string NOTE_TYPE_KEY = "type";
     const std::string NOTE_KEY_KEY = "key";
+    const std::string NOTE_KEY_VALUE_DEFAULT = "A";
 
     const float BPM_VALUE_DEFAULT = 0.f;
     const float INTERPOLATE_BEAT_DURATION_VALUE_DEFAULT = 0.f;

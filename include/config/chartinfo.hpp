@@ -33,7 +33,14 @@ struct ChartInfo {
     void loadChartSkips(ordered_json chartinfoJSON, SongPosition & songpos);
     void loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpos);
 
+    // save chart data to the given path
     void saveChart(fs::path chartPath, SongPosition & songpos);
+
+    // save chart metadata
+    ordered_json saveChartMetadata(SongPosition & songpos);
+
+    // save chart data
+    ordered_json saveChartTimeInfo(SongPosition & songpos);
 
     int level;
     int offsetMS;
