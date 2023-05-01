@@ -4,7 +4,6 @@
 #include "config/notesequenceitem.hpp"
 
 struct Stop : public NoteSequenceItem {
-    public:
     Stop(float absBeat, float beatDuration, bool passed, BeatPos beatpos, BeatPos endBeatpos) :
         NoteSequenceItem(absBeat, absBeat + beatDuration, passed, beatpos, endBeatpos), beatDuration(beatDuration) {}
 
