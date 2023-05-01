@@ -225,8 +225,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     {
         std::list<std::shared_ptr<NoteSequenceItem>> shiftedItems;
 
-        if(KEYBOARD_LAYOUTS.find(keyboardLayout) != KEYBOARD_LAYOUTS.end() && notemaps::KEYBOARD_POSITION_MAPS.find(keyboardLayout) != notemaps::KEYBOARD_POSITION_MAPS.end()) {
-            auto & keyboardLayoutMap = KEYBOARD_LAYOUTS.at(keyboardLayout);
+        if(notemaps::KEYBOARD_LAYOUTS.find(keyboardLayout) != notemaps::KEYBOARD_LAYOUTS.end() && notemaps::KEYBOARD_POSITION_MAPS.find(keyboardLayout) != notemaps::KEYBOARD_POSITION_MAPS.end()) {
+            auto & keyboardLayoutMap = notemaps::KEYBOARD_LAYOUTS.at(keyboardLayout);
             auto & keyboardPositionMap = notemaps::KEYBOARD_POSITION_MAPS.at(keyboardLayout);
 
             for(auto item: items) {
