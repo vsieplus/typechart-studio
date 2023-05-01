@@ -22,6 +22,8 @@
 #include "actions/placeskip.hpp"
 #include "actions/shiftnote.hpp"
 
+#include "config/notemaps.hpp"
+
 #include "ui/preferences.hpp"
 #include "ui/editwindow.hpp"
 #include "ui/windowsizes.hpp"
@@ -1195,8 +1197,8 @@ int filterInputMiddleKey(ImGuiInputTextCallbackData * data) {
     }
 
     auto c = data->EventChar;
-    bool validChar = MIDDLE_ROW_KEYS.find(keyboardLayout) != MIDDLE_ROW_KEYS.end() &&
-                     MIDDLE_ROW_KEYS.at(keyboardLayout).find(c) != MIDDLE_ROW_KEYS.at(keyboardLayout).end();
+    bool validChar = notemaps::MIDDLE_ROW_KEYS.find(keyboardLayout) != notemaps::MIDDLE_ROW_KEYS.end() &&
+                     notemaps::MIDDLE_ROW_KEYS.at(keyboardLayout).find(c) != notemaps::MIDDLE_ROW_KEYS.at(keyboardLayout).end();
 
     return validChar ? 0 : 1;
 }

@@ -15,6 +15,7 @@
 #include "ImSequencer.h"
 
 #include "config/note.hpp"
+#include "config/notemaps.hpp"
 #include "config/skip.hpp"
 #include "config/stop.hpp"
 #include "config/timeinfo.hpp"
@@ -186,8 +187,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     void flipNotes(std::string keyboardLayout, float startBeat, float endBeat, int minItemType, int maxItemType) {
-        if(KEYBOARD_FLIP_MAPS.find(keyboardLayout) != KEYBOARD_FLIP_MAPS.end()) {
-            auto & flipMap = KEYBOARD_FLIP_MAPS.at(keyboardLayout);
+        if(notemaps::KEYBOARD_FLIP_MAPS.find(keyboardLayout) != notemaps::KEYBOARD_FLIP_MAPS.end()) {
+            auto & flipMap = notemaps::KEYBOARD_FLIP_MAPS.at(keyboardLayout);
 
             auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
             for(auto item: items) {
@@ -222,9 +223,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     {
         std::list<std::shared_ptr<NoteSequenceItem>> shiftedItems;
 
-        if(KEYBOARD_LAYOUTS.find(keyboardLayout) != KEYBOARD_LAYOUTS.end() && KEYBOARD_POSITION_MAPS.find(keyboardLayout) != KEYBOARD_POSITION_MAPS.end()) {
+        if(KEYBOARD_LAYOUTS.find(keyboardLayout) != KEYBOARD_LAYOUTS.end() && notemaps::KEYBOARD_POSITION_MAPS.find(keyboardLayout) != notemaps::KEYBOARD_POSITION_MAPS.end()) {
             auto & keyboardLayoutMap = KEYBOARD_LAYOUTS.at(keyboardLayout);
-            auto & keyboardPositionMap = KEYBOARD_POSITION_MAPS.at(keyboardLayout);
+            auto & keyboardPositionMap = notemaps::KEYBOARD_POSITION_MAPS.at(keyboardLayout);
 
             for(auto item: items) {
                 auto shifted = shiftNoteSequenceItem(shiftDirection, item, keyboardLayoutMap, keyboardPositionMap);

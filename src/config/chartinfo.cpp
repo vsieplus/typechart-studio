@@ -163,8 +163,8 @@ void ChartInfo::loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpo
         }
 
         SequencerItemType itemType;
-        if(MIDDLE_ROW_KEYS.find(keyboardLayout) != MIDDLE_ROW_KEYS.end()) {
-            auto & validKeys = MIDDLE_ROW_KEYS.at(keyboardLayout);
+        if(notemaps::MIDDLE_ROW_KEYS.find(keyboardLayout) != notemaps::MIDDLE_ROW_KEYS.end()) {
+            auto & validKeys = notemaps::MIDDLE_ROW_KEYS.at(keyboardLayout);
             if(notemaps::FUNCTION_KEY_TO_STR.find(keyText) != notemaps::FUNCTION_KEY_TO_STR.end()) {
                 itemType = SequencerItemType::BOT_NOTE;
             } else if(validKeys.find(keyText.at(0)) != validKeys.end()) {
