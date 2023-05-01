@@ -9,8 +9,9 @@ bool operator<(const NoteSequenceItem & lhs, const NoteSequenceItem & rhs) {
 }
 
 bool operator==(const NoteSequenceItem & lhs, const NoteSequenceItem & rhs) {
-    return (lhs.absBeat == rhs.absBeat) && 
-        (lhs.beatEnd == rhs.beatEnd) && 
-        (lhs.beatpos == rhs.beatpos) && 
+    return (lhs.getItemType() == rhs.getItemType()) &&
+        (lhs.absBeat == rhs.absBeat) &&
+        (lhs.beatEnd == rhs.beatEnd) &&
+        (lhs.beatpos == rhs.beatpos) &&
         (lhs.endBeatpos == rhs.endBeatpos);
 }
