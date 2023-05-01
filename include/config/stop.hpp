@@ -5,11 +5,11 @@
 
 struct Stop : public NoteSequenceItem {
     public:
-    Stop(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) :
-        NoteSequenceItem(absBeat, absBeat + beatDuration, songBeat, beatpos, endBeatpos), beatDuration(beatDuration) {}
+    Stop(float absBeat, float beatDuration, bool passed, BeatPos beatpos, BeatPos endBeatpos) :
+        NoteSequenceItem(absBeat, absBeat + beatDuration, passed, beatpos, endBeatpos), beatDuration(beatDuration) {}
 
     virtual SequencerItemType getItemType() const override {
-        return SequencerItemType::STOP;
+        return NoteSequenceItem::SequencerItemType::STOP;
     }
 
     void setItemType(SequencerItemType type) override {}

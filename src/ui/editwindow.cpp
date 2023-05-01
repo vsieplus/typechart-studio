@@ -1385,13 +1385,13 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
             addItemFlags = ImGuiInputTextFlags_CharsUppercase;
 
             switch (insertItemType) {
-                case SequencerItemType::TOP_NOTE:
+                case NoteSequenceItem::SequencerItemType::TOP_NOTE:
                     addItemFlags |= ImGuiInputTextFlags_CharsDecimal;
                     break;
-                case SequencerItemType::MID_NOTE:
+                case NoteSequenceItem::SequencerItemType::MID_NOTE:
                     addItemFlags |= ImGuiInputTextFlags_CallbackCharFilter;
                     break;
-                case SequencerItemType::BOT_NOTE:
+                case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                     addItemFlags = 0;
                     break;
                 default:
@@ -1537,8 +1537,8 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
         }
 
         switch(insertItemType) {
-            case SequencerItemType::TOP_NOTE:
-            case SequencerItemType::MID_NOTE:
+            case NoteSequenceItem::SequencerItemType::TOP_NOTE:
+            case NoteSequenceItem::SequencerItemType::MID_NOTE:
                 ImGui::SetNextItemWidth(32);
                 if(!ImGui::IsAnyItemActive() && !ImGuiFileDialog::Instance()->IsOpened() && !ImGui::IsMouseClicked(0))
                     ImGui::SetKeyboardFocusHere(0);
@@ -1551,12 +1551,12 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                         auto foundItem = chartinfo.notes.containsItemAt(insertBeat, insertItemType);
 
                         if(foundItem.get()) {
-                            currAction = std::make_shared<EditNoteAction>(unsaved, insertBeat, (SequencerItemType)insertItemType, foundItem->displayText, keyText);
+                            currAction = std::make_shared<EditNoteAction>(unsaved, insertBeat, (NoteSequenceItem::SequencerItemType)insertItemType, foundItem->displayText, keyText);
                             chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                         } else {
                             chartinfo.notes.addNote(insertBeat, songpos.absBeat, endBeat - insertBeat, insertBeatpos, endBeatpos,
-                                (SequencerItemType)insertItemType, keyText);
-                            currAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+                                (NoteSequenceItem::SequencerItemType)insertItemType, keyText);
+                            currAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (NoteSequenceItem::SequencerItemType)insertItemType, keyText);
                         }
 
                         editActionsUndo.push(currAction);
@@ -1568,7 +1568,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     }
                 }
                 break;
-            case SequencerItemType::BOT_NOTE:
+            case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                 static int selectedFuncKey = 0;
                 static bool insertKey = false;
                 ImGui::SetNextItemWidth(64);
@@ -1605,11 +1605,11 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     std::shared_ptr<EditAction> currAction;
                     auto foundItem = chartinfo.notes.containsItemAt(insertBeat, insertItemType);
                     if(foundItem.get()) {
-                        currAction = std::make_shared<EditNoteAction>(unsaved, insertBeat, (SequencerItemType)insertItemType, foundItem->displayText, keyText);
+                        currAction = std::make_shared<EditNoteAction>(unsaved, insertBeat, (NoteSequenceItem::SequencerItemType)insertItemType, foundItem->displayText, keyText);
                         chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
                     } else {
-                        chartinfo.notes.addNote(insertBeat, songpos.absBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
-                        currAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (SequencerItemType)insertItemType, keyText);
+                        chartinfo.notes.addNote(insertBeat, songpos.absBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (NoteSequenceItem::SequencerItemType)insertItemType, keyText);
+                        currAction = std::make_shared<PlaceNoteAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos, (NoteSequenceItem::SequencerItemType)insertItemType, keyText);
                     }
 
                     editActionsUndo.push(currAction);
@@ -1622,7 +1622,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     leftClickReleased = false;
                 }
                 break;
-            case SequencerItemType::SKIP:
+            case NoteSequenceItem::SequencerItemType::SKIP:
                 {
                     if(!ImGui::IsAnyItemActive() && !ImGuiFileDialog::Instance()->IsOpened() && !ImGui::IsMouseClicked(0))
                         ImGui::SetKeyboardFocusHere(0);
@@ -1672,7 +1672,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
                     }
                 }
                 break;
-            case SequencerItemType::STOP:
+            case NoteSequenceItem::SequencerItemType::STOP:
                 chartinfo.notes.addStop(insertBeat, songpos.absBeat, endBeat - insertBeat, insertBeatpos, endBeatpos);
 
                 auto putAction = std::make_shared<PlaceStopAction>(unsaved, insertBeat, endBeat - insertBeat, insertBeatpos, endBeatpos);
@@ -1699,7 +1699,7 @@ void showEditWindowTimeline(AudioSystem * audioSystem, ChartInfo & chartinfo, So
 
             unsaved = true;
 
-            if(itemToDelete->getItemType() == SequencerItemType::SKIP) {
+            if(itemToDelete->getItemType() == NoteSequenceItem::SequencerItemType::SKIP) {
                 songpos.removeSkip(clickedBeat);
             }
         }

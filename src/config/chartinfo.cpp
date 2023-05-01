@@ -162,15 +162,15 @@ void ChartInfo::loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpo
                 continue;
         }
 
-        SequencerItemType itemType;
+        NoteSequenceItem::SequencerItemType itemType;
         if(notemaps::MIDDLE_ROW_KEYS.find(keyboardLayout) != notemaps::MIDDLE_ROW_KEYS.end()) {
             auto & validKeys = notemaps::MIDDLE_ROW_KEYS.at(keyboardLayout);
             if(notemaps::FUNCTION_KEY_TO_STR.find(keyText) != notemaps::FUNCTION_KEY_TO_STR.end()) {
-                itemType = SequencerItemType::BOT_NOTE;
+                itemType = NoteSequenceItem::SequencerItemType::BOT_NOTE;
             } else if(validKeys.find(keyText.at(0)) != validKeys.end()) {
-                itemType = SequencerItemType::MID_NOTE;
+                itemType = NoteSequenceItem::SequencerItemType::MID_NOTE;
             } else if(keyText.length() == 1 && isdigit(keyText.at(0))) {
-                itemType = SequencerItemType::TOP_NOTE;
+                itemType = NoteSequenceItem::SequencerItemType::TOP_NOTE;
             }
         } else {
             // unsupported keyboard layout
@@ -233,14 +233,14 @@ void ChartInfo::saveChart(fs::path chartPath, SongPosition & songpos) {
         ordered_json itemBeatpos = {item->beatpos.measure, item->beatpos.measureSplit, item->beatpos.split};
 
         switch(item->getItemType()) {
-            case SequencerItemType::STOP:
+            case NoteSequenceItem::SequencerItemType::STOP:
                 {
                     itemJSON[constants::POS_KEY] = itemBeatpos;
                     itemJSON[constants::DURATION_KEY] = item->beatEnd - item->absBeat;
                     stopsJSON.push_back(itemJSON);
                 }
                 break;
-            case SequencerItemType::SKIP:
+            case NoteSequenceItem::SequencerItemType::SKIP:
                 {
                     auto currSkip = std::dynamic_pointer_cast<Skip>(item);
 
@@ -250,9 +250,9 @@ void ChartInfo::saveChart(fs::path chartPath, SongPosition & songpos) {
                     skipsJSON.push_back(itemJSON);
                 }
                 break;
-            case SequencerItemType::TOP_NOTE:
-            case SequencerItemType::MID_NOTE:
-            case SequencerItemType::BOT_NOTE:
+            case NoteSequenceItem::SequencerItemType::TOP_NOTE:
+            case NoteSequenceItem::SequencerItemType::MID_NOTE:
+            case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                 {
                     auto currNote = std::dynamic_pointer_cast<Note>(item);
                     NoteType currNoteType = currNote->noteType;

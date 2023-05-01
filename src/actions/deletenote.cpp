@@ -1,7 +1,7 @@
 #include "actions/deletenote.hpp"
 #include "ui/editwindow.hpp"
 
-DeleteNoteAction::DeleteNoteAction(bool unsaved, float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText) :
+DeleteNoteAction::DeleteNoteAction(bool unsaved, float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, NoteSequenceItem::SequencerItemType itemType, std::string displayText) :
     EditAction(unsaved), absBeat(absBeat), beatDuration(beatDuration), beatpos(beatpos), endBeatpos(endBeatpos), itemType(itemType), displayText(displayText) {}
 
 void DeleteNoteAction::undoAction(EditWindowData * editWindow) {

@@ -8,17 +8,17 @@
 
 #include "config/beatpos.hpp"
 
-enum SequencerItemType {
-    TOP_NOTE,
-    MID_NOTE,
-    BOT_NOTE,
-    STOP,
-    SKIP
-};
-
 struct NoteSequenceItem {
-    NoteSequenceItem(float absBeat, float beatEnd, float songBeat, BeatPos beatpos, BeatPos endBeatpos) :
-        absBeat(absBeat), beatEnd(beatEnd), beatpos(beatpos), endBeatpos(endBeatpos), passed(absBeat < songBeat) {}
+    NoteSequenceItem(float absBeat, float beatEnd, bool passed, BeatPos beatpos, BeatPos endBeatpos) :
+        absBeat(absBeat), beatEnd(beatEnd), beatpos(beatpos), endBeatpos(endBeatpos), passed(passed) {}
+
+    enum SequencerItemType {
+        TOP_NOTE,
+        MID_NOTE,
+        BOT_NOTE,
+        STOP,
+        SKIP
+    };
 
     virtual SequencerItemType getItemType() const = 0;
     virtual void setItemType(SequencerItemType type) = 0;

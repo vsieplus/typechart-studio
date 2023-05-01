@@ -114,14 +114,14 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     void resetPassed(float songBeat) {
         for(auto & item : myItems) {
             switch(item->getItemType()) {
-                case SequencerItemType::TOP_NOTE:
-                case SequencerItemType::MID_NOTE:
-                case SequencerItemType::BOT_NOTE:
+                case NoteSequenceItem::SequencerItemType::TOP_NOTE:
+                case NoteSequenceItem::SequencerItemType::MID_NOTE:
+                case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                     item->passed = item->absBeat < songBeat;
                     break;
-                case SequencerItemType::SKIP:
+                case NoteSequenceItem::SequencerItemType::SKIP:
                     break;
-                case SequencerItemType::STOP:
+                case NoteSequenceItem::SequencerItemType::STOP:
                     break;
             }
         }
@@ -130,9 +130,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     void update(float songBeat, AudioSystem * audioSystem, bool notesoundEnabled) {
         for(auto & item : myItems) {
             switch(item->getItemType()) {
-                case SequencerItemType::TOP_NOTE:
-                case SequencerItemType::MID_NOTE:
-                case SequencerItemType::BOT_NOTE:
+                case NoteSequenceItem::SequencerItemType::TOP_NOTE:
+                case NoteSequenceItem::SequencerItemType::MID_NOTE:
+                case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                     if(item->passed) {
                         break;
                     } else if(item->absBeat < songBeat) {
@@ -143,9 +143,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                         }
                     }
                     break;
-                case SequencerItemType::SKIP:
+                case NoteSequenceItem::SequencerItemType::SKIP:
                     break;
-                case SequencerItemType::STOP:
+                case NoteSequenceItem::SequencerItemType::STOP:
                     break;
             }
         }
@@ -155,26 +155,28 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         return l.second > r.second;
     }
 
-    void addNote(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText) {
+    void addNote(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, NoteSequenceItem::SequencerItemType itemType, std::string displayText) {
         NoteType noteType = NoteType::KEYPRESS;
         if(beatDuration > FLT_EPSILON) {
             noteType = NoteType::KEYHOLDSTART;
         }
 
-        std::shared_ptr<NoteSequenceItem> newNote = std::make_shared<Note>(absBeat, absBeat + beatDuration, songBeat, beatpos, endBeatpos, 
+        bool passed = absBeat < songBeat;
+
+        std::shared_ptr<NoteSequenceItem> newNote = std::make_shared<Note>(absBeat, absBeat + beatDuration, passed, beatpos, endBeatpos, 
             noteType, NoteSplit::EIGHTH, itemType, displayText);
         myItems.push_back(newNote);
 
         std::sort(myItems.begin(), myItems.end());
 
         switch(itemType) {
-            case SequencerItemType::TOP_NOTE:
+            case NoteSequenceItem::SequencerItemType::TOP_NOTE:
                 numTopNotes++;
                 break;
-            case SequencerItemType::MID_NOTE:
+            case NoteSequenceItem::SequencerItemType::MID_NOTE:
                 numMidNotes++;
                 break;
-            case SequencerItemType::BOT_NOTE:
+            case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                 numBotNotes++;
                 break;
             default:
@@ -193,9 +195,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
             for(auto item: items) {
                 switch(item->getItemType()) {
-                    case SequencerItemType::TOP_NOTE:
-                    case SequencerItemType::MID_NOTE:
-                    case SequencerItemType::BOT_NOTE:
+                    case NoteSequenceItem::SequencerItemType::TOP_NOTE:
+                    case NoteSequenceItem::SequencerItemType::MID_NOTE:
+                    case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                         if(flipMap.find(item->displayText) != flipMap.end()) {
                             keyFrequencies[item->displayText] -= 1;
                             item->displayText = flipMap.at(item->displayText);
@@ -247,9 +249,9 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         auto itemType = item->getItemType();
 
         switch(itemType) {
-            case SequencerItemType::TOP_NOTE:
-            case SequencerItemType::MID_NOTE:
-            case SequencerItemType::BOT_NOTE:
+            case NoteSequenceItem::SequencerItemType::TOP_NOTE:
+            case NoteSequenceItem::SequencerItemType::MID_NOTE:
+            case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                 if(keyboardPositionMap.find(itemKey) != keyboardPositionMap.end()) {
                     auto keyPos = keyboardPositionMap.at(itemKey);
                     int keyRow = keyPos.first;
@@ -281,12 +283,12 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                         return false;
                     }
 
-                    if(itemType == SequencerItemType::TOP_NOTE && newRow > 0) {
-                        item->setItemType(SequencerItemType::MID_NOTE);
+                    if(itemType == NoteSequenceItem::SequencerItemType::TOP_NOTE && newRow > 0) {
+                        item->setItemType(NoteSequenceItem::SequencerItemType::MID_NOTE);
                     }
 
-                    if(itemType == SequencerItemType::MID_NOTE && newRow < 1) {
-                        item->setItemType(SequencerItemType::TOP_NOTE);
+                    if(itemType == NoteSequenceItem::SequencerItemType::MID_NOTE && newRow < 1) {
+                        item->setItemType(NoteSequenceItem::SequencerItemType::TOP_NOTE);
                     }
 
                     auto newKey = keyboardLayoutMap[newRow][newCol];
@@ -303,7 +305,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     void addStop(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
-        std::shared_ptr<Stop> newStop = std::make_shared<Stop>(absBeat, songBeat, beatDuration, beatpos, endBeatpos);
+        bool passed = absBeat < songBeat;
+        std::shared_ptr<Stop> newStop = std::make_shared<Stop>(absBeat, beatDuration, passed, beatpos, endBeatpos);
         newStop->displayText = std::to_string(beatDuration);
         myItems.push_back(newStop);
 
@@ -311,7 +314,8 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     }
 
     std::shared_ptr<Skip> addSkip(float absBeat, float songBeat, float skipTime, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
-        std::shared_ptr<Skip> newSkip = std::make_shared<Skip>(absBeat, songBeat, skipTime, beatDuration, beatpos, endBeatpos);
+        bool passed = absBeat < songBeat;
+        std::shared_ptr<Skip> newSkip = std::make_shared<Skip>(absBeat, skipTime, passed, beatDuration, beatpos, endBeatpos);
         newSkip->displayText = std::to_string(skipTime);
         myItems.push_back(newSkip);
 
@@ -323,7 +327,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     void editSkip(float absBeat, float skipTime) {
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
             auto & seqItem = *iter;
-            if((int)(seqItem->getItemType()) == SequencerItemType::SKIP && absBeat >= seqItem->absBeat &&
+            if((int)(seqItem->getItemType()) == NoteSequenceItem::SequencerItemType::SKIP && absBeat >= seqItem->absBeat &&
                 (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
 
                 auto currSkip = std::dynamic_pointer_cast<Skip>(seqItem);
@@ -389,15 +393,15 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
                 BeatPos currEndBeatPos = insertBeatPos + (item->endBeatpos - firstBeatPos);
 
                 switch(item->getItemType()) {
-                    case SequencerItemType::TOP_NOTE:
-                    case SequencerItemType::MID_NOTE:
-                    case SequencerItemType::BOT_NOTE:
+                    case NoteSequenceItem::SequencerItemType::TOP_NOTE:
+                    case NoteSequenceItem::SequencerItemType::MID_NOTE:
+                    case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                         addNote(currBeat, songBeat, item->beatEnd - item->absBeat, currBeatPos, currEndBeatPos, item->getItemType(), item->displayText);
                         break;
-                    case SequencerItemType::STOP:
+                    case NoteSequenceItem::SequencerItemType::STOP:
                         addStop(currBeat, songBeat, item->beatEnd - item->absBeat, currBeatPos, currEndBeatPos);
                         break;
-                    case SequencerItemType::SKIP:
+                    case NoteSequenceItem::SequencerItemType::SKIP:
                         auto currSkip = std::dynamic_pointer_cast<Skip>(item);
                         addSkip(currBeat, songBeat, currSkip->skipTime, item->beatEnd - item->absBeat, currBeatPos, currEndBeatPos);
                         break;
@@ -415,15 +419,15 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
 
             if(seqItemType >= minItemType && seqItemType <= maxItemType && startBeat <= seqItem->absBeat && seqItem->absBeat <= endBeat) {
                 switch(seqItem->getItemType()) {
-                    case SequencerItemType::TOP_NOTE:
+                    case NoteSequenceItem::SequencerItemType::TOP_NOTE:
                         numTopNotes--;
                         removeNote = true;
                         break;
-                    case SequencerItemType::MID_NOTE:
+                    case NoteSequenceItem::SequencerItemType::MID_NOTE:
                         numMidNotes--;
                         removeNote = true;
                         break;
-                    case SequencerItemType::BOT_NOTE:
+                    case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                         numBotNotes--;
                         removeNote = true;
                         break;
@@ -457,15 +461,15 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
                 (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
                 switch(seqItem->getItemType()) {
-                    case SequencerItemType::TOP_NOTE:
+                    case NoteSequenceItem::SequencerItemType::TOP_NOTE:
                         numTopNotes--;
                         removeNote = true;
                         break;
-                    case SequencerItemType::MID_NOTE:
+                    case NoteSequenceItem::SequencerItemType::MID_NOTE:
                         numMidNotes--;
                         removeNote = true;
                         break;
-                    case SequencerItemType::BOT_NOTE:
+                    case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                         numBotNotes--;
                         removeNote = true;
                         break;
@@ -503,13 +507,13 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         return nullptr;
     }
 
-    int getLaneItemCount(SequencerItemType lane) const {
+    int getLaneItemCount(NoteSequenceItem::SequencerItemType lane) const {
         switch(lane) {
-            case SequencerItemType::TOP_NOTE:
+            case NoteSequenceItem::SequencerItemType::TOP_NOTE:
                 return numTopNotes;
-            case SequencerItemType::MID_NOTE:
+            case NoteSequenceItem::SequencerItemType::MID_NOTE:
                 return numMidNotes;
-            case SequencerItemType::BOT_NOTE:
+            case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                 return numBotNotes;
             default:
                 return 0;
@@ -529,15 +533,15 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
             bool insertedKey = false;
 
             switch(item->getItemType()) {
-                case SequencerItemType::TOP_NOTE:
+                case NoteSequenceItem::SequencerItemType::TOP_NOTE:
                     numTopNotes++;
                     insertedKey = true;
                     break;
-                case SequencerItemType::MID_NOTE:
+                case NoteSequenceItem::SequencerItemType::MID_NOTE:
                     numMidNotes++;
                     insertedKey = true;
                     break;
-                case SequencerItemType::BOT_NOTE:
+                case NoteSequenceItem::SequencerItemType::BOT_NOTE:
                     numBotNotes++;
                     insertedKey = true;
                     break;

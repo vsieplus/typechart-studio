@@ -1,7 +1,7 @@
 #include "actions/placenote.hpp"
 #include "ui/editwindow.hpp"
 
-PlaceNoteAction::PlaceNoteAction(bool unsaved, float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, SequencerItemType itemType, std::string displayText) :
+PlaceNoteAction::PlaceNoteAction(bool unsaved, float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, NoteSequenceItem::SequencerItemType itemType, std::string displayText) :
     EditAction(unsaved), absBeat(absBeat), beatDuration(beatDuration), beatpos(beatpos), endBeatpos(endBeatpos), itemType(itemType), displayText(displayText) {}
 
 void PlaceNoteAction::undoAction(EditWindowData * editWindow) {
