@@ -23,8 +23,6 @@ bool ChartInfo::loadChart(fs::path chartPath, SongPosition & songpos) {
         in >> chartinfoJSON;
 
         loadChartMetadata(chartinfoJSON);
-        songpos.offsetMS = offsetMS;
-
         loadChartTimeInfo(chartinfoJSON, songpos);
         loadChartStops(chartinfoJSON, songpos);
         loadChartSkips(chartinfoJSON, songpos);
@@ -48,7 +46,6 @@ void ChartInfo::loadChartMetadata(ordered_json chartinfoJSON) {
     keyboardLayout = chartinfoJSON.value(constants::KEYBOARD_KEY, constants::KEYBOARD_VALUE_DEFAULT);
     difficulty = chartinfoJSON.value(constants::DIFFICULTY_KEY, constants::DIFFICULTY_VALUE_DEFAULT);
     level = chartinfoJSON.value(constants::LEVEL_KEY, constants::LEVEL_VALUE_DEFAULT);
-    offsetMS = chartinfoJSON.value(constants::OFFSET_KEY, constants::OFFSET_VALUE_DEFAULT);
 }
 
 void ChartInfo::loadChartTimeInfo(ordered_json chartinfoJSON, SongPosition & songpos) {
@@ -193,7 +190,6 @@ ordered_json ChartInfo::saveChartMetadata(SongPosition & songpos) {
     chartinfo[constants::KEYBOARD_KEY] = keyboardLayout;
     chartinfo[constants::DIFFICULTY_KEY] = difficulty;
     chartinfo[constants::LEVEL_KEY] = level;
-    chartinfo[constants::OFFSET_KEY] = songpos.offsetMS;
 
     return chartinfo;
 }

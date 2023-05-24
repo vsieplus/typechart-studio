@@ -43,7 +43,6 @@ struct ChartInfo {
     ordered_json saveChartTimeInfo(SongPosition & songpos);
 
     int level;
-    int offsetMS;
 
     std::string typist;
     std::string keyboardLayout;
