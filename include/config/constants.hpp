@@ -4,19 +4,30 @@
 #include <string>
 
 namespace constants {
+    // song metadata
+    const std::string SONGINFO_FILENAME = "songinfo.json";
+
+    const std::string TITLE_KEY = "title";
+    const std::string ARTIST_KEY = "artist";
+    const std::string GENRE_KEY = "genre";
+    const std::string COVERART_KEY = "coverart";
+    const std::string MUSIC_KEY = "music";
+    const std::string BPMTEXT_KEY = "bpmtext";
+    const std::string OFFSET_KEY = "offsetMS";
+    const std::string MUSIC_PREVIEW_START_KEY = "musicPreviewStart";
+    const std::string MUSIC_PREVIEW_STOP_KEY = "musicPreviewStop";
 
     // chart metadata
     const std::string TYPIST_KEY = "typist";
     const std::string KEYBOARD_KEY = "keyboard";
     const std::string DIFFICULTY_KEY = "difficulty";
     const std::string LEVEL_KEY = "level";
-    const std::string OFFSET_KEY = "offsetMS";
 
     const std::string TYPIST_VALUE_DEFAULT = "Unknown";
     const std::string KEYBOARD_VALUE_DEFAULT = "QWERTY";
     const std::string DIFFICULTY_VALUE_DEFAULT = "Easy";
-    int LEVEL_VALUE_DEFAULT = 1;
-    int OFFSET_VALUE_DEFAULT = 0;
+    const int LEVEL_VALUE_DEFAULT = 1;
+    const int OFFSET_VALUE_DEFAULT = 0;
 
     // chart data
     const std::string TIMEINFO_KEY = "timeinfo";
@@ -43,6 +54,9 @@ namespace constants {
 
     const int BEATS_PER_MEASURE_VALUE_DEFAULT = 4;
     const int NOTE_TYPE_VALUE_DEFAULT = 1;
+
+    // edit windows
+    const std::string DEFAULT_WINDOW_NAME = "Untitled";
 };
 
 #endif // CONSTANTS_HPP
