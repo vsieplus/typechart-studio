@@ -45,7 +45,10 @@ elif [[ "${BUILD_SYSTEM}" == "windows64" ]]; then
             -S . -B "${BUILD_DIR}"
 elif [[ "${BUILD_SYSTEM}" == "mac" ]]; then
     PRG_FILE="${PRG_NAME}"
-    echo "Building for mac [not yet impelmented]"
+    echo "Building for macOS"
+
+    cmake -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
+          -S . -B "${BUILD_DIR}"
 elif [[ "${BUILD_SYSTEM}" == "linux" ]]; then
     PRG_FILE="${PRG_NAME}"
 

@@ -3,13 +3,16 @@ cmake_minimum_required(VERSION 3.16.3)
 set(CMAKE_CXX_STANDARD 17)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    # show warnings
+    # show warnings    
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g3")
+
 endif()
 
 project(typechart-studio VERSION 0.3.0)
 configure_file(src/versionfile.h.in versionconfig.h)
 
+message(STATUS "Project name: ${PROJECT_NAME}")
+message(STATUS "Project version: ${PROJECT_VERSION}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "System name: ${CMAKE_SYSTEM_NAME}")
 
@@ -73,6 +76,10 @@ target_link_libraries(${PROJECT_NAME}
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     message(STATUS "Linking libgcc, libstdc++ statically for mingw")
     target_link_libraries(${PROJECT_NAME} -static-libgcc -static-libstdc++ -lpthread)
+endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    # macOS ...
 endif()
 
 message(STATUS "Using CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
