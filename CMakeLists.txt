@@ -24,10 +24,8 @@ set(BUILD_DIRS "build/linux/Debug" "build/linux/Release" "build/windows32/Debug"
 
 # SDL2 > 2.0.17 to work with imgui
 find_package(SDL2 2.0.17 REQUIRED)
+find_package(SDL2_IMAGE REQUIRED)
 find_package(OpenAL REQUIRED)
-
-INCLUDE(FindPkgConfig)
-PKG_SEARCH_MODULE(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
 
 set(SNDFILE_LIBRARIES "sndfile")
 

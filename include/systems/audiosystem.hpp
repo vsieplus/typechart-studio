@@ -6,9 +6,16 @@
 #include <string>
 #include <unordered_map>
 
+#ifdef __APPLE__
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
+#include <OpenAL/MacOSX_OALExtensions.h>
+#else
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/alext.h>
+#endif
+
 #include <sndfile.h>
 
 #include <SDL2/SDL.h>
@@ -95,7 +102,11 @@ class AudioSystem {
         std::map<int, bool> musicSourcesActive;
 
         // Force to read float samples to avoid clipping issue
+#ifdef __APPLE__
+        ALenum musicFormat = AL_FORMAT_STEREO16;
+#else
         ALenum musicFormat = AL_FORMAT_STEREO_FLOAT32;
+#endif
 };
 
 #endif // ...

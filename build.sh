@@ -116,7 +116,7 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
         libs+=( "${winlibs[@]}" )
         libs+=( "libssp-0" "libwinpthread-1" )
     elif [[ "${BUILD_SYSTEM}" == "mac" ]]; then
-        LIB_DIR="/usr/local/lib"
+        LIB_DIR="/opt/homebrew/lib"
         LIB_EXT="dylib"
     fi
 
