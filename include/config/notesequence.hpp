@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <numeric>
 #include <vector>
 #include <unordered_map>
 
@@ -100,7 +101,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     std::vector<std::pair<std::string, int>> keyFreqsSorted;
 
     NoteSplit computeNoteSplit(int noteSplitNumerator, int noteSplitDenominator) {
-        auto gcd = std::__gcd(noteSplitNumerator, noteSplitDenominator);
+        auto gcd = std::gcd(noteSplitNumerator, noteSplitDenominator);
         noteSplitNumerator /= gcd;
         noteSplitDenominator /= gcd;
 
