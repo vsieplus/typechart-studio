@@ -26,6 +26,7 @@
 #include "ImSequencer.h"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include <cmath>
 #include <cstdlib>
 #include <float.h>
 
