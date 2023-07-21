@@ -167,12 +167,14 @@ bool AudioSystem::loadSound(std::string soundID, std::string path) {
         format = AL_FORMAT_MONO16;
     } else if(soundSfinfo.channels == 2) {
         format = AL_FORMAT_STEREO16;
+#ifndef __APPLE__
     } else if(soundSfinfo.channels == 3) {
         if(sf_command(soundSndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
             format = AL_FORMAT_BFORMAT2D_16;
     } else if(soundSfinfo.channels == 4) {
         if(sf_command(soundSndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
             format = AL_FORMAT_BFORMAT3D_16;
+#endif
     }
 
     if(!format) {
