@@ -33,6 +33,7 @@ find_package(SDL2_image 2.6.3 REQUIRED)
 find_package(OpenAL 1.21.0 REQUIRED)
 
 set(SNDFILE_LIBRARIES "sndfile")
+set(SDL2_IMAGE_LIBRARIES "SDL2_image")
 
 # IMGUI
 set(EXTERNAL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external)
@@ -58,7 +59,6 @@ target_sources(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC ${SDL2_INCLUDE_DIRS}
-    PUBLIC ${SDL2IMAGE_INCLUDE_DIRS}
     PUBLIC ${IMGUI_DIR}
     PUBLIC ${IMGUI_DIR}/backends
     PUBLIC ${IMGUI_FD_DIR}
@@ -71,7 +71,7 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     ${SDL2_LIBRARIES}
-    ${SDL2IMAGE_LIBRARIES}
+    ${SDL2_IMAGE_LIBRARIES}
     ${OPENAL_LIBRARY}
     ${SNDFILE_LIBRARIES}
 )
