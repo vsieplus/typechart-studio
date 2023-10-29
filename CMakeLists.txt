@@ -19,13 +19,18 @@ message(STATUS "System name: ${CMAKE_SYSTEM_NAME}")
 add_subdirectory(src)
 add_subdirectory(include)
 
-set(BUILD_DIRS "build/linux/Debug" "build/linux/Release" "build/windows32/Debug" "build/windows32/Release"
-    "build/windows64/Debug" "build/windows64/Release" )
+set(BUILD_DIRS
+    "build/linux/Debug"
+    "build/linux/Release"
+    "build/windows32/Debug"
+    "build/windows32/Release"
+    "build/windows64/Debug"
+    "build/windows64/Release")
 
 # SDL2 > 2.0.17 to work with imgui
 find_package(SDL2 2.0.17 REQUIRED)
-find_package(SDL2_IMAGE REQUIRED)
-find_package(OpenAL REQUIRED)
+find_package(SDL2_image 2.6.3 REQUIRED)
+find_package(OpenAL 1.21.0 REQUIRED)
 
 set(SNDFILE_LIBRARIES "sndfile")
 

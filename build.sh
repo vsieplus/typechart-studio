@@ -33,16 +33,16 @@ if [[ "${BUILD_SYSTEM}" == "windows32" ]]; then
     PRG_FILE="${PRG_NAME}.exe"
 
     echo "Building for windows 32-bit"
-    cmake -DCMAKE_TOOLCHAIN_FILE=/home/ryan/Documents/dev/cmake/toolchain-mingw32-x86.cmake \
+    cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain-mingw32-i686.cmake \
           -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-            -S . -B "${BUILD_DIR}"
+          -S . -B "${BUILD_DIR}"
 elif [[ "${BUILD_SYSTEM}" == "windows64" ]]; then
     PRG_FILE="${PRG_NAME}.exe"
 
     echo "Building for windows 64-bit"
-    cmake -DCMAKE_TOOLCHAIN_FILE=/home/ryan/Documents/dev/cmake/toolchain-mingw32-x64.cmake \
+    cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain-mingw32-x86_64.cmake \
           -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-            -S . -B "${BUILD_DIR}"
+          -S . -B "${BUILD_DIR}"
 elif [[ "${BUILD_SYSTEM}" == "mac" ]]; then
     PRG_FILE="${PRG_NAME}"
     echo "Building for macOS"

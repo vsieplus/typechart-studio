@@ -15,24 +15,34 @@ If you purchase [Typing Tempo](https://store.steampowered.com/app/2332930/Typing
 
 ## Build
 
-Typechart Studio can be built using [CMake](https://cmake.org/).
+Typechart Studio uses several external dependencies, including [Dear ImGUI](https://github.com/ocornut/imgui) and [json](https://github.com/nlohmann/json).
+The following dependencies should be installed locally:
 
-```
+* [SDL2](https://github.com/libsdl-org/SDL) (> 2.0.18 for ImGui compatibility)
+* [SDL2 Image](https://github.com/libsdl-org/SDL_image) (> 2.0.5)
+* [OpenAL Soft](https://github.com/kcat/openal-soft) (> 1.21.0)
+* [libsndfile](https://github.com/libsndfile/libsndfile) (> 1.1.0beta2 for mp3 support)
+
+Once the above have been installed, you can create a Debug build using [CMake](https://cmake.org/):
+
+```bash
 mkdir build
 cd build
-
+cmake ..
+cmake -- build .
 ```
 
-### Building on Windows
+Alternatively, if developing on linux, a utility build script is available to use in `build.sh`. If cross-compiling to windows, be sure to update the install paths for mingw32 as required.
 
-```
+```bash
+# Create a debug build for linux -> build/linux/Debug/typechart-studio
+bash build.sh
 
-```
+# Create a release build for linux -> releases/{version}/typechart-studio-{version}-linux.zip
+bash build.sh linux Release
 
-### Building on Linux
-
-```
-
+# Cross-compile to windows 64-bit using mingw -> releases/{version}/typechart-studio-{version}-windows64.zip
+bash build.sh windows64 Release
 ```
 
 ## Contributing
