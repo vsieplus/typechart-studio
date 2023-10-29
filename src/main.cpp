@@ -1,28 +1,22 @@
-// File: main.cpp
-// Author: Ryan Sie
-// Description: main method for typechart-studio
-
+#include "config/init.hpp"
 #include "editor.hpp"
 
-bool initSDL() {
-    // init sdl
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-        printf("Error: %s\n", SDL_GetError());
-        return false;
+int main(int agrc, char * argv[]) {
+    if(!init::initSDL() || !init::initSDLImage()) {
+        return 1;
     }
 
-    return true;
-}
+    SDL_Window * window { init::initWindow() };
+    SDL_Renderer * renderer { init::initRenderer(window) };
 
-int main(int agrc, char * argv[]) {
-    initSDL();
-    
-    Editor editor;
+    if(!(window && renderer)) {
+        return 1;
+    }
 
+    Editor editor{ window, renderer };
     while(editor.isRunning()) {
         editor.loop();
     }
-
     editor.quit();
 
     return 0;

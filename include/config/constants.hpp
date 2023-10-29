@@ -2,6 +2,8 @@
 #define CONSTANTS_HPP
 
 #include <string>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 namespace constants {
     // song metadata
@@ -52,11 +54,30 @@ namespace constants {
     const float DURATION_VALUE_DEFAULT = 0.f;
     const float SKIPTIME_VALUE_DEFAULT = 0.f;
 
-    const int BEATS_PER_MEASURE_VALUE_DEFAULT = 4;
-    const int NOTE_TYPE_VALUE_DEFAULT = 1;
+    constexpr int BEATS_PER_MEASURE_VALUE_DEFAULT = 4;
+    constexpr int NOTE_TYPE_VALUE_DEFAULT = 1;
+
+    // bg color
+    constexpr uint8_t BG_R = 20;
+    constexpr uint8_t BG_G = 20;
+    constexpr uint8_t BG_B = 20;
+    constexpr uint8_t BG_A = 255;
 
     // edit windows
     const std::string DEFAULT_WINDOW_NAME = "Untitled";
+
+    constexpr int MENU_FONT_SIZE = 28;
+
+    const std::string PREFERENCES_PATH = "preferences.json";
+
+    const fs::path FONTS_DIR = fs::path("fonts");
+    const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("NotoSans-Regular.ttf");
+    const fs::path ICON_FONT_PATH = FONTS_DIR / fs::path("fa-solid-900.ttf");
+
+    const fs::path IMAGES_DIR = fs::path("images");
+    const fs::path WINDOW_ICON_PATH = IMAGES_DIR / fs::path("windowIcon.png");
+
+    const fs::path KEYPRESS_SOUND_PATH = fs::path("sounds") / fs::path("keypress.wav");
 };
 
 #endif // CONSTANTS_HPP

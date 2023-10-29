@@ -3,13 +3,17 @@
 
 #include "imgui.h"
 
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
+namespace constants {
+
+constexpr int SCREEN_WIDTH { 1280 };
+constexpr int SCREEN_HEIGHT { 720 };
 
 // default window sizes
-inline ImVec2 maxFDSize = ImVec2(SCREEN_WIDTH*3.f/4, SCREEN_HEIGHT*3.f/4);
-inline ImVec2 minFDSize = ImVec2(SCREEN_WIDTH/2.f, SCREEN_HEIGHT/2.f);
-inline ImVec2 newEditWindowSize = ImVec2(600, 570);
-inline ImVec2 editWindowSize = ImVec2(640, 480);
+constexpr ImVec2 maxFDSize { SCREEN_WIDTH*3.f/4, SCREEN_HEIGHT*3.f/4 };
+constexpr ImVec2 minFDSize { SCREEN_WIDTH/2.f, SCREEN_HEIGHT/2.f };
+constexpr ImVec2 newEditWindowSize { 600, 570 };
+constexpr ImVec2 editWindowSize { 640, 480 };
+
+}
 
 #endif

@@ -14,6 +14,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/shiftnote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/beatpos.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/chartinfo.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/init.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/notesequenceitem.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/songinfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/songposition.cpp

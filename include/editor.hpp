@@ -11,10 +11,11 @@
 #include <vector>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 class Editor {
     public:
-        Editor();
+        Editor(SDL_Window * window, SDL_Renderer * renderer);
         
         void loop();
         void quit();
@@ -34,20 +35,20 @@ class Editor {
         void initKeys();
         void initAudio();
 
-        SDL_Window * window;
-        SDL_Renderer * renderer;
+        SDL_Window * window{ nullptr };
+        SDL_Renderer * renderer{ nullptr };
 
-        ImVec4 clearColor = ImVec4(0.0784f, 0.0784f, 0.0784f, 1.00f);
+        ImVec4 clearColor { 0.0784f, 0.0784f, 0.0784f, 1.00f };
 
-        ImFont * menuFont = nullptr;
+        ImFont * menuFont { nullptr };
 
-        bool running = true;
+        bool running { true };
 
         // key states
         std::vector<bool> keysPressed;
         std::vector<bool> keysHeld;
 
-        std::unordered_map<SDL_Keycode, bool> shortcutsActivated = {
+        std::unordered_map<SDL_Keycode, bool> shortcutsActivated {
             { SDLK_c, false },
             { SDLK_x, false },
             { SDLK_v, false },

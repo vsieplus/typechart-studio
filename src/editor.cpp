@@ -1,86 +1,26 @@
 #include "editor.hpp"
+#include "config/init.hpp"
+#include "config/constants.hpp"
 #include "ui/ui.hpp"
-#include "ui/windowsizes.hpp"
-
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_sdlrenderer.h"
 
 #include "IconsFontAwesome6.h"
+
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_sdlrenderer.h"
 
 #include <stdexcept>
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include <SDL2/SDL_image.h>
-
-const int MENU_FONT_SIZE = 28;
-
-const std::string PROGRAM_NAME = "Typechart Studio";
-
-const std::string PREFERENCES_PATH = "preferences.json";
-
-const fs::path FONTS_DIR = fs::path("fonts");
-const fs::path MENU_FONT_PATH = FONTS_DIR / fs::path("NotoSans-Regular.ttf");
-const fs::path ICON_FONT_PATH = FONTS_DIR / fs::path("fa-solid-900.ttf");
-
-const fs::path IMAGES_DIR = fs::path("images");
-const fs::path WINDOW_ICON_PATH = IMAGES_DIR / fs::path("windowIcon.png");
-
-SDL_Window * initWindow() {
-    // Setup window
-    SDL_WindowFlags window_flags = (SDL_WindowFlags) (SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);
-    SDL_Window * window = SDL_CreateWindow(PROGRAM_NAME.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, window_flags);
-
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
-
-    return window;
-}
-
-SDL_Renderer * initRenderer(SDL_Window * window) {
-    // setup renderer
-    SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
-    if (renderer == NULL) {
-        SDL_Log("Error creating SDL_Renderer!");
-    }
-
-    return renderer;
-}
-
-void initSDLImage() {
-    int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
-    if(!(IMG_Init(imgFlags) & imgFlags)) {
-        char err[128];
-        snprintf(err, 128, "Failed to initialize SDL Image: %s\n", SDL_GetError());
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL Image Error", err, NULL);
-    }
-}
-
-void initImGUI(SDL_Window * window, SDL_Renderer * renderer) {
-	// setup imgui
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-
-	// setup platform, rendering backends
-	ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
-	ImGui_ImplSDLRenderer_Init(renderer);
-
-    ImGuiIO & io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-}
-
-Editor::Editor() : window(initWindow()), renderer(initRenderer(window)) {
-    if(window == nullptr || renderer == nullptr ) {
-        throw std::runtime_error("Failed to initialize SDL window/renderer");
-    }
-
-    initImGUI(window, renderer);
+Editor::Editor(SDL_Window * window, SDL_Renderer * renderer) : window(window), renderer(renderer) {
+    init::initImGUI(window, renderer);
     initFonts();
     initKeys();
     initAudio();
-    initSDLImage();
 
     setWindowIcon();
-    Preferences::Instance().loadFromFile(PREFERENCES_PATH);
+    Preferences::Instance().loadFromFile(constants::PREFERENCES_PATH);
     initLastDirPaths();
 }
 
@@ -90,13 +30,13 @@ void Editor::initFonts() {
     ImFontConfig config;
     config.PixelSnapH = true;
 
-    menuFont = io.Fonts->AddFontFromFileTTF(MENU_FONT_PATH.string().c_str(), MENU_FONT_SIZE, &config);
+    menuFont = io.Fonts->AddFontFromFileTTF(constants::MENU_FONT_PATH.string().c_str(), constants::MENU_FONT_SIZE, &config);
 
     config.MergeMode = true;
     config.GlyphMinAdvanceX = 13.f;
 
     static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-    io.Fonts->AddFontFromFileTTF(ICON_FONT_PATH.string().c_str(), 13.0f, &config, icon_ranges);
+    io.Fonts->AddFontFromFileTTF(constants::ICON_FONT_PATH.string().c_str(), 13.0f, &config, icon_ranges);
 }
 
 void Editor::initKeys() {
@@ -110,12 +50,12 @@ void Editor::initKeys() {
 
 void Editor::initAudio() {
     audioSystem.initAudioSystem(window);
-    audioSystem.loadSound("keypress", (fs::path("sounds") / fs::path("keypress.wav")).string());
+    audioSystem.loadSound("keypress", constants::KEYPRESS_SOUND_PATH.string());
 }
 
 void Editor::setWindowIcon() {
     // set window icon
-    SDL_Surface * icon = IMG_Load(WINDOW_ICON_PATH.string().c_str());
+    SDL_Surface * icon = IMG_Load(constants::WINDOW_ICON_PATH.string().c_str());
     SDL_SetWindowIcon(window, icon);
     SDL_FreeSurface(icon);
 }
@@ -125,15 +65,15 @@ void Editor::quit() {
 
     audioSystem.quitAudioSystem();
 
-    Preferences::Instance().saveToFile(PREFERENCES_PATH);
+    Preferences::Instance().saveToFile(constants::PREFERENCES_PATH);
 
-	ImGui_ImplSDLRenderer_Shutdown();
-	ImGui_ImplSDL2_Shutdown();
-	ImGui::DestroyContext();
+    ImGui_ImplSDLRenderer_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
 
     SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 }
 
 void Editor::loop() {
@@ -152,7 +92,7 @@ void Editor::handleEvents() {
             }
         }
 
-        const Uint8 * keyStates = SDL_GetKeyboardState(NULL);
+        const Uint8 * keyStates = SDL_GetKeyboardState(nullptr);
         for(unsigned int i = 0; i < keysPressed.size(); i++) {
             if(keyStates[i] && !keysHeld[i]) {
                 // if key was pressed this frame but not the last frame, mark as pressed + held
@@ -228,14 +168,12 @@ void Editor::updateShortcuts() {
 
 void Editor::render() {
     if(running) {
+        ImGui::Render();
+        SDL_SetRenderDrawColor(renderer, constants::BG_R, constants::BG_G, constants::BG_B, constants::BG_A);
+        SDL_RenderClear(renderer);
 
-
-		ImGui::Render();
-		SDL_SetRenderDrawColor(renderer, (Uint8)(clearColor.x * 255), (Uint8)(clearColor.y * 255), (Uint8)(clearColor.z * 255), (Uint8)(clearColor.w * 255));
-		SDL_RenderClear(renderer);
-
-		ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-		SDL_RenderPresent(renderer);
+        ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+        SDL_RenderPresent(renderer);
     }
 }
 
