@@ -141,7 +141,7 @@ void AudioSystem::update(SDL_Window * window) {
     }
 }
 
-bool AudioSystem::loadSound(std::string soundID, std::string path) {
+bool AudioSystem::loadSound(std::string soundID, fs::path path) {
     // adapted from https://github.com/kcat/openal-soft/blob/master/examples/alplay.c
     ALenum err, format;
     ALuint buffer;
@@ -222,7 +222,7 @@ bool AudioSystem::loadSound(std::string soundID, std::string path) {
     return true;
 }
 
-int AudioSystem::loadMusic(std::string path) {
+int AudioSystem::loadMusic(fs::path path) {
     int nextIdx = -1;
     for(auto & [sourceIdx, active] : musicSourcesActive) {
         if(!active) {

@@ -6,6 +6,9 @@
 #include <string>
 #include <unordered_map>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 #ifdef __APPLE__
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
@@ -30,8 +33,8 @@ class AudioSystem {
 
         void update(SDL_Window * window);
 
-        bool loadSound(std::string soundID, std::string path);
-        int loadMusic(std::string path);
+        bool loadSound(std::string soundID, fs::path path);
+        int loadMusic(fs::path path);
 
         void deactivateMusicSource(int sourceIdx);
 

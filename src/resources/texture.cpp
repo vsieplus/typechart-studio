@@ -4,7 +4,7 @@
 #include <SDL2/SDL_image.h>
 
 namespace Texture {
-    std::shared_ptr<SDL_Texture> loadTexture(std::string path, SDL_Renderer * renderer) {
+    std::shared_ptr<SDL_Texture> loadTexture(fs::path path, SDL_Renderer * renderer) {
         SDL_Surface * surface = IMG_Load(path.c_str());
         if(!surface) {
             return nullptr;
