@@ -9,9 +9,6 @@
 #include "config/beatpos.hpp"
 
 struct NoteSequenceItem {
-    NoteSequenceItem(double absBeat, double beatEnd, bool passed, BeatPos beatpos, BeatPos endBeatpos);
-    virtual ~NoteSequenceItem() = default;
-
     enum class SequencerItemType {
         TOP_NOTE,
         MID_NOTE,
@@ -20,17 +17,19 @@ struct NoteSequenceItem {
         SKIP
     };
 
-    virtual SequencerItemType getItemType() const = 0;
-    virtual void setItemType(SequencerItemType type) = 0;
+    NoteSequenceItem(SequencerItemType itemType, bool passed, double absBeat, double beatEnd, BeatPos beatpos, BeatPos endBeatpos, std::string_view displayText);
+    virtual ~NoteSequenceItem() = default;
 
-    BeatPos beatpos;
-    BeatPos endBeatpos;
+    SequencerItemType itemType;
+
+    bool passed { false };
+    bool deleted { false };
 
     double absBeat { 0.f };
     double beatEnd { 0.f };
 
-    bool passed { false };
-    bool deleted { false };
+    BeatPos beatpos;
+    BeatPos endBeatpos;
 
     std::string displayText {};
 };

@@ -4,17 +4,13 @@
 #include "config/notesequenceitem.hpp"
 
 struct Skip : public NoteSequenceItem {
-    Skip(float absBeat, float skipTime, float beatDuration, bool passed, BeatPos beatpos, BeatPos endBeatpos) : 
-        NoteSequenceItem(absBeat, absBeat + beatDuration, passed, beatpos, endBeatpos), skipTime(skipTime), beatDuration(beatDuration) {}
+    Skip(double absBeat, double skipTime, double beatDuration, bool passed, BeatPos beatpos, BeatPos endBeatpos)
+    : NoteSequenceItem(SequencerItemType::SKIP, passed, absBeat, absBeat + beatDuration, beatpos, endBeatpos, "")
+    , skipTime(skipTime)
+    , beatDuration(beatDuration) {}
 
-    virtual SequencerItemType getItemType() const override {
-        return NoteSequenceItem::SequencerItemType::SKIP;
-    }
-
-    void setItemType(SequencerItemType type) override {}
-
-    float skipTime;
-    float beatDuration;
+    double skipTime;
+    double beatDuration;
 };
 
 #endif // SKIP_HPP

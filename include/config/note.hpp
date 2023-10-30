@@ -6,44 +6,36 @@
 
 #include "config/notesequenceitem.hpp"
 
-enum NoteSplit {
-    WHOLE,
-    HALF,
-    QUARTER,
-    EIGHTH,
-    SIXTEENTH,
-    THIRTYSECOND,
-    SIXTYFOURTH,
-    ONETWENTYEIGHTH,
-    TWELFTH,
-    TWENTYFOURTH,
-    FORTYEIGHTH,
-    NINETYSIXTH,
-    DUMMY
-};
-
-enum NoteType {
-    KEYPRESS,
-    KEYHOLDSTART,
-    KEYHOLDRELEASE
-};
-
 struct Note : public NoteSequenceItem {
-    Note(float absBeat, float beatEnd, bool passed, BeatPos beatpos, BeatPos endBeatpos, NoteType noteType, NoteSplit noteSplit, SequencerItemType itemType, std::string key) :
-        NoteSequenceItem(absBeat, beatEnd, passed, beatpos, endBeatpos), noteType(noteType), noteSplit(noteSplit), itemType(itemType) { displayText = key; }
+    enum class NoteSplit {
+        WHOLE,
+        HALF,
+        QUARTER,
+        EIGHTH,
+        SIXTEENTH,
+        THIRTYSECOND,
+        SIXTYFOURTH,
+        ONETWENTYEIGHTH,
+        TWELFTH,
+        TWENTYFOURTH,
+        FORTYEIGHTH,
+        NINETYSIXTH,
+        DUMMY
+    };
 
-    virtual SequencerItemType getItemType() const override {
-        return itemType;
-    }
+    enum class NoteType {
+        KEYPRESS,
+        KEYHOLDSTART,
+        KEYHOLDRELEASE
+    };
 
-    void setItemType(SequencerItemType type) override { 
-        itemType = type;
-    }
+    Note(SequencerItemType itemType, bool passed, double absBeat, double beatEnd, BeatPos beatpos, BeatPos endBeatpos, NoteType noteType, NoteSplit noteSplit, std::string_view key)
+    : NoteSequenceItem(itemType, passed, absBeat, beatEnd, beatpos, endBeatpos, key)
+    , noteType(noteType)
+    , noteSplit(noteSplit) {}
 
     NoteType noteType;
     NoteSplit noteSplit;
-
-    SequencerItemType itemType;
 
     std::string key;
 };
