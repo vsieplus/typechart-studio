@@ -8,7 +8,6 @@
 #include <string_view>
 #include <vector>
 
-#include "actions/editaction.hpp"
 #include "config/chartinfo.hpp"
 #include "config/songinfo.hpp"
 #include "config/songposition.hpp"
@@ -25,6 +24,11 @@ public:
         const ChartInfo & chartinfo, const SongInfo & songinfo);
 
     void showContents(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
+
+    void setCopy(bool copy);
+    void setPaste(bool paste);
+    void setCut(bool cut);
+    void setFlip(bool flip);
 private:
     bool open { true };
     bool unsaved { true };
@@ -41,9 +45,6 @@ private:
     std::string name;
 
     std::shared_ptr<SDL_Texture> artTexture;
-
-    std::stack<std::shared_ptr<EditAction>> editActionsUndo;
-    std::stack<std::shared_ptr<EditAction>> editActionsRedo;
 
     SongPosition songpos;
 

@@ -399,31 +399,31 @@ void EditWindowManager::showEditWindows(AudioSystem * audioSystem, std::vector<b
     }
 
     if(activateUndo) {
-        if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).editActionsUndo.empty()) {
+        if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).undoStack.empty()) {
             auto & currEditWindow = editWindows.at(currentWindow);
 
-            auto action = currEditWindow.editActionsUndo.top();
+            auto action = currEditWindow.undoStack.top();
 
             action->undoAction(&currEditWindow);
 
-            currEditWindow.editActionsRedo.push(action);
-            currEditWindow.editActionsUndo.pop();
+            currEditWindow.redoStack.push(action);
+            currEditWindow.undoStack.pop();
 
-            currEditWindow.unsaved = (int)currEditWindow.editActionsUndo.size() != currEditWindow.lastSavedActionIndex;
+            currEditWindow.unsaved = (int)currEditWindow.undoStack.size() != currEditWindow.lastSavedActionIndex;
         }
 
         activateUndo = false;
     }
 
     if(activateRedo) {
-        if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).editActionsRedo.empty()) {
+        if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).redoStack.empty()) {
             auto & currEditWindow = editWindows.at(currentWindow);
 
-            auto action = currEditWindow.editActionsRedo.top();
+            auto action = currEditWindow.redoStack.top();
             action->redoAction(&currEditWindow);
 
-            currEditWindow.editActionsUndo.push(action);
-            currEditWindow.editActionsRedo.pop();
+            currEditWindow.undoStack.push(action);
+            currEditWindow.redoStack.pop();
             currEditWindow.unsaved = true;
         }
 
@@ -516,15 +516,19 @@ void EditWindowManager::showChartConfig() {
 }
 
 void EditWindowManager::setCopy(bool copy) {
-    activateCopy = copy;
+    editWindows.at(currentWindow).setCopy(copy);
 }
 
 void EditWindowManager::setPaste(bool paste) {
-    activatePaste = paste;
+    editWindows.at(currentWindow).setPaste(paste);
 }
 
 void EditWindowManager::setCut(bool cut) {
-    activateCut = cut;
+    editWindows.at(currentWindow).setCut(cut);
+}
+
+void EditWindowManager::setFlip(bool flip) {
+    editWindows.at(currentWindow).setFlip(flip);
 }
 
 void EditWindowManager::setUndo(bool undo) {
@@ -533,8 +537,4 @@ void EditWindowManager::setUndo(bool undo) {
 
 void EditWindowManager::setRedo(bool redo) {
     activateRedo = redo;
-}
-
-void EditWindowManager::setFlip(bool flip) {
-    activateFlip = flip;
 }

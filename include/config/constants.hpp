@@ -56,6 +56,8 @@ namespace constants {
     const float DURATION_VALUE_DEFAULT = 0.f;
     const float SKIPTIME_VALUE_DEFAULT = 0.f;
 
+    constexpr double ZOOM_STEP = 0.25;
+
     constexpr int BEATS_PER_MEASURE_VALUE_DEFAULT = 4;
     constexpr int NOTE_TYPE_VALUE_DEFAULT = 1;
 
@@ -114,6 +116,10 @@ namespace constants {
         { "hard", 2 },
         { "expert", 3 },
         { "unknown", 4 }
+    };
+
+    const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
+        { 0, "_" },
     };
 };
 

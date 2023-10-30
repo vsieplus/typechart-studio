@@ -10,17 +10,6 @@
 #include "ImGuiFileDialog.h"
 #include "IconsFontAwesome6.h"
 
-#include "actions/deleteitems.hpp"
-#include "actions/deletenote.hpp"
-#include "actions/editnote.hpp"
-#include "actions/editskip.hpp"
-#include "actions/flipnote.hpp"
-#include "actions/insertitems.hpp"
-#include "actions/placenote.hpp"
-#include "actions/placestop.hpp"
-#include "actions/placeskip.hpp"
-#include "actions/shiftnote.hpp"
-
 #include "config/constants.hpp"
 #include "config/utils.hpp"
 
@@ -54,16 +43,6 @@ const char * getKeyFrequencyLabels(void * data, int i) {
     }
 }
 
-void updateAudioPosition(AudioSystem * audioSystem, const SongPosition & songpos, int musicSourceIdx) {
-    // udpate audio position
-    auto offsetAbsTime = static_cast<float>(songpos.absTime + (songpos.offsetMS / 1000.f));
-    if(audioSystem->isMusicPlaying(musicSourceIdx)) {
-        audioSystem->startMusic(musicSourceIdx, offsetAbsTime);
-    } else {
-        audioSystem->setMusicPosition(musicSourceIdx, offsetAbsTime);
-    }
-}
-
 } // namespace utils
 
 
@@ -90,7 +69,7 @@ void EditWindow::saveCurrentChartFiles(std::string_view chartSaveFilename, const
     unsaved = false;
     name = chartSaveFilename;
 
-    lastSavedActionIndex = static_cast<int>(editActionsUndo.size());
+    lastSavedActionIndex = static_cast<int>(timeline.getUndoStackSize());
 }
 
 void EditWindow::showContents(AudioSystem * audioSystem, std::vector<bool> & keysPressed) {
@@ -103,7 +82,7 @@ void EditWindow::showContents(AudioSystem * audioSystem, std::vector<bool> & key
     showToolbar(audioSystem, keysPressed);
 
     ImGui::Separator();
-    timeline.showContents(audioSystem, keysPressed);
+    timeline.showContents(musicSourceIdx, focused, audioSystem, chartinfo, songpos, keysPressed);
 }
 
 void EditWindow::showMetadata() {
@@ -526,4 +505,20 @@ void EditWindow::showMusicOffset() {
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive()) {
         ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
     }
+}
+
+void EditWindow::setCopy(bool copy) {
+    timeline.setCopy(copy);
+}
+
+void EditWindow::setPaste(bool paste) {
+    timeline.setPaste(paste);
+}
+
+void EditWindow::setCut(bool cut) {
+    timeline.setCut(cut);
+}
+
+void EditWindow::setFlip(bool flip) {
+    timeline.setFlip(flip);
 }

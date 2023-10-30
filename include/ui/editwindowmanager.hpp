@@ -32,9 +32,9 @@ public:
     void setCopy(bool copy);
     void setPaste(bool paste);
     void setCut(bool cut);
+    void setFlip(bool flip);
     void setUndo(bool undo);
     void setRedo(bool redo);
-    void setFlip(bool flip);
 private:
     std::pair<std::string, int> getNextWindowNameAndID();
 
@@ -45,12 +45,8 @@ private:
 
     bool newEditStarted { false };
 
-    bool activateCopy { false };
-    bool activatePaste { false };
-    bool activateCut { false };
     bool activateUndo { false };
     bool activateRedo { false };
-    bool activateFlip { false };
 
     std::queue<int> availableWindowIDs;
     std::vector<EditWindow> editWindows;
