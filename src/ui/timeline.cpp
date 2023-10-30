@@ -543,13 +543,13 @@ void Timeline::checkDeleteItem(bool focused, bool & unsaved, ChartInfo & chartin
         if(itemToDelete.get()) {
             chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
             auto deleteAction { std::make_shared<DeleteNoteAction>(itemToDelete->absBeat, itemToDelete->beatEnd - itemToDelete->absBeat,
-                itemToDelete->beatpos, itemToDelete->endBeatpos, itemToDelete->getItemType(), itemToDelete->displayText) };
+                itemToDelete->beatpos, itemToDelete->endBeatpos, itemToDelete->itemType, itemToDelete->displayText) };
             undoStack.push(deleteAction);
             utils::emptyActionStack(redoStack);
 
             unsaved = true;
 
-            if(itemToDelete->getItemType() == NoteSequenceItem::SequencerItemType::SKIP) {
+            if(itemToDelete->itemType == NoteSequenceItem::SequencerItemType::SKIP) {
                 songpos.removeSkip(clickedBeat);
             }
         }

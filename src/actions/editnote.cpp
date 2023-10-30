@@ -9,9 +9,9 @@ EditNoteAction::EditNoteAction(double absBeat, NoteSequenceItem::SequencerItemTy
 
 void EditNoteAction::undoAction(EditWindow * editWindow) {
     EditAction::undoAction(editWindow);
-    editWindow->chartinfo.notes.editNote(absBeat, static_cast<int>(itemType), oldDisplayText);
+    editWindow->chartinfo.notes.editNote(absBeat, itemType, oldDisplayText);
 }
 
 void EditNoteAction::redoAction(EditWindow * editWindow) {
-    editWindow->chartinfo.notes.editNote(absBeat, static_cast<int>(itemType), newDisplayText);
+    editWindow->chartinfo.notes.editNote(absBeat, itemType, newDisplayText);
 }
