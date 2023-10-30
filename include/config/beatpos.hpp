@@ -8,7 +8,7 @@ namespace constants {
 }
 
 struct BeatPos {
-    BeatPos();
+    BeatPos() = default;
     BeatPos(int measure, int measureSplit, int split);
 
     int measure;
