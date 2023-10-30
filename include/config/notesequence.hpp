@@ -20,6 +20,7 @@
 #include "config/skip.hpp"
 #include "config/stop.hpp"
 #include "config/timeinfo.hpp"
+#include "config/utils.hpp"
 
 #include "actions/shiftnote.hpp"
 
@@ -43,49 +44,6 @@ const std::unordered_map<int, NoteSplit> DENOMINATOR_TO_NOTESPLIT = {
     { 48, NoteSplit::FORTYEIGHTH },
     { 96, NoteSplit::NINETYSIXTH }
 };
-
-inline BeatPos calculateBeatpos2(float absBeat, int measureSplit, const std::vector<Timeinfo> & timeinfo) {
-    int measure = 0;
-    int split = 0;
-
-    int prevBeatsPerMeasure = 0;
-    float prevSectionAbsBeat = 0.f;
-
-    unsigned int i = 0;
-    for(const auto & time : timeinfo) {
-        // track current measure
-        if(absBeat >= time.absBeatStart && i > 0) {
-            float prevSectionMeasures = (time.absBeatStart - prevSectionAbsBeat) / prevBeatsPerMeasure;
-            int prevSectionMeasuresFull = std::floor(prevSectionMeasures);
-
-            measure += prevSectionMeasuresFull;
-        }
-
-        // calculate the leftover beats
-        bool isLastSection = i == timeinfo.size() - 1;
-        bool beatInPrevSection = absBeat < time.absBeatStart;
-        if(beatInPrevSection || isLastSection) {
-            int currBeatsPerMeasure = beatInPrevSection ? prevBeatsPerMeasure : time.beatsPerMeasure;
-            int currentBeatsplit = measureSplit / currBeatsPerMeasure;
-            float currAbsBeat = beatInPrevSection ? prevSectionAbsBeat : time.absBeatStart;
-
-            float leftoverMeasures = (absBeat - currAbsBeat) / currBeatsPerMeasure;
-            int leftoverMeasuresFull = std::floor(leftoverMeasures);
-            float leftoverBeats = (leftoverMeasures - leftoverMeasuresFull) * currBeatsPerMeasure;
-            int leftoverBeatsplits = (int)(leftoverBeats * currentBeatsplit);
-
-            measure += leftoverMeasuresFull;
-            split = leftoverBeatsplits;
-            break;
-        }
-
-        prevSectionAbsBeat = time.absBeatStart;
-        prevBeatsPerMeasure = time.beatsPerMeasure;
-        i++;
-    }
-
-    return BeatPos(measure, measureSplit, split);
-}
 
 struct NoteSequence : public ImSequencer::SequenceInterface {
     // my datas
@@ -383,7 +341,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         if(!items.empty()) {
             float firstBeat = items.front()->absBeat;
             BeatPos firstBeatPos = items.front()->beatpos;
-            BeatPos insertBeatPos = calculateBeatpos2(insertBeat, firstBeatPos.measureSplit, timeinfo);
+            BeatPos insertBeatPos = utils::calculateBeatpos(insertBeat, firstBeatPos.measureSplit, timeinfo);
 
             deleteItems(insertBeat, insertBeat + (items.back()->beatEnd - firstBeat), minItemType, maxItemType);
             
