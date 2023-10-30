@@ -8,20 +8,21 @@ namespace constants {
 }
 
 struct Timeinfo {
+    Timeinfo() = default;
     Timeinfo(BeatPos beatpos, const Timeinfo * prevTimeinfo, int beatsPerMeasure, double bpm, double interpolateBeatDuration);
 
     double calculateBeatStart(const Timeinfo * prevTimeinfo) const;
     double calculateTimeStart(const Timeinfo * prevTimeinfo) const;
 
     BeatPos beatpos;
-    int beatsPerMeasure;
 
-    double bpm;
+    int beatsPerMeasure { constants::DEFAULT_BEATS_PER_MEASURE };
 
-    double absBeatStart;
-    double absTimeStart;
+    double bpm { 100.0 };
 
-    double interpolateBeatDuration;
+    double absBeatStart { 0.0 };
+    double absTimeStart { 0.0 };
+    double interpolateBeatDuration { 0.0 };
 };
 
 bool operator<(const Timeinfo & lhs, const Timeinfo & rhs);
