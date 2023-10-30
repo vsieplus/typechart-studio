@@ -9,10 +9,10 @@
 #include "config/beatpos.hpp"
 
 struct NoteSequenceItem {
-    NoteSequenceItem(float absBeat, float beatEnd, bool passed, BeatPos beatpos, BeatPos endBeatpos) :
-        absBeat(absBeat), beatEnd(beatEnd), beatpos(beatpos), endBeatpos(endBeatpos), passed(passed) {}
+    NoteSequenceItem(double absBeat, double beatEnd, bool passed, BeatPos beatpos, BeatPos endBeatpos);
+    virtual ~NoteSequenceItem() = default;
 
-    enum SequencerItemType {
+    enum class SequencerItemType {
         TOP_NOTE,
         MID_NOTE,
         BOT_NOTE,
@@ -23,16 +23,16 @@ struct NoteSequenceItem {
     virtual SequencerItemType getItemType() const = 0;
     virtual void setItemType(SequencerItemType type) = 0;
 
-    float absBeat = 0.f;
-    float beatEnd = 0.f;
-
     BeatPos beatpos;
     BeatPos endBeatpos;
 
-    std::string displayText = "";
+    double absBeat { 0.f };
+    double beatEnd { 0.f };
 
-    bool passed = false;
-    bool deleted = false;
+    bool passed { false };
+    bool deleted { false };
+
+    std::string displayText {};
 };
 
 bool operator<(const std::shared_ptr<NoteSequenceItem> & lhs, const std::shared_ptr<NoteSequenceItem> & rhs);

@@ -1,5 +1,8 @@
 #include "config/notesequenceitem.hpp"
 
+NoteSequenceItem::NoteSequenceItem(double absBeat, double beatEnd, bool passed, BeatPos beatpos, BeatPos endBeatpos) :
+    absBeat(absBeat), beatEnd(beatEnd), beatpos(beatpos), endBeatpos(endBeatpos), passed(passed) {}
+
 bool operator<(const std::shared_ptr<NoteSequenceItem> & lhs, const std::shared_ptr<NoteSequenceItem> & rhs) {
     return lhs && rhs && (*lhs.get()) < (*rhs.get());
 }
