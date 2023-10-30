@@ -66,6 +66,11 @@ namespace constants {
     // edit windows
     const std::string DEFAULT_WINDOW_NAME = "Untitled";
 
+    const std::string saveFileFilter = "(*.type){.type}";
+    const std::string songinfoFileFilter = "(*.json){.json}";
+    const std::string imageFileFilters = "(*.jpg *.png){.jpg,.png}";
+    const std::string musicFileFilters = "(*.flac *.mp3 *.ogg *.wav){.flac,.mp3,.ogg,.wav}";
+
     constexpr int MENU_FONT_SIZE = 28;
 
     const std::string PREFERENCES_PATH = "preferences.json";
