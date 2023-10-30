@@ -18,7 +18,7 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
     if(menuFont)
         ImGui::PushFont(menuFont);
 
-    std::string popupID = "";
+    std::string popupID {};
 
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
@@ -32,11 +32,11 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
         }
 
         if(ImGui::BeginMenu("Options")) {
-            showOptionMenu();
+            showOptionMenu(editWindowManager);
             ImGui::EndMenu();
         }
 
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x *.95);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x *.95f);
         ImGui::BeginChild("versiontext", ImVec2(0, 0), false);
         ImGui::Text("v%d.%d.%d", TYPECHART_STUDIO_VERSION_MAJOR, TYPECHART_STUDIO_VERSION_MINOR, TYPECHART_STUDIO_VERSION_PATCH);
         ImGui::EndChild();
@@ -53,7 +53,7 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
 }
 
 std::string showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem, EditWindowManager & editWindowManager) {
-    std::string popupID = "";
+    std::string popupID {};
 
     if(ImGui::MenuItem("New", "Ctrl+N")) {
         editWindowManager.startNewEditWindow();
