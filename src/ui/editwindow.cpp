@@ -48,14 +48,14 @@ const char * getKeyFrequencyLabels(void * data, int i) {
 
 EditWindow::EditWindow(bool open, int ID, int musicSourceIdx, std::string_view name, std::shared_ptr<SDL_Texture> artTexture,
     const ChartInfo & chartinfo, const SongInfo & songinfo)
-    : open(open)
+    : chartinfo(chartinfo)
+    , songinfo(songinfo)
+    , open(open)
     , ID(ID)
     , musicSourceIdx(musicSourceIdx)
     , currTopNotes((int)chartinfo.notes.keyFreqsSorted.size())
     , name(name)
-    , artTexture(artTexture)
-    , chartinfo(chartinfo)
-    , songinfo(songinfo) {}
+    , artTexture(artTexture) {}
 
 void EditWindow::saveCurrentChartFiles() {
     saveCurrentChartFiles(name, chartinfo.savePath, songinfo.saveDir);
@@ -82,7 +82,7 @@ void EditWindow::showContents(AudioSystem * audioSystem, std::vector<bool> & key
     showToolbar(audioSystem, keysPressed);
 
     ImGui::Separator();
-    timeline.showContents(musicSourceIdx, focused, audioSystem, chartinfo, songpos, keysPressed);
+    timeline.showContents(musicSourceIdx, focused, unsaved, audioSystem, chartinfo, songpos, keysPressed);
 }
 
 void EditWindow::showMetadata() {
