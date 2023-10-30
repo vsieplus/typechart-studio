@@ -26,7 +26,6 @@ public:
     void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
     void createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer);\
 
-    void saveCurrentChartFiles(EditWindow & currWindow, const fs::path & chartSavePath, std::string chartSaveFilename, fs::path saveDir);
     void closeWindow(const EditWindow & currWindow, std::vector<EditWindow>::iterator & iter, AudioSystem * audioSystem);
     bool tryCloseEditWindow(EditWindow & currWindow, std::vector<EditWindow>::iterator & iter, AudioSystem * audioSystem);
 

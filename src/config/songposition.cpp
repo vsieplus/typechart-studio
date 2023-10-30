@@ -1,7 +1,10 @@
 #include <algorithm>
+#include <cmath>
 #include <float.h>
 
 #include "config/songposition.hpp"
+
+#include "imgui.h"
 
 void SongPosition::start() {
     songStart = SDL_GetPerformanceCounter();

@@ -152,6 +152,19 @@ void EditWindowManager::showOpenChartWindow(SDL_Renderer * renderer, AudioSystem
     }
 }
 
+static char UImusicFilename[128] = "";
+static char UIcoverArtFilename[128] = "";
+
+
+static std::string UImusicFilepath = "";
+static std::string UIcoverArtFilepath = "";
+
+static bool popupInvalidJSON = true;
+static bool popupFailedToLoadMusic = false;
+
+static float UImusicPreviewStart = 0;
+static float UImusicPreviewStop = 15;
+
 void EditWindowManager::startNewEditWindow() {
     if(!newEditStarted) {
         newEditStarted = true;
@@ -183,7 +196,7 @@ void EditWindowManager::startSaveCurrentChart(bool saveAs) {
                 ImGuiFileDialog::Instance()->OpenModal("saveChart", "Save current chart", constants::saveFileFilter, Preferences::Instance().getSaveDir(),
                     "Untitled.type", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
             } else {
-                saveCurrentChartFiles(editWindow, editWindow.chartinfo.savePath, editWindow.name, editWindow.songinfo.saveDir);
+                editWindow.saveCurrentChartFiles();
             }
         }
     }
@@ -272,17 +285,6 @@ void EditWindowManager::createNewEditWindow(AudioSystem * audioSystem, SDL_Rende
     }
 }
 
-void EditWindowManager::saveCurrentChartFiles(EditWindow & currWindow, const fs::path & chartSavePath, std::string chartSaveFilename, fs::path saveDir) {
-    currWindow.songinfo.saveSongInfo(saveDir, currWindow.initialSaved);
-    currWindow.chartinfo.saveChart(chartSavePath, currWindow.songpos);
-
-    currWindow.initialSaved = true;
-    currWindow.unsaved = false;
-    currWindow.name = chartSaveFilename;
-
-    currWindow.lastSavedActionIndex = currWindow.editActionsUndo.size();
-}
-
 bool EditWindowManager::tryCloseEditWindow(EditWindow & currWindow, std::vector<EditWindow>::iterator & iter, AudioSystem * audioSystem) {
     bool closed = false;
 
@@ -355,18 +357,7 @@ void EditWindowManager::showEditWindows(AudioSystem * audioSystem, std::vector<b
             currWindow.focused = false;
         }
 
-        currWindow.showEditWindowMetadata();
-        ImGui::SameLine();
-        currWindow.showChartData(audioSystem);
-
-        ImGui::Separator();
-        // showEditWindowToolbar(audioSystem, &(currWindow.songinfo.musicPreviewStart), &(currWindow.songinfo.musicPreviewStop), currWindow.songpos, 
-        //     currWindow.chartinfo.notes, keysPressed, currWindow);
-        currWindow.showToolbar(audioSystem, keysPressed);
-        ImGui::Separator();
-
-        showEditWindowTimeline(audioSystem, currWindow.chartinfo, currWindow.songpos, currWindow.unsaved, keysPressed,
-            currWindow.editActionsUndo, currWindow.editActionsRedo, currWindow.musicSourceIdx, currWindow.focused);
+        currWindow.showContents(audioSystem, keysPressed);
 
         ImGui::End();
 
@@ -393,7 +384,7 @@ void EditWindowManager::showEditWindows(AudioSystem * audioSystem, std::vector<b
                 sizeBeforeUpdate = currWindowSize;
             }
 
-            saveCurrentChartFiles(currEditWindow, fs::path(chartSavePath), chartSaveFilename, saveDir);
+            currEditWindow.saveCurrentChartFiles(chartSaveFilename, fs::path(chartSavePath), fs::path(saveDir));
 
             Preferences::Instance().addMostRecentFile(chartSavePath);
             lastChartSaveDir = saveDir;
