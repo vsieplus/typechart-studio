@@ -6,7 +6,7 @@ ShiftNoteAction::ShiftNoteAction(bool unsaved, int minItemType, int maxItemType,
     EditAction(unsaved), minItemType(minItemType), maxItemType(maxItemType), startBeat(startBeat),
     endBeat(endBeat), keyboardLayout(keyboardLayout), shiftDirection(shiftDirection), items(items) {}
 
-void ShiftNoteAction::undoAction(EditWindowData * editWindow) {
+void ShiftNoteAction::undoAction(EditWindow * editWindow) {
     EditAction::undoAction(editWindow);
 
     ShiftDirection reverseDirection = ShiftNone;
@@ -31,12 +31,12 @@ void ShiftNoteAction::undoAction(EditWindowData * editWindow) {
     editWindow->chartinfo.notes.shiftItems(keyboardLayout, startBeat, endBeat, items, reverseDirection);
 }
 
-void ShiftNoteAction::redoAction(EditWindowData * editWindow) {
+void ShiftNoteAction::redoAction(EditWindow * editWindow) {
     reconcileDeletedItems(editWindow);
     editWindow->chartinfo.notes.shiftItems(keyboardLayout, startBeat, endBeat, items, shiftDirection);
 }
 
-void ShiftNoteAction::reconcileDeletedItems(EditWindowData * editWindow) {
+void ShiftNoteAction::reconcileDeletedItems(EditWindow * editWindow) {
     // if any items were deleted, try to find a replacement with matching beat / note
     // otherwise, just delete the item
     for(auto itemIter = items.begin(); itemIter != items.end();) {

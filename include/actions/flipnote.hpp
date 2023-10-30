@@ -10,8 +10,8 @@ class FlipNoteAction : public EditAction {
         FlipNoteAction(bool unsaved, int minItemType, int maxItemType, float startBeat,
             float endBeat, std::string keyboardLayout);
 
-        virtual void undoAction(EditWindowData * editWindow) override;
-        virtual void redoAction(EditWindowData * editWindow) override;
+        virtual void undoAction(EditWindow * editWindow) override;
+        virtual void redoAction(EditWindow * editWindow) override;
     private:
         int minItemType, maxItemType;
         float startBeat, endBeat;

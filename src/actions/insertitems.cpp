@@ -11,7 +11,7 @@ InsertItemsAction::InsertItemsAction(bool unsaved, int itemTypeStart, int itemTy
         itemsInserted(itemsInserted),
         itemsDeleted(itemsDeleted) {}
 
-void InsertItemsAction::undoAction(EditWindowData * editWindow) {
+void InsertItemsAction::undoAction(EditWindow * editWindow) {
     EditAction::undoAction(editWindow);
 
     if(!itemsInserted.empty()) {
@@ -25,7 +25,7 @@ void InsertItemsAction::undoAction(EditWindowData * editWindow) {
     }
 }
 
-void InsertItemsAction::redoAction(EditWindowData * editWindow) {
+void InsertItemsAction::redoAction(EditWindow * editWindow) {
     if(!itemsInserted.empty()) {
         editWindow->chartinfo.notes.insertItems(startBeat, editWindow->songpos.absBeat, itemTypeStart,
             itemTypeEnd, editWindow->songpos.timeinfo, itemsInserted);

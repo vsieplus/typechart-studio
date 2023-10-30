@@ -12,8 +12,8 @@ class InsertItemsAction : public EditAction {
             std::list<std::shared_ptr<NoteSequenceItem>> & itemsInserted,
             std::list<std::shared_ptr<NoteSequenceItem>> & itemsDeleted);
 
-        virtual void undoAction(EditWindowData * editWindow) override;
-        virtual void redoAction(EditWindowData * editWindow) override;
+        virtual void undoAction(EditWindow * editWindow) override;
+        virtual void redoAction(EditWindow * editWindow) override;
     private:
         int itemTypeStart;
         int itemTypeEnd;

@@ -10,7 +10,7 @@ DeleteItemsAction::DeleteItemsAction(bool unsaved, int itemTypeStart, int itemTy
         endBeat(endBeat),
         items(items) {}
 
-void DeleteItemsAction::undoAction(EditWindowData * editWindow) {
+void DeleteItemsAction::undoAction(EditWindow * editWindow) {
     EditAction::undoAction(editWindow);
     if(!items.empty()) {
         editWindow->chartinfo.notes.insertItems(items.front()->absBeat, editWindow->songpos.absBeat, itemTypeStart, 
@@ -18,6 +18,6 @@ void DeleteItemsAction::undoAction(EditWindowData * editWindow) {
     }
 }
 
-void DeleteItemsAction::redoAction(EditWindowData * editWindow) {
+void DeleteItemsAction::redoAction(EditWindow * editWindow) {
     editWindow->chartinfo.notes.deleteItems(startBeat, endBeat, itemTypeStart, itemTypeEnd);
 }

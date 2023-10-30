@@ -8,8 +8,8 @@ class EditSkipAction : public EditAction {
     public:
         EditSkipAction(bool unsaved, float absBeat, float prevSkipbeats, float newSkipbeats);
 
-        virtual void undoAction(EditWindowData * editWindow) override;
-        virtual void redoAction(EditWindowData * editWindow) override;
+        virtual void undoAction(EditWindow * editWindow) override;
+        virtual void redoAction(EditWindow * editWindow) override;
 
     private:
         float absBeat;

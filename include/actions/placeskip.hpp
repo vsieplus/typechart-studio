@@ -8,8 +8,8 @@ class PlaceSkipAction : public EditAction {
     public:
         PlaceSkipAction(bool unsaved, float absBeat, float skipBeats, float beatDuration, BeatPos beatpos, BeatPos endBeatpos);
 
-        virtual void undoAction(EditWindowData * editWindow) override;
-        virtual void redoAction(EditWindowData * editWindow) override;
+        virtual void undoAction(EditWindow * editWindow) override;
+        virtual void redoAction(EditWindow * editWindow) override;
     private:
         float absBeat;
         float skipBeats;
