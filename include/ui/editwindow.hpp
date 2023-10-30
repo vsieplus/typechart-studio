@@ -1,38 +1,40 @@
 #ifndef EDITWINDOW_HPP
 #define EDITWINDOW_HPP
 
+#include <filesystem>
 #include <memory>
 #include <stack>
 #include <string>
 #include <vector>
-
-#include <filesystem>
-namespace fs = std::filesystem;
 
 #include "actions/editaction.hpp"
 #include "config/chartinfo.hpp"
 #include "config/songinfo.hpp"
 #include "config/songposition.hpp"
 #include "resources/texture.hpp"
+#include "ui/timeline.hpp"
+
+namespace fs = std::filesystem;
 
 class AudioSystem;
 
-struct EditWindow {
-    EditWindow(bool open, int ID, int musicSourceIdx, std::string name, std::shared_ptr<SDL_Texture> artTexture, ChartInfo chartinfo, SongInfo songinfo) : 
-        open(open), ID(ID), musicSourceIdx(musicSourceIdx), name(name), artTexture(artTexture), chartinfo(chartinfo), songinfo(songinfo), 
-        currTopNotes(chartinfo.notes.keyFreqsSorted.size()) {
-    }
+class EditWindow {
+public:
+    EditWindow(bool open, int ID, int musicSourceIdx, std::string name, std::shared_ptr<SDL_Texture> artTexture, const ChartInfo & chartinfo, const SongInfo & songinfo);
 
+    void showContents(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
+private:
     bool open { true };
     bool unsaved { true };
     bool initialSaved { false };
     bool focused { false };
 
-    bool editingSomething = false;
+    bool editingSomething { false };
 
-    int ID;
-    int musicSourceIdx;
-    int lastSavedActionIndex = 0;
+    int ID { 0 };
+    int musicSourceIdx { 0 };
+    int lastSavedActionIndex { 0 };
+    int currTopNotes { 0 };
 
     std::string name;
 
@@ -46,7 +48,14 @@ struct EditWindow {
     ChartInfo chartinfo;
     SongInfo songinfo;
 
-    int currTopNotes;
+    Timeline timeline;
+
+    void saveCurrentChartFiles();
+    void saveCurrentChartFiles(std::string_view chartSaveFilename, const fs::path & chartSavePath, const fs::path & saveDir);
+
+    void showMetadata();
+    bool showSongConfig();
+    bool showChartConfig();
 
     void showChartData(AudioSystem * audioSystem);
 
@@ -66,10 +75,6 @@ struct EditWindow {
     void showMusicPreviewSliders(float musicLengthSecs);
     void showMusicPreviewButton(AudioSystem * audioSystem);
     void showMusicOffset();
-
-    void showMetadata();
-    bool showSongConfig();
-    bool showChartConfig();
 };
 
 #endif // EDITWINDOW_HPP
