@@ -22,6 +22,8 @@ bool showEditableText(const char * label, char * text, size_t bufSize, bool & ed
 BeatPos calculateBeatpos(double absBeat, int currentBeatsplit, const std::vector<Timeinfo> & timeinfo);
 std::pair<int, double> splitSecsbyMin(double seconds);
 
+bool cmpSecond(const std::pair<std::string, int> & l, const std::pair<std::string, int> & r);
+
 }
 
 #endif // UTILS_HPP

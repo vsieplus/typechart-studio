@@ -101,4 +101,8 @@ std::pair<int, double> splitSecsbyMin(double seconds) {
     return std::make_pair(fullMinutes, leftoverSecs);
 }
 
+bool cmpSecond(const std::pair<std::string, int> & l, const std::pair<std::string, int> & r) {
+    return l.second > r.second;
+}
+
 }
