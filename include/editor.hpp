@@ -3,6 +3,7 @@
 
 #include "imgui.h"
 
+#include "ui/editwindowmanager.hpp"
 #include "systems/audiosystem.hpp"
 
 #include <stdio.h>
@@ -60,7 +61,8 @@ class Editor {
             { SDLK_p, false }
         };
 
-        AudioSystem audioSystem;
+        EditWindowManager editWindowManager{};
+        AudioSystem audioSystem{};
 };
 
 #endif // EDITOR_HPP

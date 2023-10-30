@@ -21,7 +21,7 @@ Editor::Editor(SDL_Window * window, SDL_Renderer * renderer) : window(window), r
 
     setWindowIcon();
     Preferences::Instance().loadFromFile(constants::PREFERENCES_PATH);
-    initLastDirPaths();
+    editWindowManager.initLastDirPaths();
 }
 
 void Editor::initFonts() {
@@ -129,10 +129,10 @@ void Editor::update() {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-        showMenuBar(menuFont, renderer, &audioSystem);
-        showInitEditWindow(&audioSystem, renderer);
-        showOpenChartWindow(renderer, &audioSystem);
-        showEditWindows(&audioSystem, keysPressed);
+        menubar::showMenuBar(menuFont, renderer, &audioSystem, editWindowManager);
+        editWindowManager.showInitEditWindow(&audioSystem, renderer);
+        editWindowManager.showOpenChartWindow(renderer, &audioSystem);
+        editWindowManager.showEditWindows(&audioSystem, keysPressed);
 
         updateShortcuts();
 
@@ -142,7 +142,7 @@ void Editor::update() {
 
 void Editor::updateShortcuts() {
     if(shortcutsActivated.at(SDLK_n)) {
-        startNewEditWindow();
+        editWindowManager.startNewEditWindow();
     }
 
     if(shortcutsActivated.at(SDLK_p)) {
@@ -150,19 +150,19 @@ void Editor::updateShortcuts() {
     }
 
     if(shortcutsActivated.at(SDLK_s)) {
-        startSaveCurrentChart();
+        editWindowManager.startSaveCurrentChart();
     }
 
     if(shortcutsActivated.at(SDLK_o)) {
-        startOpenChart();
+        editWindowManager.startOpenChart();
     }
 
     if(shortcutsActivated.at(SDLK_z)) {
-        setUndo();
+        editWindowManager.setUndo(true);
     }
 
     if(shortcutsActivated.at(SDLK_y)) {
-        setRedo();
+        editWindowManager.setRedo(true);
     }
 }
 

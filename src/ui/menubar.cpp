@@ -5,11 +5,15 @@ namespace fs = std::filesystem;
 
 #include "versionconfig.h"
 
+#include "ui/editwindowmanager.hpp"
+
 #include "ui/editwindow.hpp"
 #include "ui/menubar.hpp"
 #include "ui/preferences.hpp"
 
-void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audioSystem) {
+namespace menubar {
+
+void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audioSystem, EditWindowManager & editWindowManager) {
     // styling
     if(menuFont)
         ImGui::PushFont(menuFont);
@@ -18,7 +22,7 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
 
     if(ImGui::BeginMainMenuBar()) {
         if(ImGui::BeginMenu("File")) {
-            popupID = showFileMenu(renderer, audioSystem);
+            popupID = showFileMenu(renderer, audioSystem, editWindowManager);
             ImGui::EndMenu();
         }
 
@@ -48,15 +52,15 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
         ImGui::PopFont();
 }
 
-std::string showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem) {
+std::string showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem, EditWindowManager & editWindowManager) {
     std::string popupID = "";
 
     if(ImGui::MenuItem("New", "Ctrl+N")) {
-        startNewEditWindow();
+        editWindowManager.startNewEditWindow();
     }
 
     if(ImGui::MenuItem("Open", "Ctrl+O")) {
-        startOpenChart();
+        editWindowManager.startOpenChart();
     }
 
     if(ImGui::BeginMenu("Recent")) {
@@ -64,50 +68,50 @@ std::string showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem) {
             fs::path fsRecentPath(recentPath.c_str());
             auto labelName = fsRecentPath.parent_path().stem().string() + "/" + fsRecentPath.filename().string();
             if(ImGui::MenuItem(labelName.c_str())) {
-                popupID = loadEditWindow(renderer, audioSystem, fsRecentPath);
+                popupID = editWindowManager.loadEditWindow(renderer, audioSystem, fsRecentPath);
             }
         }
         ImGui::EndMenu();
     }
 
     if(ImGui::MenuItem("Save", "Ctrl+S")) {
-        startSaveCurrentChart();
+        editWindowManager.startSaveCurrentChart();
     }
 
     if(ImGui::MenuItem("Save As...")) {
-        startSaveCurrentChart(true);
+        editWindowManager.startSaveCurrentChart(true);
     }
 
     return popupID;
 }
 
-void showEditMenu() {
+void showEditMenu(EditWindowManager & editWindowManager) {
     if(ImGui::MenuItem("Undo", "Ctrl+Z")) {
-        setUndo();
+        editWindowManager.setUndo(true);
     }
 
     if(ImGui::MenuItem("Redo", "Ctrl+Y")) {
-        setRedo();
+        editWindowManager.setRedo(true);
     }
 
     ImGui::Separator();
     
     if(ImGui::MenuItem("Cut", "Ctrl+X")) {
-        setCut();
+        editWindowManager.setCut(true);
     }
 
     if(ImGui::MenuItem("Copy", "Ctrl+C")) {
-        setCopy();
+        editWindowManager.setCopy(true);
     }
 
     if(ImGui::MenuItem("Paste", "Ctrl+V")) {
-        setPaste();
+        editWindowManager.setPaste(true);
     }
 
     ImGui::Separator();
 
     if(ImGui::MenuItem("Flip", "F")) {
-        setFlip();
+        editWindowManager.setFlip(true);
     }
 }
 
@@ -130,3 +134,5 @@ void showOptionMenu() {
         ImGui::EndMenu();
     }
 }
+
+} // namespace menubar
