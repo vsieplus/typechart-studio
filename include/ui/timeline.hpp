@@ -25,7 +25,7 @@ class Timeline {
 public:
     Timeline() = default;
 
-    void showContents(int musicSourceIdx, bool focused, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, std::vector<bool> & keysPressed);
+    void showContents(int musicSourceIdx, bool focused, bool & unsaved, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, std::vector<bool> & keysPressed);
 
     int getUndoStackSize() const;
     int getRedoStackSize() const;
@@ -47,15 +47,24 @@ private:
     void prepUpdateEntity(bool focused, std::string_view addItemPopup, const SongPosition & songpos);
     void setEntityType(bool focused, std::string_view addItemPopup, const SongPosition & songpos);
 
-    void checkEditActions(bool focused, std::vector<bool> & keysPressed);
+    void checkEditActions(bool focused, bool & unsaved, ChartInfo & chartinfo, const SongPosition & songpos, std::vector<bool> & keysPressed);
     void editCopy();
-    void editCut(ChartInfo & chartinfo);
-    void editFlip(ChartInfo & chartinfo);
+    void editCut(bool & unsaved, ChartInfo & chartinfo);
+    void editFlip(bool & unsaved, ChartInfo & chartinfo);
+    void editShiftNotes(bool & unsaved, ChartInfo & chartinfo, const std::vector<bool> & keysPressed);
+    void editDelete(bool & unsaved, ChartInfo & chartinfo);
+    void editPaste(bool & unsaved, ChartInfo & chartinfo, const SongPosition & songpos);
 
-    void showAddItem(std::vector <bool> & keysPressed);
-    void checkDeleteItem(bool focused);
+    void showAddItem(bool & unsaved, ChartInfo & chartinfo, const SongPosition & songpos, std::vector <bool> & keysPressed);
+    void showTopMidNote(bool & unsaved, char * addedItem, ChartInfo & chartinfo, const SongPosition & songpos);
+    void showBotNote(bool & unsaved, ChartInfo & chartinfo, const SongPosition & songpos);
+    void showSkip(bool & unsaved, ChartInfo & chartinfo, const SongPosition & songpos);
+    void showStop(bool & unsaved, ChartInfo & chartinfo, const SongPosition & songpos);
 
-    void showHorizontalScroll(AudioSystem * audioSystem);
+    void checkDeleteItem(bool focused, bool & unsaved, ChartInfo & chartinfo, SongPosition & songpos);
+    void checkUpdateNotes(bool focused, AudioSystem * audioSystem, ChartInfo & chartinfo, const SongPosition & songpos);
+
+    void showHorizontalScroll(int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem);
 
     bool updatedBeat { false };
 
