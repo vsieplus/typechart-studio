@@ -1,6 +1,7 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
+#include <array>
 #include <string>
 #include <filesystem>
 #include <unordered_map>
@@ -51,10 +52,10 @@ namespace constants {
     const std::string NOTE_KEY_KEY = "key";
     const std::string NOTE_KEY_VALUE_DEFAULT = "A";
 
-    const float BPM_VALUE_DEFAULT = 0.f;
-    const float INTERPOLATE_BEAT_DURATION_VALUE_DEFAULT = 0.f;
-    const float DURATION_VALUE_DEFAULT = 0.f;
-    const float SKIPTIME_VALUE_DEFAULT = 0.f;
+    const double BPM_VALUE_DEFAULT = 0.0;
+    const double INTERPOLATE_BEAT_DURATION_VALUE_DEFAULT = 0.0;
+    const double DURATION_VALUE_DEFAULT = 0.0;
+    const double SKIPTIME_VALUE_DEFAULT = 0.0;
 
     constexpr double ZOOM_STEP = 0.25;
 
@@ -88,21 +89,21 @@ namespace constants {
 
     const fs::path KEYPRESS_SOUND_PATH = fs::path("sounds") / fs::path("keypress.wav");
 
-    const std::unordered_map<int, std::string> ID_TO_KEYBOARDLAYOUT = {
+    const std::unordered_map<int, std::string> ID_TO_KEYBOARDLAYOUT {
         { 0, "QWERTY" },
         { 1, "DVORAK" },
         { 2, "AZERTY" },
         { 3, "COLEMAK" }
     };
 
-    const std::unordered_map<std::string, int> KEYBOARDLAYOUT_TO_ID = {
+    const std::unordered_map<std::string, int> KEYBOARDLAYOUT_TO_ID {
         { "QWERTY", 0 },
         { "DVORAK", 1 },
         { "AZERTY", 2 },
         { "COLEMAK", 3 }
     };
 
-    const std::unordered_map<int, std::string> ID_TO_DIFFICULTY = {
+    const std::unordered_map<int, std::string> ID_TO_DIFFICULTY {
         { 0, "easy" },
         { 1, "normal" },
         { 2, "hard" },
@@ -110,7 +111,7 @@ namespace constants {
         { 4, "unknown" }
     };
 
-    const std::unordered_map<std::string, int> DIFFICULTY_TO_ID = {
+    const std::unordered_map<std::string, int> DIFFICULTY_TO_ID {
         { "easy", 0 },
         { "normal", 1 },
         { "hard", 2 },
@@ -118,9 +119,17 @@ namespace constants {
         { "unknown", 4 }
     };
 
-    const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
+    const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS {
         { 0, "_" },
     };
-};
+
+    const std::array<std::string, 5> SEQUENCER_ITEM_TYPES { 
+        "Lane 1 [Top]",
+        "Lane 2 [Middle]",
+        "Lane 3 [Bottom]",
+        "Stops",
+        "Skips"
+    };
+} // namespace constants
 
 #endif // CONSTANTS_HPP
