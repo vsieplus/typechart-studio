@@ -336,18 +336,18 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         return currItems;
     }
 
-    void insertItems(float insertBeat, float songBeat, int minItemType, int maxItemType,
+    void insertItems(double insertBeat, double songBeat, int minItemType, int maxItemType,
         const std::vector<Timeinfo> & timeinfo, std::list<std::shared_ptr<NoteSequenceItem>> items)
     {
         if(!items.empty()) {
-            float firstBeat = items.front()->absBeat;
+            double firstBeat = items.front()->absBeat;
             BeatPos firstBeatPos = items.front()->beatpos;
             BeatPos insertBeatPos = utils::calculateBeatpos(insertBeat, firstBeatPos.measureSplit, timeinfo);
 
             deleteItems(insertBeat, insertBeat + (items.back()->beatEnd - firstBeat), minItemType, maxItemType);
             
             for(auto item : items) {
-                float currBeat = insertBeat + (item->absBeat - firstBeat);
+                double currBeat = insertBeat + (item->absBeat - firstBeat);
 
                 BeatPos currBeatPos = insertBeatPos + (item->beatpos - firstBeatPos);
                 BeatPos currEndBeatPos = insertBeatPos + (item->endBeatpos - firstBeatPos);
@@ -370,12 +370,12 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void deleteItems(float startBeat, float endBeat, int minItemType, int maxItemType) {
+    void deleteItems(double startBeat, double endBeat, int minItemType, int maxItemType) {
         for(auto iter = myItems.begin(); iter != myItems.end();) {
             bool removeNote = false;
-            auto & seqItem = *iter;
+            const auto & seqItem = *iter;
 
-            int seqItemType = (int)(seqItem->getItemType());
+            auto seqItemType = static_cast<int>(seqItem->getItemType());
 
             if(seqItemType >= minItemType && seqItemType <= maxItemType && startBeat <= seqItem->absBeat && seqItem->absBeat <= endBeat) {
                 switch(seqItem->getItemType()) {
