@@ -52,6 +52,8 @@ namespace constants {
     const std::string NOTE_KEY_KEY = "key";
     const std::string NOTE_KEY_VALUE_DEFAULT = "A";
 
+    const std::string ADD_ITEM_POPUP_PREFIX { "add_item_" };
+
     const double BPM_VALUE_DEFAULT = 0.0;
     const double INTERPOLATE_BEAT_DURATION_VALUE_DEFAULT = 0.0;
     const double DURATION_VALUE_DEFAULT = 0.0;

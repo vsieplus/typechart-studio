@@ -1,7 +1,5 @@
 #include "ui/timeline.hpp"
 
-#include <format>
-
 #include "actions/deleteitems.hpp"
 #include "actions/deletenote.hpp"
 #include "actions/editnote.hpp"
@@ -59,22 +57,22 @@ void Timeline::showContents(int musicSourceIdx, bool focused, bool & unsaved, Au
     checkResetClicks();
     checkUpdatedBeat(focused, musicSourceIdx, chartinfo, songpos, audioSystem);
 
-    std::string addItemPopup = std::format("add_item_{}", musicSourceIdx);
+    std::string addItemPopup { constants::ADD_ITEM_POPUP_PREFIX + std::to_string(musicSourceIdx) };
 
     // insert or update entity at the clicked beat
     prepUpdateEntity(focused, addItemPopup, songpos);
     setEntityType(focused, addItemPopup, songpos);
 
-    checkEditActions(focused, keysPressed);
+    checkEditActions(focused, unsaved, chartinfo, songpos, keysPressed);
 
     if(ImGui::BeginPopup(addItemPopup.c_str())) {
-        showAddItem(keysPressed);
+        showAddItem(unsaved, chartinfo, songpos, keysPressed);
         ImGui::EndPopup();
     }
 
     checkDeleteItem(focused, unsaved, chartinfo, songpos);
     checkUpdateNotes(focused, audioSystem, chartinfo, songpos);
-    showHorizontalScroll(musicSourceIdx, chartinfo, songpos, audioSystem);
+    showHorizontalScroll(focused, musicSourceIdx, chartinfo, songpos, audioSystem);
 }
 
 void Timeline::showBeatsplit() {
@@ -184,7 +182,7 @@ void Timeline::checkUpdatedBeat(bool focused, int musicSourceIdx, ChartInfo & ch
     }
 }
 
-void Timeline::prepUpdateEntity(bool focused, std::string_view addItemPopup, const SongPosition & songpos) {
+void Timeline::prepUpdateEntity(bool focused, const std::string & addItemPopup, const SongPosition & songpos) {
     if(focused && !ImGuiFileDialog::Instance()->IsOpened() && leftClickedEntity && !ImGui::IsPopupOpen(addItemPopup.c_str())) {
         bool hadSelection = haveSelection;
         if(haveSelection) {
@@ -219,7 +217,7 @@ void Timeline::prepUpdateEntity(bool focused, std::string_view addItemPopup, con
     }
 }
 
-void Timeline::setEntityType(bool focused, std::string_view addItemPopup, const SongPosition & songpos) {
+void Timeline::setEntityType(bool focused, const std::string & addItemPopup, const SongPosition & songpos) {
     if(focused && !ImGuiFileDialog::Instance()->IsOpened() && startedNote && leftClickReleased &&
         !ImGui::IsPopupOpen(addItemPopup.c_str()) && clickedBeat >= insertBeat)
     {
@@ -252,17 +250,17 @@ void Timeline::checkEditActions(bool focused, bool & unsaved, ChartInfo & charti
     // copy, cut, delete selection of notes
     if(focused && haveSelection) {
         if(activateCopy || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_c)])) {
-            editCopy();
+            editCopy(chartinfo);
         } else if(activateCut || (io.KeyCtrl && keysPressed[SDL_GetScancodeFromKey(SDLK_x)])) {
             editCut(unsaved, chartinfo);
         } else if(activateFlip || keysPressed[SDL_GetScancodeFromKey(SDLK_f)]) {
             editFlip(unsaved, chartinfo);
         }
 
-        editShiftNotes(unsaved, chartinfo);
+        editShiftNotes(unsaved, chartinfo, keysPressed);
 
         if(keysPressed[SDL_SCANCODE_DELETE]) {
-            editDelete();
+            editDelete(unsaved, chartinfo);
         }
 
         if(keysPressed[SDL_SCANCODE_ESCAPE]) {
@@ -276,7 +274,7 @@ void Timeline::checkEditActions(bool focused, bool & unsaved, ChartInfo & charti
 }
 
 
-void Timeline::editCopy() {
+void Timeline::editCopy(const ChartInfo & chartinfo) {
     copiedItems = chartinfo.notes.getItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
     haveSelection = false;
     activateCopy = false;
@@ -324,7 +322,7 @@ void Timeline::editShiftNotes(bool & unsaved, ChartInfo & chartinfo, const std::
     if(shiftDirection != ShiftNoteAction::ShiftDirection::ShiftNone) {
         auto items { chartinfo.notes.shiftNotes(chartinfo.keyboardLayout, insertBeat, endBeat, insertItemType, insertItemTypeEnd, shiftDirection) };
 
-        auto shiftAction { std::make_shared<ShiftNoteAction>(unsaved, insertItemType, insertItemTypeEnd, insertBeat, endBeat, 
+        auto shiftAction { std::make_shared<ShiftNoteAction>(insertItemType, insertItemTypeEnd, insertBeat, endBeat, 
             chartinfo.keyboardLayout, shiftDirection, items) };
         undoStack.push(shiftAction);
         utils::emptyActionStack(redoStack);
@@ -338,7 +336,7 @@ void Timeline::editDelete(bool & unsaved, ChartInfo & chartinfo) {
     chartinfo.notes.deleteItems(insertBeat, endBeat, insertItemType, insertItemTypeEnd);
 
     if(!deletedItems.empty()) {
-        auto delAction = std::make_shared<DeleteItemsAction>(unsaved, insertItemType, insertItemTypeEnd, insertBeat, endBeat, deletedItems);
+        auto delAction { std::make_shared<DeleteItemsAction>(insertItemType, insertItemTypeEnd, insertBeat, endBeat, deletedItems) };
         undoStack.push(delAction);
         utils::emptyActionStack(redoStack);
 
@@ -355,11 +353,11 @@ void Timeline::editPaste(bool & unsaved, ChartInfo & chartinfo, const SongPositi
         chartinfo.notes.insertItems(hoveredBeat, songpos.absBeat, insertItemType, insertItemTypeEnd, songpos.timeinfo, copiedItems);
 
         if(!overwrittenItems.empty()) {
-            auto delAction = std::make_shared<DeleteItemsAction>(unsaved, insertItemType, insertItemTypeEnd, hoveredBeat, hoveredBeatEnd, overwrittenItems);
+            auto delAction { std::make_shared<DeleteItemsAction>(insertItemType, insertItemTypeEnd, hoveredBeat, hoveredBeatEnd, overwrittenItems) };
             undoStack.push(delAction);
         }
 
-        auto insAction = std::make_shared<InsertItemsAction>(unsaved, insertItemType, insertItemTypeEnd, hoveredBeat, copiedItems, overwrittenItems);
+        auto insAction { std::make_shared<InsertItemsAction>(insertItemType, insertItemTypeEnd, hoveredBeat, copiedItems, overwrittenItems) };
         undoStack.push(insAction);
         utils::emptyActionStack(redoStack);
 
@@ -369,7 +367,7 @@ void Timeline::editPaste(bool & unsaved, ChartInfo & chartinfo, const SongPositi
     activatePaste = false;
 }
 
-void Timeline::showAddItem(bool & unsaved, ChartInfo & chartinfo, const SongPosition & songpos, std::vector <bool> & keysPressed) {
+void Timeline::showAddItem(bool & unsaved, ChartInfo & chartinfo, SongPosition & songpos, std::vector <bool> & keysPressed) {
     static char addedItem[2];
 
     if(keysPressed[SDL_SCANCODE_ESCAPE]) {
@@ -386,7 +384,7 @@ void Timeline::showAddItem(bool & unsaved, ChartInfo & chartinfo, const SongPosi
             showBotNote(unsaved, chartinfo, songpos);
             break;
         case NoteSequenceItem::SequencerItemType::SKIP:
-            showSkip(unsaved, chartinfo, songpos);
+            showSkip(unsaved, chartinfo, songpos, keysPressed);
             break;
         case NoteSequenceItem::SequencerItemType::STOP:
             showStop(unsaved, chartinfo, songpos);
@@ -406,11 +404,11 @@ void Timeline::showTopMidNote(bool & unsaved, char * addedItem, ChartInfo & char
             auto itemType { static_cast<NoteSequenceItem::SequencerItemType>(insertItemType) };
 
             std::shared_ptr<EditAction> currAction { nullptr };
-            auto foundItem { chartinfo.notes.containsItemAt(insertBeat, insertItemType) };
+            auto foundItem { chartinfo.notes.containsItemAt(insertBeat, itemType) };
 
             if(foundItem) {
                 currAction = std::make_shared<EditNoteAction>(insertBeat, itemType, foundItem->displayText, keyText);
-                chartinfo.notes.editNote(insertBeat, insertItemType, keyText);
+                chartinfo.notes.editNote(insertBeat, itemType, keyText);
             } else {
                 auto beatDuration = endBeat - insertBeat;
                 chartinfo.notes.addNote(insertBeat, songpos.absBeat, beatDuration, insertBeatpos, endBeatpos, itemType, keyText);
@@ -451,9 +449,8 @@ void Timeline::showBotNote(bool & unsaved, ChartInfo & chartinfo, const SongPosi
 
     std::shared_ptr<EditAction> currAction;
     auto itemType = static_cast<NoteSequenceItem::SequencerItemType>(insertItemType);
-    auto foundItem = chartinfo.notes.containsItemAt(insertBeat, itemType);
 
-    if(foundItem.get()) {
+    if(auto foundItem = chartinfo.notes.containsItemAt(insertBeat, itemType); foundItem) {
         currAction = std::make_shared<EditNoteAction>(insertBeat, itemType, foundItem->displayText, keyText);
         chartinfo.notes.editNote(insertBeat, itemType, keyText);
     } else {
@@ -472,7 +469,7 @@ void Timeline::showBotNote(bool & unsaved, ChartInfo & chartinfo, const SongPosi
     leftClickReleased = false;
 }
 
-void Timeline::showSkip(bool & unsaved, ChartInfo & chartinfo, const SongPosition & songpos) {
+void Timeline::showSkip(bool & unsaved, ChartInfo & chartinfo, SongPosition & songpos, const std::vector<bool> & keysPressed) {
     if(!ImGui::IsAnyItemActive() && !ImGuiFileDialog::Instance()->IsOpened() && !ImGui::IsMouseClicked(0)) {
         ImGui::SetKeyboardFocusHere(0);
     }
@@ -482,7 +479,7 @@ void Timeline::showSkip(bool & unsaved, ChartInfo & chartinfo, const SongPositio
     static double skipBeats { 0.0 };
     ImGui::InputDouble("Skip beats", &skipBeats, currentBeatsplitValue / 2.0, currentBeatsplitValue / 2.0);
     ImGui::SameLine();
-    HelpMarker("How many beats will the skip be displayed for?\n- 0 -> the skip is instant\n"
+    utils::HelpMarker("How many beats will the skip be displayed for?\n- 0 -> the skip is instant\n"
             "- skip_duration / 2 -> the skip will take half the time as without the skip\n"
             "- skip_duration -> will look the same as no skip");
 
@@ -490,7 +487,7 @@ void Timeline::showSkip(bool & unsaved, ChartInfo & chartinfo, const SongPositio
         skipBeats = 0.0;
     }
 
-    auto currItem { chartinfo.notes.containsItemAt(insertBeat, insertItemType) };
+    auto currItem { chartinfo.notes.containsItemAt(insertBeat, static_cast<NoteSequenceItem::SequencerItemType>(insertItemType)) };
     if(currItem) {
         auto currSkip { std::dynamic_pointer_cast<Skip>(currItem) };
         if(skipBeats > currSkip->beatDuration) {
@@ -539,9 +536,9 @@ void Timeline::showStop(bool & unsaved, ChartInfo & chartinfo, const SongPositio
 void Timeline::checkDeleteItem(bool focused, bool & unsaved, ChartInfo & chartinfo, SongPosition & songpos) {
     // check to delete item
     if(focused && !ImGuiFileDialog::Instance()->IsOpened() && rightClickedEntity) {
-        auto itemToDelete { chartinfo.notes.containsItemAt(clickedBeat, clickedItemType) };
+        auto itemToDelete { chartinfo.notes.containsItemAt(clickedBeat, static_cast<NoteSequenceItem::SequencerItemType>(clickedItemType)) };
         if(itemToDelete.get()) {
-            chartinfo.notes.deleteItem(clickedBeat, clickedItemType);
+            chartinfo.notes.deleteItem(clickedBeat, static_cast<NoteSequenceItem::SequencerItemType>(clickedItemType));
             auto deleteAction { std::make_shared<DeleteNoteAction>(itemToDelete->absBeat, itemToDelete->beatEnd - itemToDelete->absBeat,
                 itemToDelete->beatpos, itemToDelete->endBeatpos, itemToDelete->itemType, itemToDelete->displayText) };
             undoStack.push(deleteAction);
@@ -563,7 +560,7 @@ void Timeline::checkUpdateNotes(bool focused, AudioSystem * audioSystem, ChartIn
     }
 }
 
-void Timeline::showHorizontalScroll(int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem) {
+void Timeline::showHorizontalScroll(bool focused, int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem) {
     const auto & io = ImGui::GetIO();
 
     // sideways scroll
