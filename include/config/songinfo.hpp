@@ -30,10 +30,10 @@ struct SongInfo {
 
     fs::path saveDir;
 
-    int offsetMS = 0.f;
+    int offsetMS { 0 };
 
-    float musicPreviewStart = 0.f;
-    float musicPreviewStop = 0.f;
+    float musicPreviewStart { 0.f };
+    float musicPreviewStop { 0.f };
 };
 
 #endif // SONGINFO_HPP

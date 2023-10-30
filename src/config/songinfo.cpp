@@ -52,6 +52,8 @@ bool SongInfo::loadSongInfo(fs::path songinfoPath, fs::path songinfoDir) {
     musicPreviewStart = songinfoJSON.value(constants::MUSIC_PREVIEW_START_KEY, 0.f);
     musicPreviewStop = songinfoJSON.value(constants::MUSIC_PREVIEW_STOP_KEY, 0.f);
     offsetMS = songinfoJSON.value(constants::OFFSET_KEY, constants::OFFSET_VALUE_DEFAULT);
+
+    return true;
 }
 
 void SongInfo::saveSongInfo(fs::path saveDir, bool initialSaved) {
