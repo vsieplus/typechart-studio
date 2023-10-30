@@ -22,7 +22,6 @@
 #include "actions/shiftnote.hpp"
 
 #include "config/constants.hpp"
-#include "config/notemaps.hpp"
 #include "config/utils.hpp"
 
 #include "ui/preferences.hpp"
@@ -55,9 +54,9 @@ const char * getKeyFrequencyLabels(void * data, int i) {
     }
 }
 
-void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos, int musicSourceIdx) {
+void updateAudioPosition(AudioSystem * audioSystem, const SongPosition & songpos, int musicSourceIdx) {
     // udpate audio position
-    float offsetAbsTime = songpos.absTime + (songpos.offsetMS / 1000.f);
+    auto offsetAbsTime = static_cast<float>(songpos.absTime + (songpos.offsetMS / 1000.f));
     if(audioSystem->isMusicPlaying(musicSourceIdx)) {
         audioSystem->startMusic(musicSourceIdx, offsetAbsTime);
     } else {
@@ -65,65 +64,10 @@ void updateAudioPosition(AudioSystem * audioSystem, SongPosition & songpos, int 
     }
 }
 
-}
+} // namespace utils
 
 
-// CLEANUP -----------------------------------
-
-const std::unordered_map<int, std::string> FUNCTION_KEY_COMBO_ITEMS = {
-    { 0, "_" },
-};
-
-const std::unordered_map<int, SDL_Scancode> FUNCTION_KEY_COMBO_SCANCODES = {
-    { 0, SDL_SCANCODE_SPACE },
-};
-
-int filterInputMiddleKey(ImGuiInputTextCallbackData * data) {
-    std::string keyboardLayout;
-    if(data->UserData) {
-        keyboardLayout = static_cast<char*>(data->UserData);
-    }
-
-    auto c = data->EventChar;
-    bool validChar = notemaps::MIDDLE_ROW_KEYS.find(keyboardLayout) != notemaps::MIDDLE_ROW_KEYS.end() &&
-                     notemaps::MIDDLE_ROW_KEYS.at(keyboardLayout).find(c) != notemaps::MIDDLE_ROW_KEYS.at(keyboardLayout).end();
-
-    return validChar ? 0 : 1;
-}
-
-const std::map<int, std::string> ID_TO_KEYBOARDLAYOUT = {
-    { 0, "QWERTY" },
-    { 1, "DVORAK" },
-    { 2, "AZERTY" },
-    { 3, "COLEMAK" }
-};
-
-const std::map<std::string, int> KEYBOARDLAYOUT_TO_ID = {
-    { "QWERTY", 0 },
-    { "DVORAK", 1 },
-    { "AZERTY", 2 },
-    { "COLEMAK", 3 }
-};
-
-const std::map<int, std::string> ID_TO_DIFFICULTY = {
-    { 0, "easy" },
-    { 1, "normal" },
-    { 2, "hard" },
-    { 3, "expert" },
-    { 4, "unknown" }
-};
-
-const std::map<std::string, int> DIFFICULTY_TO_ID = {
-    { "easy", 0 },
-    { "normal", 1 },
-    { "hard", 2 },
-    { "expert", 3 },
-    { "unknown", 4 }
-};
-
-// CLEANUP -----------------------------------
-
-EditWindow::EditWindow(bool open, int ID, int musicSourceIdx, std::string name, std::shared_ptr<SDL_Texture> artTexture,
+EditWindow::EditWindow(bool open, int ID, int musicSourceIdx, std::string_view name, std::shared_ptr<SDL_Texture> artTexture,
     const ChartInfo & chartinfo, const SongInfo & songinfo)
     : open(open)
     , ID(ID)
@@ -184,7 +128,6 @@ bool EditWindow::showSongConfig() {
     static char UIartist[64] = "";
     static char UIgenre[64] = "";
     static char UIbpmtext[16] = "";
-    static char UItypist[64] = "";
 
     if(ImGui::CollapsingHeader("Song config", ImGuiTreeNodeFlags_DefaultOpen)) {
         unsaved |= utils::showEditableText(ICON_FA_MUSIC " Title", UItitle, 64, editingUItitle, songinfo.title);
@@ -207,7 +150,7 @@ bool EditWindow::showChartConfig() {
         unsaved |= utils::showEditableText(ICON_FA_PENCIL " Typist", UItypist, 64, editingUItypist, chartinfo.typist);
 
         if(ImGui::Combo(ICON_FA_KEYBOARD " Keyboard", &UIkeyboardLayout, "QWERTY\0DVORAK\0AZERTY\0COLEMAK\0")) {
-            chartinfo.keyboardLayout = ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout);
+            chartinfo.keyboardLayout = constants::ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout);
             unsaved = true;
         }
 
@@ -218,7 +161,7 @@ bool EditWindow::showChartConfig() {
                           "when loaded into Typing Tempo.");
 
         if(ImGui::Combo(ICON_FA_CHESS_PAWN " Difficulty", &UIdifficulty, "easy\0normal\0hard\0expert\0unknown\0")) {
-            chartinfo.difficulty = ID_TO_DIFFICULTY.at(UIdifficulty);
+            chartinfo.difficulty = constants::ID_TO_DIFFICULTY.at(UIdifficulty);
             unsaved = true;
         }
 
@@ -297,7 +240,7 @@ bool EditWindow::showEditSection() const {
 
 void EditWindow::showRemoveSection() {
     // remove the selected section
-    static bool invalidDeletion = false;
+    static bool invalidDeletion { false };
     if(ImGui::Button(ICON_FA_MINUS) && !songpos.timeinfo.empty()) {
         if(songpos.currentSection == 0) {
             invalidDeletion = true;
@@ -331,7 +274,7 @@ void EditWindow::showChartSectionList(AudioSystem * audioSystem) {
                     songpos.start();
                     songpos.pause();
 
-                    songpos.pauseCounter += (Uint64)((songpos.offsetMS / 1000.0) * SDL_GetPerformanceFrequency());
+                    songpos.pauseCounter += static_cast<Uint64>((songpos.offsetMS / 1000.0) * SDL_GetPerformanceFrequency());
                 }
 
                 songpos.setSongBeatPosition(currSection.absBeatStart + FLT_EPSILON);
@@ -367,7 +310,7 @@ void EditWindow::showSectionDataWindow(bool & newSection, bool newSectionEdit, b
         auto windowEditTitle = newSectionEdit ? "Edit Section" : "New Section";
         ImGui::Begin(windowEditTitle, &newSection);
 
-        static bool invalidInput = false;
+        static bool invalidInput { false };
 
         ImGui::Text("Section start");
         ImGui::SameLine();

@@ -5,6 +5,7 @@
 #include <memory>
 #include <stack>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "actions/editaction.hpp"
@@ -20,7 +21,8 @@ class AudioSystem;
 
 class EditWindow {
 public:
-    EditWindow(bool open, int ID, int musicSourceIdx, std::string name, std::shared_ptr<SDL_Texture> artTexture, const ChartInfo & chartinfo, const SongInfo & songinfo);
+    EditWindow(bool open, int ID, int musicSourceIdx, std::string_view name, std::shared_ptr<SDL_Texture> artTexture,
+        const ChartInfo & chartinfo, const SongInfo & songinfo);
 
     void showContents(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
 private:

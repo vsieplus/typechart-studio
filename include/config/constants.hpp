@@ -3,6 +3,8 @@
 
 #include <string>
 #include <filesystem>
+#include <unordered_map>
+
 namespace fs = std::filesystem;
 
 namespace constants {
@@ -83,6 +85,36 @@ namespace constants {
     const fs::path WINDOW_ICON_PATH = IMAGES_DIR / fs::path("windowIcon.png");
 
     const fs::path KEYPRESS_SOUND_PATH = fs::path("sounds") / fs::path("keypress.wav");
+
+    const std::unordered_map<int, std::string> ID_TO_KEYBOARDLAYOUT = {
+        { 0, "QWERTY" },
+        { 1, "DVORAK" },
+        { 2, "AZERTY" },
+        { 3, "COLEMAK" }
+    };
+
+    const std::unordered_map<std::string, int> KEYBOARDLAYOUT_TO_ID = {
+        { "QWERTY", 0 },
+        { "DVORAK", 1 },
+        { "AZERTY", 2 },
+        { "COLEMAK", 3 }
+    };
+
+    const std::unordered_map<int, std::string> ID_TO_DIFFICULTY = {
+        { 0, "easy" },
+        { 1, "normal" },
+        { 2, "hard" },
+        { 3, "expert" },
+        { 4, "unknown" }
+    };
+
+    const std::unordered_map<std::string, int> DIFFICULTY_TO_ID = {
+        { "easy", 0 },
+        { "normal", 1 },
+        { "hard", 2 },
+        { "expert", 3 },
+        { "unknown", 4 }
+    };
 };
 
 #endif // CONSTANTS_HPP
