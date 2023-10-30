@@ -4,10 +4,10 @@
 #include <array>
 #include <map>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 #include <filesystem>
-namespace fs = std::filesystem;
 
 #ifdef __APPLE__
 #include <OpenAL/al.h>
@@ -23,6 +23,8 @@ namespace fs = std::filesystem;
 
 #include <SDL2/SDL.h>
 
+namespace fs = std::filesystem;
+
 /* Signature:
     - AudioComponent
 */
@@ -33,25 +35,25 @@ class AudioSystem {
 
         void update(SDL_Window * window);
 
-        bool loadSound(std::string soundID, fs::path path);
-        int loadMusic(fs::path path);
+        bool loadSound(std::string_view soundID, const fs::path & path);
+        int loadMusic(const fs::path & path);
 
         void deactivateMusicSource(int sourceIdx);
 
-        void playSound(std::string soundID);
+        void playSound(std::string_view soundID);
 
         void startMusic(int sourceIdx, float startPosition = 0.f);
         void setMusicPosition(int sourceIdx, float position);
-        void resumeMusic(int sourceIdx);
-        void pauseMusic(int sourceIdx);
+        void resumeMusic(int sourceIdx) const;
+        void pauseMusic(int sourceIdx) const;
         void stopMusic(int sourceIdx);
 
         void setMusicVolume(float gain);
         void setSoundVolume(float gain);
 
         // calculate song pos, length in seconds
-        float getMusicLength(int sourceIdx);
-        float getSongPosition(int sourceIdx);
+        float getMusicLength(int sourceIdx) const;
+        float getSongPosition(int sourceIdx) const;
 
         bool isMusicPlaying(int sourceIdx) const;
         bool isMusicPaused(int sourceIdx) const;
@@ -62,8 +64,7 @@ class AudioSystem {
         float getMusicStop(int sourceIdx) const;
         void setMusicStop(int sourceIdx, float musicStop);
     private:
-        void initSoundSource(ALuint source, float pitch, float gain, std::array<float, 3> position,
-                             std::array<float, 3> velocity, bool looping);
+        void initSoundSource(ALuint source, float pitch, float gain, std::array<float, 3> position, std::array<float, 3> velocity, bool looping) const;
 
         float getBufferLength(ALuint bufid) const;
 
@@ -78,29 +79,22 @@ class AudioSystem {
         ALCdevice * soundDevice;
         ALCcontext * soundContext;
 
-        ALuint soundBuffers[NUM_SOUND_SOURCES];
-        ALuint soundSources[NUM_SOUND_SOURCES];
+        std::array<ALuint, NUM_SOUND_SOURCES> soundBuffers;
+        std::array<ALuint, NUM_SOUND_SOURCES> soundSources;
 
-        ALuint musicBuffers[NUM_MUSIC_SOURCES][NUM_BUFFERS];
-        ALuint musicSources[NUM_MUSIC_SOURCES];
+        std::array<std::array<ALuint, NUM_MUSIC_SOURCES>, NUM_BUFFERS> musicBuffers;
+        std::array<ALuint, NUM_MUSIC_SOURCES> musicSources;
 
         // for tracking time position of music
-        float lastBufferPositions[NUM_MUSIC_SOURCES];
-        float musicStops[NUM_MUSIC_SOURCES];
+        std::array<float, NUM_MUSIC_SOURCES> lastBufferPositions;
+        std::array<float, NUM_MUSIC_SOURCES> musicStops;
+        std::array<bool, NUM_MUSIC_SOURCES> stopMusicsEarly;
 
-        bool stopMusicsEarly[NUM_MUSIC_SOURCES];
+        std::array<SNDFILE *, NUM_MUSIC_SOURCES> sndfiles;
+        std::array<SF_INFO, NUM_MUSIC_SOURCES> sfInfos;
+        std::array<float *, NUM_MUSIC_SOURCES> membufs;
 
-        SNDFILE * sndfiles[NUM_MUSIC_SOURCES];
-        SF_INFO sfInfos[NUM_MUSIC_SOURCES];
-
-        float * membufs[NUM_MUSIC_SOURCES];
-
-        // SNDFILE * sndfile = nullptr;
-        // SF_INFO sfInfo;
-
-        // float * membuf = nullptr;
-
-        std::unordered_map<std::string, ALuint> soundBufferIDs;
+        std::unordered_map<std::string_view, ALuint> soundBufferIDs;
 
         std::map<int, bool> musicSourcesActive;
 
@@ -112,4 +106,4 @@ class AudioSystem {
 #endif
 };
 
-#endif // ...
+#endif // AUDIOSYSTEM_HPP
