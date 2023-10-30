@@ -21,8 +21,12 @@ struct SongPosition {
     void updateSkips();
 
     void addSkip(std::shared_ptr<Skip> skip);
-    void removeSkip(float absBeat);
+    void removeSkip(double absBeat);
     void resetCurrskip();
+
+    bool addSection(int newBeatsPerMeasure, double newBPM, double newInterpolateDuration, BeatPos newBeatpos);
+    bool editSection(int origSectionIndex, int newBeatsPerMeasure, double newBPM, double newInterpolateDuration, BeatPos newBeatpos);
+    bool removeSection(int sectionIndex);
 
     void pause();
     void unpause();
@@ -39,20 +43,20 @@ struct SongPosition {
     bool beatSkipped = false;
     bool beatSkiptimePassed = false;
 
-    float currSpb = 0.f;
-    float bpmInterpolateStart = 0.f;
-    float bpmInterpolateEnd = 0.f;
+    double currSpb = 0.0;
+    double bpmInterpolateStart = 0.0;
+    double bpmInterpolateEnd = 0.0;
 
-    float absTime = 0.f;
-    float absBeat = 0.f;
+    double absTime = 0.0;
+    double absBeat = 0.0;
 
-    float prevSectionTime = 0.f;
-    float prevSectionBeats = 0.f;
+    double prevSectionTime = 0.0;
+    double prevSectionBeats = 0.0;
 
-    float currSkipDuration = 0.f;
-    float currSkipStartTimePosition = 0.f;
-    float currSkipTime = 0.f;
-    float currSkipSpb = 0.f;
+    double currSkipDuration = 0.0;
+    double currSkipStartTimePosition = 0.0;
+    double currSkipTime = 0.0;
+    double currSkipSpb = 0.0;
 
     int offsetMS = 0;
     int currentSkip = 0;
