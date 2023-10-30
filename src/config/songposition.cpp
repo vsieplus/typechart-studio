@@ -296,17 +296,17 @@ void SongPosition::setSongBeatPosition(double absBeat) {
     }
 }
 
-float SongPosition::calculateAbsBeat(BeatPos beatpos) {
-    float absBeat = 0.0;
-    int prevSectionBeatsPerMeasure = 4;
-    BeatPos prevSectionBeatpos = {0, 1, 0};
+double SongPosition::calculateAbsBeat(BeatPos beatpos) {
+    double absBeat { 0.0 };
+    int prevSectionBeatsPerMeasure { 4 };
+    BeatPos prevSectionBeatpos { 0, 1, 0 };
 
-    for(auto & section: timeinfo) {
+    for(const auto & section: timeinfo) {
         if(beatpos < section.beatpos || section.absBeatStart == timeinfo.back().absBeatStart) {
-            float prevSectionMeasure = prevSectionBeatpos.measure + (prevSectionBeatpos.split / (float)prevSectionBeatpos.measureSplit);
-            float currSectionMeasure = beatpos.measure + (beatpos.split / (float)beatpos.measureSplit);
+            double prevSectionMeasure = prevSectionBeatpos.measure + (prevSectionBeatpos.split / static_cast<double>(prevSectionBeatpos.measureSplit));
+            double currSectionMeasure = beatpos.measure + (beatpos.split / static_cast<double>(beatpos.measureSplit));
 
-            float currSectionBeats = (currSectionMeasure - prevSectionMeasure) * prevSectionBeatsPerMeasure;
+            double currSectionBeats = (currSectionMeasure - prevSectionMeasure) * prevSectionBeatsPerMeasure;
             absBeat += currSectionBeats;
             break;
         } else {

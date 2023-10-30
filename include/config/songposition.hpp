@@ -34,7 +34,7 @@ struct SongPosition {
     void setSongTimePosition(double absTime);
     void setSongBeatPosition(double absBeat);
 
-    float calculateAbsBeat(BeatPos beatpos);
+    double calculateAbsBeat(BeatPos beatpos);
 
     bool started = false;
     bool paused = false;
