@@ -71,7 +71,7 @@ BeatPos calculateBeatpos(double absBeat, int currentBeatsplit, const std::vector
         // calculate the leftover beats from the section the note falls within
         bool isLastSection = i == timeinfo.size() - 1;
         bool beatInPrevSection = absBeat < time.absBeatStart; 
-        if (beatInPrevSection || isLastSection) {
+        if(beatInPrevSection || isLastSection) {
             int currBeatsPerMeasure = beatInPrevSection ? prevBeatsPerMeasure : time.beatsPerMeasure;
             double currAbsBeat = beatInPrevSection ? prevSectionAbsBeat : time.absBeatStart;
 
