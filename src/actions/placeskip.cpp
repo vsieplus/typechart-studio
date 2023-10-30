@@ -2,8 +2,12 @@
 #include "ui/editwindow.hpp"
 
 
-PlaceSkipAction::PlaceSkipAction(bool unsaved, float absBeat, float skipBeats, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) :
-    EditAction(unsaved), absBeat(absBeat), skipBeats(skipBeats), beatDuration(beatDuration), beatpos(beatpos), endBeatpos(endBeatpos) {}
+PlaceSkipAction::PlaceSkipAction(double absBeat, double skipBeats, double beatDuration, BeatPos beatpos, BeatPos endBeatpos)
+    : absBeat(absBeat)
+    , skipBeats(skipBeats)
+    , beatDuration(beatDuration)
+    , beatpos(beatpos)
+    , endBeatpos(endBeatpos) {}
 
 void PlaceSkipAction::undoAction(EditWindow * editWindow) {
     EditAction::undoAction(editWindow);

@@ -11,7 +11,7 @@
 
 class ShiftNoteAction : public EditAction {
     public:
-        enum ShiftDirection {
+        enum class ShiftDirection {
             ShiftUp,
             ShiftDown,
             ShiftLeft,
@@ -19,13 +19,16 @@ class ShiftNoteAction : public EditAction {
             ShiftNone
         };
 
-        ShiftNoteAction(bool unsaved, int minItemType, int maxItemType, float startBeat, float endBeat, std::string keyboardLayout,
-            ShiftDirection shiftDirection, std::list<std::shared_ptr<NoteSequenceItem>> items);
-        virtual void undoAction(EditWindow * editWindow) override;
-        virtual void redoAction(EditWindow * editWindow) override;
+        ShiftNoteAction(int minItemType, int maxItemType, double startBeat, double endBeat, std::string_view keyboardLayout,
+            ShiftDirection shiftDirection, const std::list<std::shared_ptr<NoteSequenceItem>> & items);
+
+        void undoAction(EditWindow * editWindow) override;
+        void redoAction(EditWindow * editWindow) override;
     private:
-        int minItemType, maxItemType;
-        float startBeat, endBeat;
+        int minItemType;
+        int maxItemType;
+        double startBeat;
+        double endBeat;
 
         std::string keyboardLayout;
 
@@ -33,7 +36,7 @@ class ShiftNoteAction : public EditAction {
 
         std::list<std::shared_ptr<NoteSequenceItem>> items;
 
-        void reconcileDeletedItems(EditWindow * editWindow);
+        void reconcileDeletedItems(const EditWindow * editWindow);
 };
 
 #endif // SHIFTNOTE_HPP

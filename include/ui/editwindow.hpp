@@ -23,6 +23,10 @@ public:
     EditWindow(bool open, int ID, int musicSourceIdx, std::string_view name, std::shared_ptr<SDL_Texture> artTexture,
         const ChartInfo & chartinfo, const SongInfo & songinfo);
 
+    ChartInfo chartinfo;
+    SongInfo songinfo;
+    SongPosition songpos;
+
     void showContents(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
 
     void setCopy(bool copy);
@@ -45,11 +49,6 @@ private:
     std::string name;
 
     std::shared_ptr<SDL_Texture> artTexture;
-
-    SongPosition songpos;
-
-    ChartInfo chartinfo;
-    SongInfo songinfo;
 
     Timeline timeline;
 

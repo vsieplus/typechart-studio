@@ -2,8 +2,11 @@
 #include "ui/editwindow.hpp"
 
 
-PlaceStopAction::PlaceStopAction(bool unsaved, float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) :
-    EditAction(unsaved), absBeat(absBeat), beatDuration(beatDuration), beatpos(beatpos), endBeatpos(endBeatpos) {}
+PlaceStopAction::PlaceStopAction(double absBeat, double beatDuration, BeatPos beatpos, BeatPos endBeatpos)
+    : absBeat(absBeat)
+    , beatDuration(beatDuration)
+    , beatpos(beatpos)
+    , endBeatpos(endBeatpos) {}
 
 void PlaceStopAction::undoAction(EditWindow * editWindow) {
     EditAction::undoAction(editWindow);

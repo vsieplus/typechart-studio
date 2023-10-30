@@ -1,7 +1,6 @@
 add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/editor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/actions/editaction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/deleteitems.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/deletenote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/editnote.cpp

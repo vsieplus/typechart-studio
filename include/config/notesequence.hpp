@@ -115,7 +115,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         return l.second > r.second;
     }
 
-    void addNote(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, NoteSequenceItem::SequencerItemType itemType, std::string displayText) {
+    void addNote(double absBeat, double songBeat, double beatDuration, BeatPos beatpos, BeatPos endBeatpos, NoteSequenceItem::SequencerItemType itemType, std::string displayText) {
         NoteType noteType = NoteType::KEYPRESS;
         if(beatDuration > FLT_EPSILON) {
             noteType = NoteType::KEYHOLDSTART;
@@ -148,7 +148,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         updateKeyFrequencies();
     }
 
-    void flipNotes(std::string keyboardLayout, float startBeat, float endBeat, int minItemType, int maxItemType) {
+    void flipNotes(std::string_view keyboardLayout, double startBeat, double endBeat, int minItemType, int maxItemType) {
         if(notemaps::KEYBOARD_FLIP_MAPS.find(keyboardLayout) != notemaps::KEYBOARD_FLIP_MAPS.end()) {
             auto & flipMap = notemaps::KEYBOARD_FLIP_MAPS.at(keyboardLayout);
 
@@ -173,19 +173,21 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    std::list<std::shared_ptr<NoteSequenceItem>> shiftNotes(std::string keyboardLayout, float startBeat, float endBeat,
+    std::list<std::shared_ptr<NoteSequenceItem>> shiftNotes(std::string_view keyboardLayout, double startBeat, double endBeat,
         int minItemType, int maxItemType, ShiftNoteAction::ShiftDirection shiftDirection)
     {
         auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
         return shiftItems(keyboardLayout, startBeat, endBeat, items, shiftDirection);
     }
 
-    std::list<std::shared_ptr<NoteSequenceItem>> shiftItems(std::string keyboardLayout, float startBeat, float endBeat,
+    std::list<std::shared_ptr<NoteSequenceItem>> shiftItems(std::string_view keyboardLayout, double startBeat, double endBeat,
         const std::list<std::shared_ptr<NoteSequenceItem>> & items, ShiftNoteAction::ShiftDirection shiftDirection)
     {
         std::list<std::shared_ptr<NoteSequenceItem>> shiftedItems;
 
-        if(notemaps::KEYBOARD_LAYOUTS.find(keyboardLayout) != notemaps::KEYBOARD_LAYOUTS.end() && notemaps::KEYBOARD_POSITION_MAPS.find(keyboardLayout) != notemaps::KEYBOARD_POSITION_MAPS.end()) {
+        if (notemaps::KEYBOARD_LAYOUTS.find(keyboardLayout) != notemaps::KEYBOARD_LAYOUTS.end() &&
+            notemaps::KEYBOARD_POSITION_MAPS.find(keyboardLayout) != notemaps::KEYBOARD_POSITION_MAPS.end())
+        {
             auto & keyboardLayoutMap = notemaps::KEYBOARD_LAYOUTS.at(keyboardLayout);
             auto & keyboardPositionMap = notemaps::KEYBOARD_POSITION_MAPS.at(keyboardLayout);
 
@@ -264,18 +266,18 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         return true;
     }
 
-    void addStop(float absBeat, float songBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
+    void addStop(double absBeat, double songBeat, double beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
         bool passed = absBeat < songBeat;
-        std::shared_ptr<Stop> newStop = std::make_shared<Stop>(absBeat, beatDuration, passed, beatpos, endBeatpos);
+        auto newStop { std::make_shared<Stop>(absBeat, beatDuration, passed, beatpos, endBeatpos) };
         newStop->displayText = std::to_string(beatDuration);
         myItems.push_back(newStop);
 
         std::sort(myItems.begin(), myItems.end());
     }
 
-    std::shared_ptr<Skip> addSkip(float absBeat, float songBeat, float skipTime, float beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
+    std::shared_ptr<Skip> addSkip(double absBeat, double songBeat, double skipTime, double beatDuration, BeatPos beatpos, BeatPos endBeatpos) {
         bool passed = absBeat < songBeat;
-        std::shared_ptr<Skip> newSkip = std::make_shared<Skip>(absBeat, skipTime, passed, beatDuration, beatpos, endBeatpos);
+        auto newSkip { std::make_shared<Skip>(absBeat, skipTime, passed, beatDuration, beatpos, endBeatpos) };
         newSkip->displayText = std::to_string(skipTime);
         myItems.push_back(newSkip);
 
@@ -284,10 +286,10 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         return newSkip;
     }
 
-    void editSkip(float absBeat, float skipTime) {
+    void editSkip(double absBeat, double skipTime) {
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
             auto & seqItem = *iter;
-            if((int)(seqItem->getItemType()) == NoteSequenceItem::SequencerItemType::SKIP && absBeat >= seqItem->absBeat &&
+            if(seqItem->getItemType() == NoteSequenceItem::SequencerItemType::SKIP && absBeat >= seqItem->absBeat &&
                 (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
 
                 auto currSkip = std::dynamic_pointer_cast<Skip>(seqItem);
@@ -299,7 +301,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    void editNote(float absBeat, int itemType, std::string displayText) {
+    void editNote(double absBeat, int itemType, std::string displayText) {
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
             auto & seqItem = *iter;
             if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
@@ -318,7 +320,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         }
     }
 
-    std::list<std::shared_ptr<NoteSequenceItem>> getItems(float startBeat, float endBeat, int minItemType, int maxItemType) {
+    std::list<std::shared_ptr<NoteSequenceItem>> getItems(double startBeat, double endBeat, int minItemType, int maxItemType) {
         std::list<std::shared_ptr<NoteSequenceItem>> currItems;
 
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
@@ -414,11 +416,11 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         updateKeyFrequencies();
     }
 
-    void deleteItem(double absBeat, int itemType) {
+    void deleteItem(double absBeat, NoteSequenceItem::SequencerItemType itemType) {
         bool removeNote = false;
         for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
             const auto & seqItem = *iter;
-            if((int)(seqItem->getItemType()) == itemType && absBeat >= seqItem->absBeat &&
+            if(seqItem->getItemType() == itemType && absBeat >= seqItem->absBeat &&
                 (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
                 switch(seqItem->getItemType()) {
                     case NoteSequenceItem::SequencerItemType::TOP_NOTE:

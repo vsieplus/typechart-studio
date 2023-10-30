@@ -8,17 +8,16 @@
 
 class DeleteItemsAction : public EditAction {
     public:
-        DeleteItemsAction(bool unsaved, int itemTypeStart, int itemTypeEnd, float startBeat, float endBeat, 
-            std::list<std::shared_ptr<NoteSequenceItem>> & items);
+        DeleteItemsAction(int itemTypeStart, int itemTypeEnd, double startBeat, double endBeat, const std::list<std::shared_ptr<NoteSequenceItem>> & items);
 
-        virtual void undoAction(EditWindow * editWindow) override;
-        virtual void redoAction(EditWindow * editWindow) override;
+        void undoAction(EditWindow * editWindow) override;
+        void redoAction(EditWindow * editWindow) override;
     private:
         int itemTypeStart;
         int itemTypeEnd;
 
-        float startBeat;
-        float endBeat;
+        double startBeat;
+        double endBeat;
 
         std::list<std::shared_ptr<NoteSequenceItem>> items;
 };

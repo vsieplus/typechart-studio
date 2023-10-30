@@ -6,14 +6,14 @@
 
 class DeleteNoteAction : public EditAction {
     public:
-        DeleteNoteAction(bool unsaved, float absBeat, float beatDuration, BeatPos beatpos, BeatPos endBeatpos, NoteSequenceItem::SequencerItemType itemType, std::string displayText);
+        DeleteNoteAction(double absBeat, double beatDuration, BeatPos beatpos, BeatPos endBeatpos, NoteSequenceItem::SequencerItemType itemType, std::string_view displayText);
 
-        virtual void undoAction(EditWindow * editWindow) override;
-        virtual void redoAction(EditWindow * editWindow) override;
+        void undoAction(EditWindow * editWindow) override;
+        void redoAction(EditWindow * editWindow) override;
 
     private:
-        float absBeat;
-        float beatDuration;
+        double absBeat;
+        double beatDuration;
 
         BeatPos beatpos;
         BeatPos endBeatpos;

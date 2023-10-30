@@ -6,14 +6,14 @@
 
 class PlaceSkipAction : public EditAction {
     public:
-        PlaceSkipAction(bool unsaved, float absBeat, float skipBeats, float beatDuration, BeatPos beatpos, BeatPos endBeatpos);
+        PlaceSkipAction(double absBeat, double skipBeats, double beatDuration, BeatPos beatpos, BeatPos endBeatpos);
 
-        virtual void undoAction(EditWindow * editWindow) override;
-        virtual void redoAction(EditWindow * editWindow) override;
+        void undoAction(EditWindow * editWindow) override;
+        void redoAction(EditWindow * editWindow) override;
     private:
-        float absBeat;
-        float skipBeats;
-        float beatDuration;
+        double absBeat;
+        double skipBeats;
+        double beatDuration;
 
         BeatPos beatpos;
         BeatPos endBeatpos;

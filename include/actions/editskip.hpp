@@ -6,15 +6,15 @@
 
 class EditSkipAction : public EditAction {
     public:
-        EditSkipAction(bool unsaved, float absBeat, float prevSkipbeats, float newSkipbeats);
+        EditSkipAction(double absBeat, double prevSkipbeats, double newSkipbeats);
 
-        virtual void undoAction(EditWindow * editWindow) override;
-        virtual void redoAction(EditWindow * editWindow) override;
+        void undoAction(EditWindow * editWindow) override;
+        void redoAction(EditWindow * editWindow) override;
 
     private:
-        float absBeat;
-        float prevSkipbeats;
-        float newSkipbeats;
+        double absBeat;
+        double prevSkipbeats;
+        double newSkipbeats;
 };
 
 #endif // EDITSKIP_HPP

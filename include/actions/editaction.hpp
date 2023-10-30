@@ -4,14 +4,12 @@
 class EditWindow;
 
 class EditAction {
-    public:
-        EditAction(bool & unsaved) : unsaved(unsaved), wasUnsaved(unsaved) {}
+public:
+    EditAction() = default;
+    virtual ~EditAction() = default;
 
-        virtual void undoAction(EditWindow * editWindow);
-        virtual void redoAction(EditWindow * editWindow) = 0;
-    private:
-        bool & unsaved;
-        bool wasUnsaved;
+    virtual void undoAction(EditWindow * editWindow) = 0;
+    virtual void redoAction(EditWindow * editWindow) = 0;
 };
 
 #endif // EDITACTION_HPP

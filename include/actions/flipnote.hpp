@@ -2,19 +2,22 @@
 #define FLIPNOTE_HPP
 
 #include <string>
+#include <string_view>
 
 #include "actions/editaction.hpp"
 
 class FlipNoteAction : public EditAction {
     public:
-        FlipNoteAction(bool unsaved, int minItemType, int maxItemType, float startBeat,
-            float endBeat, std::string keyboardLayout);
+        FlipNoteAction(int minItemType, int maxItemType, double startBeat, double endBeat, std::string_view keyboardLayout);
 
-        virtual void undoAction(EditWindow * editWindow) override;
-        virtual void redoAction(EditWindow * editWindow) override;
+        void undoAction(EditWindow * editWindow) override;
+        void redoAction(EditWindow * editWindow) override;
     private:
-        int minItemType, maxItemType;
-        float startBeat, endBeat;
+        int minItemType;
+        int maxItemType;
+
+        double startBeat;
+        double endBeat;
 
         std::string keyboardLayout;
 };
