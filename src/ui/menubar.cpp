@@ -27,12 +27,12 @@ void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audio
         }
 
         if(ImGui::BeginMenu("Edit")) {
-            showEditMenu();
+            showEditMenu(editWindowManager);
             ImGui::EndMenu();
         }
 
         if(ImGui::BeginMenu("Options")) {
-            showOptionMenu(editWindowManager);
+            showOptionMenu();
             ImGui::EndMenu();
         }
 
