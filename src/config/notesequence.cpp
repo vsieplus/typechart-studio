@@ -246,20 +246,18 @@ bool NoteSequence::shiftNoteSequenceItem(ShiftNoteAction::ShiftDirection shiftDi
     return true;
 }
 
-std::list<std::shared_ptr<NoteSequenceItem>> NoteSequence::getItems(double startBeat, double endBeat, int minItemType, int maxItemType) {
+std::list<std::shared_ptr<NoteSequenceItem>> NoteSequence::getItems(double startBeat, double endBeat, int minItemType, int maxItemType) const {
     std::list<std::shared_ptr<NoteSequenceItem>> currItems;
 
-    for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
-        auto & seqItem = *iter;
-
-        int seqItemType = (int)(seqItem->itemType);
+    std::for_each(myItems.begin(), myItems.end(), [&](auto seqItem) {
+        int seqItemType = static_cast<int>(seqItem->itemType);
 
         if(seqItemType >= minItemType && seqItemType <= maxItemType && startBeat <= seqItem->absBeat && seqItem->absBeat <= endBeat) {
             currItems.push_back(seqItem);
         } else if(endBeat <= seqItem->absBeat) {
             break;
         }
-    }
+    });
 
     return currItems;
 }

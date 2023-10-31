@@ -28,7 +28,6 @@
 
 struct NoteSequence : public ImSequencer::SequenceInterface {
     NoteSequence() = default;
-    virtual ~NoteSequence() = default;
 
     float mFrameMin { 0.f };
     float mFrameMax { 1000.f };
@@ -60,7 +59,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
         const std::list<std::shared_ptr<NoteSequenceItem>> & items, ShiftNoteAction::ShiftDirection shiftDirection);
     bool shiftNoteSequenceItem(ShiftNoteAction::ShiftDirection shiftDirection, std::shared_ptr<NoteSequenceItem> item, std::string_view keyboardLayout);
 
-    std::list<std::shared_ptr<NoteSequenceItem>> getItems(double startBeat, double endBeat, int minItemType, int maxItemType);
+    std::list<std::shared_ptr<NoteSequenceItem>> getItems(double startBeat, double endBeat, int minItemType, int maxItemType) const;
     std::shared_ptr<NoteSequenceItem> containsItemAt(double absBeat, NoteSequenceItem::SequencerItemType itemType);
     int getLaneItemCount(NoteSequenceItem::SequencerItemType lane) const;
     void resetItemCounts();
