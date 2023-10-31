@@ -18,26 +18,15 @@ namespace fs = std::filesystem;
 
 class AudioSystem;
 
-class EditWindow {
-public:
+struct EditWindow {
     EditWindow(bool open, int ID, int musicSourceIdx, std::string_view name, std::shared_ptr<SDL_Texture> artTexture,
         const ChartInfo & chartinfo, const SongInfo & songinfo);
 
-    ChartInfo chartinfo;
-    SongInfo songinfo;
-    SongPosition songpos;
-
-    void showContents(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
-
-    void setCopy(bool copy);
-    void setPaste(bool paste);
-    void setCut(bool cut);
-    void setFlip(bool flip);
-private:
     bool open { true };
     bool unsaved { true };
     bool initialSaved { false };
     bool focused { false };
+    bool resetInfoDisplay { false };
 
     bool editingSomething { false };
 
@@ -50,10 +39,19 @@ private:
 
     std::shared_ptr<SDL_Texture> artTexture;
 
+    ChartInfo chartinfo;
+    SongInfo songinfo;
+    SongPosition songpos;
+
     Timeline timeline;
 
     void saveCurrentChartFiles();
     void saveCurrentChartFiles(std::string_view chartSaveFilename, const fs::path & chartSavePath, const fs::path & saveDir);
+
+    void undoLastAction();
+    void redoLastAction();
+
+    void showContents(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
 
     void showMetadata();
     bool showSongConfig();

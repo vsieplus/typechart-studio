@@ -15,7 +15,6 @@
 
 #include "ui/preferences.hpp"
 #include "ui/editwindow.hpp"
-#include "ui/windowsizes.hpp"
 
 #include "systems/audiosystem.hpp"
 
@@ -48,14 +47,14 @@ const char * getKeyFrequencyLabels(void * data, int i) {
 
 EditWindow::EditWindow(bool open, int ID, int musicSourceIdx, std::string_view name, std::shared_ptr<SDL_Texture> artTexture,
     const ChartInfo & chartinfo, const SongInfo & songinfo)
-    : chartinfo(chartinfo)
-    , songinfo(songinfo)
-    , open(open)
+    : open(open)
     , ID(ID)
     , musicSourceIdx(musicSourceIdx)
     , currTopNotes((int)chartinfo.notes.keyFreqsSorted.size())
     , name(name)
-    , artTexture(artTexture) {}
+    , artTexture(artTexture)
+    , chartinfo(chartinfo)
+    , songinfo(songinfo) {}
 
 void EditWindow::saveCurrentChartFiles() {
     saveCurrentChartFiles(name, chartinfo.savePath, songinfo.saveDir);
@@ -70,6 +69,29 @@ void EditWindow::saveCurrentChartFiles(std::string_view chartSaveFilename, const
     name = chartSaveFilename;
 
     lastSavedActionIndex = static_cast<int>(timeline.getUndoStackSize());
+}
+
+void EditWindow::undoLastAction() {
+    if(!timeline.undoStack.empty()) {
+        auto action = timeline.undoStack.top();
+        action->undoAction(this);
+
+        timeline.redoStack.push(action);
+        timeline.undoStack.pop();
+
+        unsaved = static_cast<int>(timeline.undoStack.size()) != lastSavedActionIndex;
+    }
+}
+
+void EditWindow::redoLastAction() {
+    if(!timeline.redoStack.empty()) {
+        auto action = timeline.redoStack.top();
+        action->redoAction(this);
+
+        timeline.undoStack.push(action);
+        timeline.redoStack.pop();
+        unsaved = true;
+    }
 }
 
 void EditWindow::showContents(AudioSystem * audioSystem, std::vector<bool> & keysPressed) {
@@ -91,6 +113,7 @@ void EditWindow::showMetadata() {
 
     bool editingSongInfo { showSongConfig() };
     bool editingChartInfo { showChartConfig() };
+    resetInfoDisplay = false;
 
     ImGui::EndChild();
 
@@ -108,6 +131,13 @@ bool EditWindow::showSongConfig() {
     static char UIgenre[64] = "";
     static char UIbpmtext[16] = "";
 
+    if(resetInfoDisplay) {
+        snprintf(UItitle, 64, "%s", songinfo.title.c_str());
+        snprintf(UIartist, 64, "%s", songinfo.artist.c_str());
+        snprintf(UIgenre, 64, "%s", songinfo.genre.c_str());
+        snprintf(UIbpmtext, 16, "%s", songinfo.bpmtext.c_str());
+    }
+
     if(ImGui::CollapsingHeader("Song config", ImGuiTreeNodeFlags_DefaultOpen)) {
         unsaved |= utils::showEditableText(ICON_FA_MUSIC " Title", UItitle, 64, editingUItitle, songinfo.title);
         unsaved |= utils::showEditableText(ICON_FA_MICROPHONE "Artist", UIartist, 64, editingUIartist, songinfo.artist);
@@ -124,6 +154,13 @@ bool EditWindow::showChartConfig() {
     static int UIlevel = 1;
     static int UIkeyboardLayout = 0;
     static int UIdifficulty = 0;
+
+    if(resetInfoDisplay) {
+        snprintf(UItypist, 64, "%s", chartinfo.typist.c_str());
+        UIlevel = chartinfo.level;
+        UIkeyboardLayout = constants::KEYBOARDLAYOUT_TO_ID.at(chartinfo.keyboardLayout);
+        UIdifficulty = constants::DIFFICULTY_TO_ID.at(chartinfo.difficulty);
+    }
 
     if(ImGui::CollapsingHeader("Chart config", ImGuiTreeNodeFlags_DefaultOpen)) {
         unsaved |= utils::showEditableText(ICON_FA_PENCIL " Typist", UItypist, 64, editingUItypist, chartinfo.typist);
@@ -505,20 +542,4 @@ void EditWindow::showMusicOffset() {
     if(ImGui::IsItemHovered() && !ImGui::IsItemActive()) {
         ImGui::SetTooltip("Offset from the first beat in milliseconds\n(Ctrl + Click to enter)");
     }
-}
-
-void EditWindow::setCopy(bool copy) {
-    timeline.setCopy(copy);
-}
-
-void EditWindow::setPaste(bool paste) {
-    timeline.setPaste(paste);
-}
-
-void EditWindow::setCut(bool cut) {
-    timeline.setCut(cut);
-}
-
-void EditWindow::setFlip(bool flip) {
-    timeline.setFlip(flip);
 }
