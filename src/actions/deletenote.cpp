@@ -10,7 +10,6 @@ DeleteNoteAction::DeleteNoteAction(double absBeat, double beatDuration, BeatPos 
     , displayText(displayText) {}
 
 void DeleteNoteAction::undoAction(EditWindow * editWindow) {
-    EditAction::undoAction(editWindow);
     editWindow->chartinfo.notes.addNote(absBeat, editWindow->songpos.absBeat, beatDuration, beatpos, endBeatpos, itemType, displayText);
 }
 

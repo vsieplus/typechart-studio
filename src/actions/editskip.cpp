@@ -7,7 +7,6 @@ EditSkipAction::EditSkipAction(double absBeat,double prevSkipbeats, double newSk
     , newSkipbeats(newSkipbeats) {}
 
 void EditSkipAction::undoAction(EditWindow * editWindow) {
-    EditAction::undoAction(editWindow);
     editWindow->chartinfo.notes.editSkip(absBeat, prevSkipbeats);
 }
 

@@ -10,7 +10,6 @@ PlaceNoteAction::PlaceNoteAction(double absBeat, double beatDuration, BeatPos be
     , displayText(displayText) {}
 
 void PlaceNoteAction::undoAction(EditWindow * editWindow) {
-    EditAction::undoAction(editWindow);
     editWindow->chartinfo.notes.deleteItem(absBeat, itemType);
 }
 

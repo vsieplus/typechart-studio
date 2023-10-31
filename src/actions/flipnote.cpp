@@ -9,8 +9,6 @@ FlipNoteAction::FlipNoteAction(int minItemType, int maxItemType, double startBea
     , keyboardLayout(keyboardLayout) {}
 
 void FlipNoteAction::undoAction(EditWindow * editWindow) {
-    EditAction::undoAction(editWindow);
-
     // undo/redo is the same behavior
     redoAction(editWindow);
 }

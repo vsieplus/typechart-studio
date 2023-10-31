@@ -12,8 +12,6 @@ ShiftNoteAction::ShiftNoteAction(int minItemType, int maxItemType, double startB
     , items(items) {}
 
 void ShiftNoteAction::undoAction(EditWindow * editWindow) {
-    EditAction::undoAction(editWindow);
-
     ShiftDirection reverseDirection = ShiftDirection::ShiftNone;
     switch(shiftDirection) {
         case ShiftDirection::ShiftUp:

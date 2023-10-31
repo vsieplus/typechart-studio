@@ -9,7 +9,6 @@ DeleteItemsAction::DeleteItemsAction(int itemTypeStart, int itemTypeEnd, double 
     , items(items) {}
 
 void DeleteItemsAction::undoAction(EditWindow * editWindow) {
-    EditAction::undoAction(editWindow);
     if(!items.empty()) {
         editWindow->chartinfo.notes.insertItems(items.front()->absBeat, editWindow->songpos.absBeat, itemTypeStart, 
             itemTypeEnd, editWindow->songpos.timeinfo, items);

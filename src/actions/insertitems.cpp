@@ -11,8 +11,6 @@ InsertItemsAction::InsertItemsAction(int itemTypeStart, int itemTypeEnd, double 
     , itemsDeleted(itemsDeleted) {}
 
 void InsertItemsAction::undoAction(EditWindow * editWindow) {
-    EditAction::undoAction(editWindow);
-
     if(!itemsInserted.empty()) {
         auto endBeat = startBeat + (itemsInserted.back()->absBeat - itemsInserted.front()->absBeat);
         editWindow->chartinfo.notes.deleteItems(startBeat, endBeat, itemTypeStart, itemTypeEnd);

@@ -8,7 +8,6 @@ EditNoteAction::EditNoteAction(double absBeat, NoteSequenceItem::SequencerItemTy
     , newDisplayText(newDisplayText) {}
 
 void EditNoteAction::undoAction(EditWindow * editWindow) {
-    EditAction::undoAction(editWindow);
     editWindow->chartinfo.notes.editNote(absBeat, itemType, oldDisplayText);
 }
 

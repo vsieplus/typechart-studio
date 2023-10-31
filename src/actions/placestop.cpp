@@ -9,7 +9,6 @@ PlaceStopAction::PlaceStopAction(double absBeat, double beatDuration, BeatPos be
     , endBeatpos(endBeatpos) {}
 
 void PlaceStopAction::undoAction(EditWindow * editWindow) {
-    EditAction::undoAction(editWindow);
     editWindow->chartinfo.notes.deleteItem(absBeat, NoteSequenceItem::SequencerItemType::STOP);
 }
 
