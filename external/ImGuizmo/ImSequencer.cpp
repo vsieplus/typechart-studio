@@ -52,9 +52,9 @@ namespace ImSequencer
       return overDel;
    }
 
-   bool Sequencer(SequenceInterface* sequence, float zoom, int currentBeatsplit, int beatsPerMeasure, bool darkTheme, bool haveSelection, bool windowFocused, bool* expanded,
-                  bool* updatedBeat, bool* leftClickedEntity, bool* leftClickReleased, bool* leftClickShift, bool* rightClickedEntity, float* clickedBeat,
-                  float* hoveredBeat, int* clickedItemType, int* releasedItemType, int* selectedEntry, float* firstFrame, int sequenceOptions)
+   bool Sequencer(SequenceInterface* sequence, double zoom, int currentBeatsplit, int beatsPerMeasure, bool darkTheme, bool haveSelection, bool windowFocused, bool* expanded,
+                  bool* updatedBeat, bool* leftClickedEntity, bool* leftClickReleased, bool* leftClickShift, bool* rightClickedEntity, double* clickedBeat,
+                  double* hoveredBeat, int* clickedItemType, int* releasedItemType, int* selectedEntry, double* firstFrame, int sequenceOptions)
    {
       bool ret = false;
       ImGuiIO& io = ImGui::GetIO();
@@ -129,7 +129,7 @@ namespace ImSequencer
             panningViewFrame = *firstFrame;
          }
          *firstFrame = panningViewFrame - ((io.MousePos.x - panningViewSource.x) / framePixelWidth);
-         *firstFrame = ImClamp(*firstFrame, (float)sequence->GetFrameMin(), (float)sequence->GetFrameMax() - visibleFrameCount);
+         *firstFrame = ImClamp(*firstFrame, (double)sequence->GetFrameMin(), (double)sequence->GetFrameMax() - visibleFrameCount);
          
          if(updatedBeat)
             *updatedBeat = true;
@@ -454,7 +454,7 @@ namespace ImSequencer
          // draw the sequence items
          for (int i = 0; i < sequence->GetItemCount(); i++)
          {
-            float* start, * end;
+            double* start, * end;
             int itemType;
             unsigned int color = darkTheme ? 0xFFAA8080 : 0xFFBAD4F3;
             const char * displayText;
@@ -467,7 +467,7 @@ namespace ImSequencer
             ImVec2 slotP1(pos.x + *start * framePixelWidth - 3, pos.y + 2);
             ImVec2 slotP2;
             
-            if(start && end && std::abs(*start - *end) < FLT_EPSILON) {
+            if(start && end && std::abs(*start - *end) < DBL_EPSILON) {
                slotP2 = ImVec2(pos.x + *start * framePixelWidth + 32 - 3, pos.y + ItemHeight - 2 + localCustomHeight);
             } else {
                slotP2 = ImVec2(pos.x + *end * framePixelWidth + 32 - 3, pos.y + ItemHeight - 2 + localCustomHeight);
@@ -556,12 +556,12 @@ namespace ImSequencer
             int diffFrame = int((cx - movingPos) / framePixelWidth);
             if (std::abs(diffFrame) > 0)
             {
-               float* start, * end;
+               double* start, * end;
                sequence->Get(movingEntry, &start, &end, NULL, NULL, NULL);
                if (selectedEntry)
                   *selectedEntry = movingEntry;
-               float& l = *start;
-               float& r = *end;
+               double& l = *start;
+               double& r = *end;
                if (movingPart & 1)
                   l += diffFrame;
                if (movingPart & 2)
@@ -595,9 +595,9 @@ namespace ImSequencer
          draw_list->PopClipRect();
          draw_list->PopClipRect();
 
-         for (auto& customDraw : customDraws)
+         for (const auto& customDraw : customDraws)
             sequence->CustomDraw(customDraw.index, draw_list, customDraw.customRect, customDraw.legendRect, customDraw.clippingRect, customDraw.legendClippingRect);
-         for (auto& customDraw : compactCustomDraws)
+         for (const auto& customDraw : compactCustomDraws)
             sequence->CustomDrawCompact(customDraw.index, draw_list, customDraw.customRect, customDraw.clippingRect);
 
          // copy paste
@@ -726,7 +726,8 @@ namespace ImSequencer
                   {
                      float framesPerPixelInBar = barWidthInPixels / (float)visibleFrameCount;
                      *firstFrame = ((io.MousePos.x - panningViewSource.x) / framesPerPixelInBar) - panningViewFrame;
-                     *firstFrame = ImClamp(*firstFrame, (float)sequence->GetFrameMin(), ImMax(sequence->GetFrameMax() - visibleFrameCount, (float)sequence->GetFrameMin()));
+                     *firstFrame = ImClamp(*firstFrame, (double)sequence->GetFrameMin(),
+                        ImMax((double)(sequence->GetFrameMax() - visibleFrameCount), (double)sequence->GetFrameMin()));
                   
                      if(updatedBeat)
                         *updatedBeat = true;

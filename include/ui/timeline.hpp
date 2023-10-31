@@ -30,14 +30,13 @@ struct Timeline {
     int getRedoStackSize() const;
 
     void showBeatsplit();
-    void showCurrentBeat(int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem);
-    void showBeatpos(const SongPosition & songpos);
+    void showCurrentBeat(int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem) const;
+    void showBeatpos(const SongPosition & songpos) const;
     void showZoom(bool focused);
     void showSequencer(bool focused, ChartInfo & chartinfo, SongPosition & songpos);
 
     void checkResetClicks();
-    void checkUpdatedBeat();
-    void checkUpdatedBeat(bool focused, int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem);
+    void checkUpdatedBeat(bool focused, int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem) const;
     void prepUpdateEntity(bool focused, const std::string & addItemPopup, const SongPosition & songpos);
     void setEntityType(bool focused, const std::string & addItemPopup, const SongPosition & songpos);
 

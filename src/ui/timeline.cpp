@@ -84,7 +84,7 @@ void Timeline::showBeatsplit() {
     currentBeatsplitValue = 1.0 / currentBeatsplit;
 }
 
-void Timeline::showCurrentBeat(int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem) {
+void Timeline::showCurrentBeat(int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem) const {
     ImGui::SameLine();
     ImGui::Text("Current beat: ");
     ImGui::SameLine();
@@ -119,7 +119,7 @@ void Timeline::showCurrentBeat(int musicSourceIdx, ChartInfo & chartinfo, SongPo
     }
 }
 
-void Timeline::showBeatpos(const SongPosition & songpos) {
+void Timeline::showBeatpos(const SongPosition & songpos) const {
     auto currBeatpos = utils::calculateBeatpos(songpos.absBeat, currentBeatsplit, songpos.timeinfo);
     ImGui::SameLine();
     ImGui::Text("[Pos]: [%d, %d, %d]", std::max(0, currBeatpos.measure), std::max(0, currBeatpos.measureSplit), std::max(0, currBeatpos.split));
@@ -149,9 +149,9 @@ void Timeline::showSequencer(bool focused, ChartInfo & chartinfo, SongPosition &
     rightClickedEntity = false;
 
     int beatsPerMeasure = songpos.timeinfo.size() > songpos.currentSection ? songpos.timeinfo.at(songpos.currentSection).beatsPerMeasure : 4;
-    Sequencer(&(chartinfo.notes), zoom, currentBeatsplit, beatsPerMeasure, Preferences::Instance().isDarkTheme(), haveSelection, focused,
+    ImSequencer::Sequencer(&(chartinfo.notes), zoom, currentBeatsplit, beatsPerMeasure, Preferences::Instance().isDarkTheme(), haveSelection, focused,
         nullptr, &updatedBeat, &leftClickedEntity, &leftClickReleased, &leftClickShift, &rightClickedEntity, &clickedBeat, &hoveredBeat,
-        &clickedItemType, &releasedItemType, nullptr, &songpos.absBeat, ImSequencer::SEQUENCER_CHANGE_FRAME);
+        &clickedItemType, &releasedItemType, nullptr, &songpos.absBeat, static_cast<int>(ImSequencer::SEQUENCER_CHANGE_FRAME));
 }
 
 void Timeline::checkResetClicks() {
@@ -162,7 +162,7 @@ void Timeline::checkResetClicks() {
     }
 }
 
-void Timeline::checkUpdatedBeat(bool focused, int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem) {
+void Timeline::checkUpdatedBeat(bool focused, int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem) const {
     if(focused && updatedBeat) {
         if(!songpos.started) {
             songpos.start();

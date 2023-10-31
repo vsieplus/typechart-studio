@@ -44,18 +44,18 @@ set(ICNFNTCPP_DIR ${EXTERNAL_DIR}/IconFontCppHeaders)
 set(JSON_DIR ${EXTERNAL_DIR}/nlohmann)
 
 target_sources(${PROJECT_NAME}
-                PRIVATE
-                    ${IMGUI_DIR}/imgui_draw.cpp
-                    ${IMGUI_DIR}/imgui_tables.cpp
-                    ${IMGUI_DIR}/imgui_widgets.cpp
-                    ${IMGUI_DIR}/imgui.cpp
-                    ${IMGUI_DIR}/backends/imgui_impl_sdl.cpp
-                    ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer.cpp
-                PRIVATE
-                    ${IMGUI_FD_DIR}/ImGuiFileDialog.cpp
-                PRIVATE
-                    ${IMGUIZMO_DIR}/ImSequencer.cpp
-                )
+PRIVATE
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_sdl.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer.cpp
+PRIVATE
+    ${IMGUI_FD_DIR}/ImGuiFileDialog.cpp
+PRIVATE
+    ${IMGUIZMO_DIR}/ImSequencer.cpp
+)
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC ${SDL2_INCLUDE_DIRS}
