@@ -410,7 +410,7 @@ void EditWindow::showChartStatistics() {
 }
 
 void EditWindow::showToolbar(AudioSystem * audioSystem, std::vector<bool> & keysPressed) {
-    auto musicLengthSecs = audioSystem->getMusicLength(musicSourceIdx);
+    float musicLengthSecs = audioSystem->getMusicLength(musicSourceIdx);
     showMusicPosition(musicLengthSecs);
 
     ImGui::SameLine();
@@ -433,7 +433,7 @@ void EditWindow::showToolbar(AudioSystem * audioSystem, std::vector<bool> & keys
     showMusicOffset();
 }
 
-void EditWindow::showMusicPosition(double musicLengthSecs) const {
+void EditWindow::showMusicPosition(float musicLengthSecs) const {
     auto [audioPosMin, audioPosSec] { utils::splitSecsbyMin(songpos.absTime) };
     auto [songLengthMin, songLengthSec] { utils::splitSecsbyMin(musicLengthSecs) };
     audioPosMin = std::max(0, audioPosMin);

@@ -69,7 +69,7 @@ struct EditWindow {
     void showChartStatistics();
 
     void showToolbar(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
-    void showMusicPosition(double musicLengthSecs) const;
+    void showMusicPosition(float musicLengthSecs) const;
     void showMusicControls(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
     void showMusicPreview(AudioSystem * audioSystem, float musicLengthSecs);
     void showMusicPreviewSliders(float musicLengthSecs);

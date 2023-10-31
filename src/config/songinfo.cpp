@@ -8,22 +8,20 @@
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
 
-SongInfo::SongInfo() {}
+SongInfo::SongInfo(std::string_view title, std::string_view artist, std::string_view genre, std::string_view bpmtext, std::string_view musicFilename,
+    std::string_view coverartFilename, const fs::path & musicFilepath, const fs::path & coverartFilepath, float musicPreviewStart, float musicPreviewStop)
+    : title(title)
+    , artist(artist)
+    , genre(genre)
+    , bpmtext(bpmtext)
+    , musicFilename(musicFilename)
+    , coverartFilename(coverartFilename)
+    , musicFilepath(musicFilepath)
+    , coverartFilepath(coverartFilepath)
+    , musicPreviewStart(musicPreviewStart)
+    , musicPreviewStop(musicPreviewStop) {}
 
-SongInfo::SongInfo(std::string title, std::string artist, std::string genre, std::string bpmtext, std::string musicFilename, std::string coverartFilename,
-    fs::path musicFilepath, fs::path coverartFilepath, float musicPreviewStart, float musicPreviewStop)
-    : title(title),
-      artist(artist),
-      genre(genre),
-      bpmtext(bpmtext),
-      musicFilename(musicFilename),
-      coverartFilename(coverartFilename),
-      musicFilepath(musicFilepath),
-      coverartFilepath(coverartFilepath),
-      musicPreviewStart(musicPreviewStart),
-      musicPreviewStop(musicPreviewStop) {}
-
-bool SongInfo::loadSongInfo(fs::path songinfoPath, fs::path songinfoDir) {
+bool SongInfo::loadSongInfo(const fs::path & songinfoPath, const fs::path & songinfoDir) {
     saveDir = songinfoDir;
 
     json songinfoJSON;
@@ -33,10 +31,6 @@ bool SongInfo::loadSongInfo(fs::path songinfoPath, fs::path songinfoDir) {
         in >> songinfoJSON;
     } catch(json::exception & e) {
         return false;
-    }
-
-    if(songinfoJSON.contains("title")) {
-        std::string title = songinfoJSON["title"];
     }
 
     title = songinfoJSON.value(constants::TITLE_KEY, "");
@@ -56,7 +50,7 @@ bool SongInfo::loadSongInfo(fs::path songinfoPath, fs::path songinfoDir) {
     return true;
 }
 
-void SongInfo::saveSongInfo(fs::path saveDir, bool initialSaved) {
+void SongInfo::saveSongInfo(const fs::path & saveDir, bool initialSaved) {
     this->saveDir = saveDir;
     fs::path songinfoSavePath = saveDir / fs::path(constants::SONGINFO_FILENAME);
 
@@ -77,16 +71,14 @@ void SongInfo::saveSongInfo(fs::path saveDir, bool initialSaved) {
     file << std::setw(4) << songinfo << std::endl;
 
     if(Preferences::Instance().getCopyArtAndMusic() && !initialSaved) {
-        fs::path artSavePath = saveDir / fs::path(coverartFilename);
-        fs::path musicSavePath = saveDir / fs::path(musicFilename);
+        fs::path artSavePath { saveDir / fs::path(coverartFilename) };
+        fs::path musicSavePath { saveDir / fs::path(musicFilename) };
 
-        fs::path musicSrcPath = musicFilepath;
-        if(fs::exists(musicSrcPath) && musicSrcPath != musicSavePath) {
+        if(fs::path musicSrcPath = musicFilepath; fs::exists(musicSrcPath) && musicSrcPath != musicSavePath) {
             fs::copy_file(musicSrcPath, musicSavePath, fs::copy_options::overwrite_existing);
         }
 
-        fs::path artSrcPath = coverartFilepath;
-        if(fs::exists(artSrcPath) && artSrcPath != artSavePath) {
+        if(fs::path artSrcPath = coverartFilepath; fs::exists(artSrcPath) && artSrcPath != artSavePath) {
             fs::copy_file(artSrcPath, artSavePath, fs::copy_options::overwrite_existing);
         }
     }
