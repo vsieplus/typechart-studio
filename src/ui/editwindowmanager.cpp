@@ -426,7 +426,10 @@ void EditWindowManager::showSongConfig() {
                 snprintf(UItitle, 64, "%s", songinfo.title.c_str());
                 snprintf(UIbpmtext, 16, "%s", songinfo.bpmtext.c_str());
                 snprintf(UImusicFilename, 64, "%s", songinfo.musicFilename.c_str());
+                snprintf(UIcoverArtFilename, 64, "%s", songinfo.coverartFilename.c_str());
+                snprintf(UIgenre, 64, "%s", songinfo.genre.c_str());
                 UImusicFilepath = songinfo.musicFilepath;
+                UIcoverArtFilepath = songinfo.coverartFilepath;
                 UImusicPreviewStart = songinfo.musicPreviewStart;
                 UImusicPreviewStop = songinfo.musicPreviewStop;
             }
