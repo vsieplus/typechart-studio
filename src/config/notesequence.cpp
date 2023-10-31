@@ -43,17 +43,17 @@ void NoteSequence::resetPassed(double songBeat) {
 }
 
 void NoteSequence::addNote(double absBeat, double songBeat, double beatDuration, BeatPos beatpos, BeatPos endBeatpos,
-        NoteSequenceItem::SequencerItemType itemType, std::string_view displayText)
+        NoteSequenceItem::SequencerItemType itemType, const std::string & displayText)
 {
-    NoteType noteType = NoteType::KEYPRESS;
+    auto noteType = Note::NoteType::KEYPRESS;
     if(beatDuration > FLT_EPSILON) {
-        noteType = NoteType::KEYHOLDSTART;
+        noteType = Note::NoteType::KEYHOLDSTART;
     }
 
     bool passed = absBeat < songBeat;
 
-    std::shared_ptr<NoteSequenceItem> newNote = std::make_shared<Note>(absBeat, absBeat + beatDuration, passed, beatpos, endBeatpos, 
-        noteType, NoteSplit::EIGHTH, itemType, displayText);
+    std::shared_ptr<NoteSequenceItem> newNote = std::make_shared<Note>(itemType, passed, absBeat, absBeat + beatDuration, beatpos, endBeatpos,
+        noteType, Note::NoteSplit::EIGHTH, displayText);
     myItems.push_back(newNote);
 
     std::sort(myItems.begin(), myItems.end());
@@ -77,9 +77,7 @@ void NoteSequence::addNote(double absBeat, double songBeat, double beatDuration,
     updateKeyFrequencies();
 }
 
-void NoteSequence::editNote(double absBeat, NoteSequenceItem::SequencerItemType itemType, std::string_view displayText) {
-    for(auto iter = myItems.begin(); iter != myItems.end(); iter++) {
-
+void NoteSequence::editNote(double absBeat, NoteSequenceItem::SequencerItemType itemType, const std::string & displayText) {
     std::for_each(myItems.begin(), myItems.end(), [&](auto seqItem) {
         if(seqItem->itemType == itemType && absBeat >= seqItem->absBeat &&
             (absBeat < seqItem->beatEnd || (seqItem->absBeat == seqItem->beatEnd && absBeat <= seqItem->beatEnd))) {
@@ -131,7 +129,7 @@ void NoteSequence::editSkip(double absBeat, double skipTime) {
     });
 }
 
-void NoteSequence::flipNotes(std::string_view keyboardLayout, double startBeat, double endBeat, int minItemType, int maxItemType) {
+void NoteSequence::flipNotes(const std::string & keyboardLayout, double startBeat, double endBeat, int minItemType, int maxItemType) {
     if(notemaps::KEYBOARD_FLIP_MAPS.find(keyboardLayout) != notemaps::KEYBOARD_FLIP_MAPS.end()) {
         auto & flipMap = notemaps::KEYBOARD_FLIP_MAPS.at(keyboardLayout);
 
@@ -156,14 +154,14 @@ void NoteSequence::flipNotes(std::string_view keyboardLayout, double startBeat, 
     }
 }
 
-std::list<std::shared_ptr<NoteSequenceItem>> NoteSequence::shiftNotes(std::string_view keyboardLayout, double startBeat, double endBeat,
+std::list<std::shared_ptr<NoteSequenceItem>> NoteSequence::shiftNotes(const std::string & keyboardLayout, double startBeat, double endBeat,
     int minItemType, int maxItemType, ShiftNoteAction::ShiftDirection shiftDirection)
 {
     auto items = getItems(startBeat, endBeat, minItemType, maxItemType);
     return shiftItems(keyboardLayout, startBeat, endBeat, items, shiftDirection);
 }
 
-std::list<std::shared_ptr<NoteSequenceItem>> NoteSequence::shiftItems(std::string_view keyboardLayout, double startBeat, double endBeat,
+std::list<std::shared_ptr<NoteSequenceItem>> NoteSequence::shiftItems(const std::string & keyboardLayout, double startBeat, double endBeat,
     const std::list<std::shared_ptr<NoteSequenceItem>> & items, ShiftNoteAction::ShiftDirection shiftDirection)
 {
     std::list<std::shared_ptr<NoteSequenceItem>> shiftedItems;
@@ -183,7 +181,7 @@ std::list<std::shared_ptr<NoteSequenceItem>> NoteSequence::shiftItems(std::strin
     return shiftedItems;
 }
 
-bool NoteSequence::shiftNoteSequenceItem(ShiftNoteAction::ShiftDirection shiftDirection, std::shared_ptr<NoteSequenceItem> item, std::string_view keyboardLayout) {
+bool NoteSequence::shiftNoteSequenceItem(ShiftNoteAction::ShiftDirection shiftDirection, std::shared_ptr<NoteSequenceItem> item, const std::string & keyboardLayout) {
     auto & keyboardLayoutMap = notemaps::KEYBOARD_LAYOUTS.at(keyboardLayout);
     auto & keyboardPositionMap = notemaps::KEYBOARD_POSITION_MAPS.at(keyboardLayout);
 
@@ -255,7 +253,7 @@ std::list<std::shared_ptr<NoteSequenceItem>> NoteSequence::getItems(double start
         if(seqItemType >= minItemType && seqItemType <= maxItemType && startBeat <= seqItem->absBeat && seqItem->absBeat <= endBeat) {
             currItems.push_back(seqItem);
         } else if(endBeat <= seqItem->absBeat) {
-            break;
+            return;
         }
     });
 
@@ -398,15 +396,20 @@ void NoteSequence::insertItems(double insertBeat, double songBeat, int minItemTy
     updateKeyFrequencies();
 }
 
-void deleteItem(double absBeat, NoteSequenceItem::SequencerItemType itemType) {
-    deleteItems(absBeat, absBeat, itemType, itemType);
+void NoteSequence::deleteItem(double absBeat, NoteSequenceItem::SequencerItemType itemType) {
+    deleteItems(absBeat, absBeat, static_cast<int>(itemType), static_cast<int>(itemType));
 }
 
 const std::pair<std::string, int> & NoteSequence::getKeyItemData(int frequencyRank) const {
     return keyFreqsSorted.at(frequencyRank);
 }
 
-void NoteSequence::Get(int index, float** start, float** end, int* type, unsigned int* color, const char** displayText) override {
+void NoteSequence::updateKeyFrequencies() {
+    keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
+    std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), utils::cmpSecond);
+}
+
+void NoteSequence::Get(int index, double** start, double** end, int* type, unsigned int* color, const char** displayText) {
     auto item = myItems[index];
 
     if(color) {
@@ -422,7 +425,7 @@ void NoteSequence::Get(int index, float** start, float** end, int* type, unsigne
     }
 
     if(type) {
-        *type = (int)(item->itemType);
+        *type = static_cast<int>(item->itemType);
     }
 
     if(displayText) {

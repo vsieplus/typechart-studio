@@ -43,21 +43,21 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     void resetPassed(double songBeat);
 
     void addNote(double absBeat, double songBeat, double beatDuration, BeatPos beatpos, BeatPos endBeatpos,
-        NoteSequenceItem::SequencerItemType itemType, std::string_view displayText);
-    void editNote(double absBeat, NoteSequenceItem::SequencerItemType itemType, std::string_view displayText);
+        NoteSequenceItem::SequencerItemType itemType, const std::string & displayText);
+    void editNote(double absBeat, NoteSequenceItem::SequencerItemType itemType, const std::string & displayText);
 
     void addStop(double absBeat, double songBeat, double beatDuration, BeatPos beatpos, BeatPos endBeatpos);
 
     std::shared_ptr<Skip> addSkip(double absBeat, double songBeat, double skipTime, double beatDuration, BeatPos beatpos, BeatPos endBeatpos);
     void editSkip(double absBeat, double skipTime);
 
-    void flipNotes(std::string_view keyboardLayout, double startBeat, double endBeat, int minItemType, int maxItemType);
+    void flipNotes(const std::string & keyboardLayout, double startBeat, double endBeat, int minItemType, int maxItemType);
 
-    std::list<std::shared_ptr<NoteSequenceItem>> shiftNotes(std::string_view keyboardLayout, double startBeat, double endBeat,
+    std::list<std::shared_ptr<NoteSequenceItem>> shiftNotes(const std::string &, double startBeat, double endBeat,
         int minItemType, int maxItemType, ShiftNoteAction::ShiftDirection shiftDirection);
-    std::list<std::shared_ptr<NoteSequenceItem>> shiftItems(std::string_view keyboardLayout, double startBeat, double endBeat,
+    std::list<std::shared_ptr<NoteSequenceItem>> shiftItems(const std::string & keyboardLayout, double startBeat, double endBeat,
         const std::list<std::shared_ptr<NoteSequenceItem>> & items, ShiftNoteAction::ShiftDirection shiftDirection);
-    bool shiftNoteSequenceItem(ShiftNoteAction::ShiftDirection shiftDirection, std::shared_ptr<NoteSequenceItem> item, std::string_view keyboardLayout);
+    bool shiftNoteSequenceItem(ShiftNoteAction::ShiftDirection shiftDirection, std::shared_ptr<NoteSequenceItem> item, const std::string & keyboardLayout);
 
     std::list<std::shared_ptr<NoteSequenceItem>> getItems(double startBeat, double endBeat, int minItemType, int maxItemType) const;
     std::shared_ptr<NoteSequenceItem> containsItemAt(double absBeat, NoteSequenceItem::SequencerItemType itemType);
@@ -69,11 +69,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     void deleteItem(double absBeat, NoteSequenceItem::SequencerItemType itemType);
 
     const std::pair<std::string, int> & getKeyItemData(int frequencyRank) const;
-
-    void updateKeyFrequencies() {
-        keyFreqsSorted = std::vector<std::pair<std::string, int>>(keyFrequencies.begin(), keyFrequencies.end());
-        std::sort(keyFreqsSorted.begin(), keyFreqsSorted.end(), utils::cmpSecond);
-    }
+    void updateKeyFrequencies();
 
     int GetFrameMin() const override { return static_cast<int>(mFrameMin); }
     int GetFrameMax() const override { return static_cast<int>(mFrameMax); }
@@ -82,7 +78,7 @@ struct NoteSequence : public ImSequencer::SequenceInterface {
     const char* GetItemTypeName(int typeIndex) const override { return constants::SEQUENCER_ITEM_TYPES[typeIndex].c_str(); }
     const char* GetItemLabel(int index) const override { return ""; }
 
-    void Get(int index, float** start, float** end, int* type, unsigned int* color, const char** displayText) override;
+    void Get(int index, double** start, double** end, int* type, unsigned int* color, const char** displayText) override;
     size_t GetCustomHeight(int index) override { return 30; }
 };
 
