@@ -3,9 +3,9 @@
 #include "config/constants.hpp"
 #include "config/utils.hpp"
 #include "ui/preferences.hpp"
+#include "ui/windowsizes.hpp"
 
-
-
+#include "IconsFontAwesome6.h"
 #include "ImGuiFileDialog.h"
 
 void EditWindowManager::initLastDirPaths() {
@@ -14,9 +14,9 @@ void EditWindowManager::initLastDirPaths() {
     lastChartSaveDir = Preferences::Instance().getSaveDir();
 }
 
-void EditWindowManager::startOpenChart() {
+void EditWindowManager::startOpenChart() const {
     if(!ImGuiFileDialog::Instance()->IsOpened()) {
-        ImGuiFileDialog::Instance()->OpenModal("openChart", "Open chart", constants::saveFileFilter, lastChartOpenDir, "");
+        ImGuiFileDialog::Instance()->OpenModal("openChart", "Open chart", constants::saveFileFilter.c_str(), lastChartOpenDir, "");
     }
 }
 
@@ -24,7 +24,7 @@ std::string EditWindowManager::loadEditWindow(SDL_Renderer * renderer, AudioSyst
     fs::path chartDir = chartPath.parent_path();
 
     // try to load songinfo, chart info
-    fs::path songinfoPath = chartDir / fs::path(constants::SONGINFO_FILENAME);
+    fs::path songinfoPath { chartDir / fs::path(constants::SONGINFO_FILENAME) };
     if(!fs::exists(songinfoPath)) {
         return "No songinfo.json found";
     }
@@ -38,7 +38,7 @@ std::string EditWindowManager::loadEditWindow(SDL_Renderer * renderer, AudioSyst
         return "Invalid json";
     }
 
-    int musicSourceIdx = audioSystem->loadMusic(songinfo.musicFilepath);
+    int musicSourceIdx { audioSystem->loadMusic(songinfo.musicFilepath) };
 
     if(musicSourceIdx == -1) {
         popupFailedToLoadMusic = true;
@@ -51,26 +51,16 @@ std::string EditWindowManager::loadEditWindow(SDL_Renderer * renderer, AudioSyst
         return "Failed to open chart";
     }
 
-    auto newWindowData = getNextWindowNameAndID();
-    auto windowID = newWindowData.second;
-    std::string windowName = chartinfo.savePath.filename().string() +  " (" + songinfo.getSongID() + ")";
+    auto [_, windowID] { getNextWindowNameAndID() };
+    std::string windowName { chartinfo.savePath.filename().string() +  " (" + songinfo.getSongID() + ")" };
+    auto artTexture { Texture::loadTexture(songinfo.coverartFilepath, renderer) };
 
-    auto artTexture = Texture::loadTexture(songinfo.coverartFilepath, renderer);
+    EditWindow newWindow { true, windowID, musicSourceIdx, windowName, artTexture, chartinfo, songinfo };
 
-    EditWindow newWindow = EditWindow(true, windowID, musicSourceIdx, windowName, artTexture, chartinfo, songinfo);
     newWindow.unsaved = false;
     newWindow.songpos = songpos;
     newWindow.initialSaved = true;
-
-    strcpy(newWindow.UItitle, UItitle);
-    strcpy(newWindow.UIartist, UIartist);
-    strcpy(newWindow.UIgenre, UIgenre);
-    strcpy(newWindow.UIbpmtext, UIbpmtext);
-
-    strcpy(newWindow.UItypist, chartinfo.typist.c_str());
-    newWindow.UIlevel = chartinfo.level;
-    newWindow.UIkeyboardLayout = KEYBOARDLAYOUT_TO_ID.at(chartinfo.keyboardLayout);
-    newWindow.UIdifficulty = DIFFICULTY_TO_ID.at(chartinfo.difficulty);
+    newWindow.resetInfoDisplay = true;
 
     editWindows.push_back(newWindow);
 
@@ -78,15 +68,14 @@ std::string EditWindowManager::loadEditWindow(SDL_Renderer * renderer, AudioSyst
 }
 
 void EditWindowManager::showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem) {
-    bool popupFromOpenChart = false;
+    bool popupFromOpenChart { false };
 
     if(ImGuiFileDialog::Instance()->Display("openChart", ImGuiWindowFlags_NoCollapse, constants::minFDSize, constants::maxFDSize)) {
-        if (ImGuiFileDialog::Instance()->IsOk()) {
+        if(ImGuiFileDialog::Instance()->IsOk()) {
             std::string chartPath = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string chartDir = ImGuiFileDialog::Instance()->GetCurrentPath();
 
-            auto popupID = loadEditWindow(renderer, audioSystem, fs::path(chartPath));
-            if(popupID.size() > 0) {
+            if(auto popupID = loadEditWindow(renderer, audioSystem, fs::path(chartPath)); popupID.size() > 0) {
                 ImGui::OpenPopup(popupID.c_str());
                 popupFromOpenChart = true;
             }
@@ -99,6 +88,13 @@ void EditWindowManager::showOpenChartWindow(SDL_Renderer * renderer, AudioSystem
         ImGuiFileDialog::Instance()->Close();
     }
 
+    showNoSonginfoFound(popupFromOpenChart);
+    showNoChartFound(popupFromOpenChart);
+    showFailedToOpenSongInfo(popupFromOpenChart);
+    showFailedToOpenChart(popupFromOpenChart);
+}
+
+void EditWindowManager::showNoSonginfoFound(bool popupFromOpenChart) const {
     if(ImGui::BeginPopupModal("No Songinfo found")) {
         ImGui::Text("No songinfo.json found in the selected chart's directory");
         ImGui::SameLine();
@@ -111,7 +107,9 @@ void EditWindowManager::showOpenChartWindow(SDL_Renderer * renderer, AudioSystem
 
         ImGui::EndPopup();
     }
+}
 
+void EditWindowManager::showNoChartFound(bool popupFromOpenChart) const {
     if(ImGui::BeginPopupModal("No Chart found")) {
         ImGui::Text("The selected chart file could not be located");
         ImGui::SameLine();
@@ -124,7 +122,9 @@ void EditWindowManager::showOpenChartWindow(SDL_Renderer * renderer, AudioSystem
 
         ImGui::EndPopup();
     }
+}
 
+void EditWindowManager::showFailedToOpenSongInfo(bool popupFromOpenChart) const {
     if(ImGui::BeginPopupModal("failedToOpenSonginfo")) {
         ImGui::Text("Failed to load selected songinfo.json file");
         ImGui::SameLine();
@@ -137,7 +137,9 @@ void EditWindowManager::showOpenChartWindow(SDL_Renderer * renderer, AudioSystem
 
         ImGui::EndPopup();
     }
+}
 
+void EditWindowManager::showFailedToOpenChart(bool popupFromOpenChart) const {
     if(ImGui::BeginPopupModal("Failed to open Chart")) {
         ImGui::Text("Failed to load selected chart file");
         ImGui::SameLine();
@@ -151,19 +153,6 @@ void EditWindowManager::showOpenChartWindow(SDL_Renderer * renderer, AudioSystem
         ImGui::EndPopup();
     }
 }
-
-static char UImusicFilename[128] = "";
-static char UIcoverArtFilename[128] = "";
-
-
-static std::string UImusicFilepath = "";
-static std::string UIcoverArtFilepath = "";
-
-static bool popupInvalidJSON = true;
-static bool popupFailedToLoadMusic = false;
-
-static float UImusicPreviewStart = 0;
-static float UImusicPreviewStop = 15;
 
 void EditWindowManager::startNewEditWindow() {
     if(!newEditStarted) {
@@ -187,13 +176,13 @@ void EditWindowManager::startNewEditWindow() {
 }
 
 void EditWindowManager::startSaveCurrentChart(bool saveAs) {
-    if(currentWindow >= 0 && currentWindow < editWindows.size()) {
+    if(static_cast<int>(currentWindow) >= 0 && currentWindow < editWindows.size()) {
         auto & editWindow = editWindows.at(currentWindow);
         if(saveAs || editWindow.unsaved) {
             // save vs save as
             if(saveAs || !editWindow.initialSaved) {
                 editWindow.initialSaved = false;
-                ImGuiFileDialog::Instance()->OpenModal("saveChart", "Save current chart", constants::saveFileFilter, Preferences::Instance().getSaveDir(),
+                ImGuiFileDialog::Instance()->OpenModal("saveChart", "Save current chart", constants::saveFileFilter.c_str(), Preferences::Instance().getSaveDir(),
                     "Untitled.type", 1, nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
             } else {
                 editWindow.saveCurrentChartFiles();
@@ -234,8 +223,8 @@ std::pair<std::string, int> EditWindowManager::getNextWindowNameAndID() {
 
         if(windowID > 0)
             windowName += std::to_string(windowID);
-    } else if(editWindows.size() > 0) {
-        windowID = editWindows.size();
+    } else if(!editWindows.empty()) {
+        windowID = static_cast<int>(editWindows.size());
         windowName += std::to_string(windowID);
     }
 
@@ -244,9 +233,9 @@ std::pair<std::string, int> EditWindowManager::getNextWindowNameAndID() {
 
 void EditWindowManager::createNewEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer) {
     // populate with current song, chart info
-    SongInfo songinfo = SongInfo(UItitle, UIartist, UIgenre, UIbpmtext, UImusicFilename, UIcoverArtFilename,
-        UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop);
-    ChartInfo chartinfo = ChartInfo(UIlevel, UItypist, ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout), ID_TO_DIFFICULTY.at(UIdifficulty));
+    SongInfo songinfo { UItitle, UIartist, UIgenre, UIbpmtext, UImusicFilename, UIcoverArtFilename,
+        UImusicFilepath, UIcoverArtFilepath, UImusicPreviewStart, UImusicPreviewStop };
+    ChartInfo chartinfo { UIlevel, UItypist, constants::ID_TO_KEYBOARDLAYOUT.at(UIkeyboardLayout), constants::ID_TO_DIFFICULTY.at(UIdifficulty) };
 
     // attempt to load music
     int musicSourceIdx = audioSystem->loadMusic(UImusicFilepath);
@@ -257,30 +246,18 @@ void EditWindowManager::createNewEditWindow(AudioSystem * audioSystem, SDL_Rende
     } else {
         popupFailedToLoadMusic = false;
 
-        auto newWindowData = getNextWindowNameAndID();
-        auto windowName = newWindowData.first;
-        auto windowID = newWindowData.second;
+        auto [windowName, windowID] { getNextWindowNameAndID() };
+        auto artTexture { Texture::loadTexture(UIcoverArtFilepath, renderer) };
 
-        auto artTexture = Texture::loadTexture(UIcoverArtFilepath, renderer);
-
-        EditWindow newWindow = EditWindow(true, windowID, musicSourceIdx, windowName, artTexture, chartinfo, songinfo);
-        strcpy(newWindow.UItitle, UItitle);
-        strcpy(newWindow.UIartist, UIartist);
-        strcpy(newWindow.UIgenre, UIgenre);
-        strcpy(newWindow.UIbpmtext, UIbpmtext);
-
-        strcpy(newWindow.UItypist, UItypist);
-        newWindow.UIlevel = UIlevel;
-        newWindow.UIkeyboardLayout = UIkeyboardLayout;
-        newWindow.UIdifficulty = UIdifficulty;
+        EditWindow newWindow { true, windowID, musicSourceIdx, windowName, artTexture, chartinfo, songinfo };
+        newWindow.resetInfoDisplay = true;
 
         // initial section from BPM
-        float initialBpm = ::atof(UIbpmtext);
-        BeatPos initialSectionStart = {0, 1, 0};
-        newWindow.songpos.timeinfo.push_back(Timeinfo(initialSectionStart, nullptr, 4, initialBpm, 0));
+        double initialBpm = ::atof(UIbpmtext);
+        BeatPos initialSectionStart { 0, 1, 0 };
+        newWindow.songpos.timeinfo.emplace_back(initialSectionStart, nullptr, 4, initialBpm, 0);
     
         editWindows.push_back(newWindow);
-
         newEditStarted = false;
     }
 }
@@ -347,18 +324,11 @@ void EditWindowManager::showEditWindows(AudioSystem * audioSystem, std::vector<b
         }
 
         ImGui::Begin(currWindow.name.c_str(), &(currWindow.open), windowFlags);
-
-        if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) ||
-            (ImGuiFileDialog::Instance()->IsOpened() && currWindow.focused)) {
-            currentWindow = i;
+        if(checkWindowFocus(i, currWindow)) {
             currWindowSize = ImGui::GetWindowSize();
-            currWindow.focused = true;
-        } else {
-            currWindow.focused = false;
         }
 
         currWindow.showContents(audioSystem, keysPressed);
-
         ImGui::End();
 
         bool closedCurrwindow = false;
@@ -372,6 +342,22 @@ void EditWindowManager::showEditWindows(AudioSystem * audioSystem, std::vector<b
         }
     }
 
+    showSaveChart(updatedName, sizeBeforeUpdate, currWindowSize);
+    checkUndoRedo();
+}
+
+bool EditWindowManager::checkWindowFocus(unsigned int i, EditWindow & currWindow) {
+    if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) || (ImGuiFileDialog::Instance()->IsOpened() && currWindow.focused)) {
+        currentWindow = i;
+        currWindow.focused = true;
+    } else {
+        currWindow.focused = false;
+    }
+
+    return currWindow.focused;
+}
+
+void EditWindowManager::showSaveChart(bool & updatedName, ImVec2 & sizeBeforeUpdate, ImVec2 & currWindowSize) {
     if(ImGuiFileDialog::Instance()->Display("saveChart", ImGuiWindowFlags_NoCollapse, constants::minFDSize, constants::maxFDSize)) {
         if(ImGuiFileDialog::Instance()->IsOk()) {
             std::string chartSavePath = ImGuiFileDialog::Instance()->GetFilePathName();
@@ -397,34 +383,22 @@ void EditWindowManager::showEditWindows(AudioSystem * audioSystem, std::vector<b
 
         ImGuiFileDialog::Instance()->Close();
     }
+}
 
+void EditWindowManager::checkUndoRedo() {
     if(activateUndo) {
-        if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).undoStack.empty()) {
+        if(currentWindow < editWindows.size()) {
             auto & currEditWindow = editWindows.at(currentWindow);
-
-            auto action = currEditWindow.undoStack.top();
-
-            action->undoAction(&currEditWindow);
-
-            currEditWindow.redoStack.push(action);
-            currEditWindow.undoStack.pop();
-
-            currEditWindow.unsaved = (int)currEditWindow.undoStack.size() != currEditWindow.lastSavedActionIndex;
+            currEditWindow.undoLastAction();
         }
 
         activateUndo = false;
     }
 
     if(activateRedo) {
-        if(currentWindow < editWindows.size() && !editWindows.at(currentWindow).redoStack.empty()) {
+        if(currentWindow < editWindows.size()) {
             auto & currEditWindow = editWindows.at(currentWindow);
-
-            auto action = currEditWindow.redoStack.top();
-            action->redoAction(&currEditWindow);
-
-            currEditWindow.undoStack.push(action);
-            currEditWindow.redoStack.pop();
-            currEditWindow.unsaved = true;
+            currEditWindow.redoLastAction();
         }
 
         activateRedo = false;
@@ -435,7 +409,7 @@ void EditWindowManager::showSongConfig() {
     // song config
     ImGui::Text(ICON_FA_CLIPBOARD " Song configuration");
     if(ImGui::Button("Load from existing...")) {
-        ImGuiFileDialog::Instance()->OpenModal("selectSonginfo", "Select songinfo.json", constants::songinfoFileFilter, lastChartOpenDir, "");
+        ImGuiFileDialog::Instance()->OpenModal("selectSonginfo", "Select songinfo.json", constants::songinfoFileFilter.c_str(), lastChartOpenDir, "");
     }
     
     ImGui::SameLine();
@@ -446,7 +420,16 @@ void EditWindowManager::showSongConfig() {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             std::string songinfoPath = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string songinfoDir = ImGuiFileDialog::Instance()->GetCurrentPath();
-            //loadSonginfo(songinfoPath, songinfoDir);
+
+            if(SongInfo songinfo; songinfo.loadSongInfo(songinfoPath, songinfoDir)) {
+                snprintf(UIartist, 64, "%s", songinfo.artist.c_str());
+                snprintf(UItitle, 64, "%s", songinfo.title.c_str());
+                snprintf(UIbpmtext, 16, "%s", songinfo.bpmtext.c_str());
+                snprintf(UImusicFilename, 64, "%s", songinfo.musicFilename.c_str());
+                UImusicFilepath = songinfo.musicFilepath;
+                UImusicPreviewStart = songinfo.musicPreviewStart;
+                UImusicPreviewStop = songinfo.musicPreviewStop;
+            }
 
             lastChartOpenDir = songinfoDir;
         }
@@ -457,7 +440,7 @@ void EditWindowManager::showSongConfig() {
     ImGui::InputText(ICON_FA_MUSIC " Music", UImusicFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##music")) {
-        ImGuiFileDialog::Instance()->OpenModal("selectMusicFile", "Select Music", constants::musicFileFilters, lastOpenResourceDir, "");
+        ImGuiFileDialog::Instance()->OpenModal("selectMusicFile", "Select Music", constants::musicFileFilters.c_str(), lastOpenResourceDir, "");
     }
 
     // music file dialog
@@ -477,7 +460,7 @@ void EditWindowManager::showSongConfig() {
     ImGui::InputText(ICON_FA_PHOTO_FILM " Art", UIcoverArtFilename, 128, ImGuiInputTextFlags_ReadOnly);
     ImGui::SameLine();
     if(ImGui::Button("Browse...##art")) {
-        ImGuiFileDialog::Instance()->OpenModal("selectArt", "Select Art", constants::imageFileFilters, lastOpenResourceDir, "");
+        ImGuiFileDialog::Instance()->OpenModal("selectArt", "Select Art", constants::imageFileFilters.c_str(), lastOpenResourceDir, "");
     }
 
     // art file dialog
@@ -516,19 +499,19 @@ void EditWindowManager::showChartConfig() {
 }
 
 void EditWindowManager::setCopy(bool copy) {
-    editWindows.at(currentWindow).setCopy(copy);
+    editWindows.at(currentWindow).timeline.activateCopy = copy;
 }
 
 void EditWindowManager::setPaste(bool paste) {
-    editWindows.at(currentWindow).setPaste(paste);
+    editWindows.at(currentWindow).timeline.activatePaste = paste;
 }
 
 void EditWindowManager::setCut(bool cut) {
-    editWindows.at(currentWindow).setCut(cut);
+    editWindows.at(currentWindow).timeline.activateCut = cut;
 }
 
 void EditWindowManager::setFlip(bool flip) {
-    editWindows.at(currentWindow).setFlip(flip);
+    editWindows.at(currentWindow).timeline.activateFlip = flip;
 }
 
 void EditWindowManager::setUndo(bool undo) {
