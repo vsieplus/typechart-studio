@@ -64,7 +64,7 @@ std::string showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem, Edi
     }
 
     if(ImGui::BeginMenu("Recent")) {
-        for(auto & recentPath : Preferences::Instance().getMostRecentFiles()) {
+        for(const auto & recentPath : Preferences::Instance().getMostRecentFiles()) {
             fs::path fsRecentPath(recentPath.c_str());
             auto labelName = fsRecentPath.parent_path().stem().string() + "/" + fsRecentPath.filename().string();
             if(ImGui::MenuItem(labelName.c_str())) {
