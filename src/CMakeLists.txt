@@ -15,12 +15,14 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/config/chartinfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/init.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/notesequenceitem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/notesequence.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/songinfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/songposition.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/timeinfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/utils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/texture.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/editwindow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui/editwindowmanager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/menubar.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/preferences.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/timeline.cpp
