@@ -69,7 +69,7 @@ mv src/${PRG_FILE} .
 if [[ "${BUILD_TYPE}" == "Release" ]]; then
     cd "${ROOT_DIR}"
 
-    VERSION=0.3.0 # this should match what is in the CMakeLists.txt file
+    VERSION=1.0.0 # this should match what is in the CMakeLists.txt file
     OUT_DIR="releases/${VERSION}/${BUILD_SYSTEM}"
 
     mkdir -p "${OUT_DIR}"

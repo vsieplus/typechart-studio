@@ -8,7 +8,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 endif()
 
-project(typechart-studio VERSION 0.3.0)
+project(typechart-studio VERSION 1.0.0)
 configure_file(src/versionfile.h.in versionconfig.h)
 
 message(STATUS "Project name: ${PROJECT_NAME}")
