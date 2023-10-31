@@ -614,19 +614,3 @@ int Timeline::getUndoStackSize() const {
 int Timeline::getRedoStackSize() const {
     return static_cast<int>(redoStack.size());
 }
-
-void Timeline::setCopy(bool copy) {
-    activateCopy = copy;
-}
-
-void Timeline::setPaste(bool paste) {
-    activatePaste = paste;
-}
-
-void Timeline::setCut(bool cut) {
-    activateCut = cut;
-}
-
-void Timeline::setFlip(bool flip) {
-    activateFlip = flip;
-}

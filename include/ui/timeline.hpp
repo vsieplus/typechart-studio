@@ -21,8 +21,7 @@ namespace utils {
     void updateAudioPosition(AudioSystem * audioSystem, const SongPosition & songpos, int musicSourceIdx);
 }
 
-class Timeline {
-public:
+struct Timeline {
     Timeline() = default;
 
     void showContents(int musicSourceIdx, bool focused, bool & unsaved, AudioSystem * audioSystem, ChartInfo & chartinfo, SongPosition & songpos, std::vector<bool> & keysPressed);
@@ -30,11 +29,6 @@ public:
     int getUndoStackSize() const;
     int getRedoStackSize() const;
 
-    void setCopy(bool copy);
-    void setPaste(bool paste);
-    void setCut(bool cut);
-    void setFlip(bool flip);
-private:
     void showBeatsplit();
     void showCurrentBeat(int musicSourceIdx, ChartInfo & chartinfo, SongPosition & songpos, AudioSystem * audioSystem);
     void showBeatpos(const SongPosition & songpos);
