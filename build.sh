@@ -33,19 +33,22 @@ if [[ "${BUILD_SYSTEM}" == "windows32" ]]; then
     PRG_FILE="${PRG_NAME}.exe"
 
     echo "Building for windows 32-bit"
-    cmake -DCMAKE_TOOLCHAIN_FILE=/home/ryan/Documents/dev/cmake/toolchain-mingw32-x86.cmake \
+    cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain-mingw32-i686.cmake \
           -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-            -S . -B "${BUILD_DIR}"
+          -S . -B "${BUILD_DIR}"
 elif [[ "${BUILD_SYSTEM}" == "windows64" ]]; then
     PRG_FILE="${PRG_NAME}.exe"
 
     echo "Building for windows 64-bit"
-    cmake -DCMAKE_TOOLCHAIN_FILE=/home/ryan/Documents/dev/cmake/toolchain-mingw32-x64.cmake \
+    cmake -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain-mingw32-x86_64.cmake \
           -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-            -S . -B "${BUILD_DIR}"
+          -S . -B "${BUILD_DIR}"
 elif [[ "${BUILD_SYSTEM}" == "mac" ]]; then
     PRG_FILE="${PRG_NAME}"
-    echo "Building for mac [not yet impelmented]"
+    echo "Building for macOS"
+
+    cmake -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
+          -S . -B "${BUILD_DIR}"
 elif [[ "${BUILD_SYSTEM}" == "linux" ]]; then
     PRG_FILE="${PRG_NAME}"
 
@@ -66,14 +69,15 @@ mv src/${PRG_FILE} .
 if [[ "${BUILD_TYPE}" == "Release" ]]; then
     cd "${ROOT_DIR}"
 
-    VERSION=0.3.0 # this should match what is in the CMakeLists.txt file
+    VERSION=1.0.0 # this should match what is in the CMakeLists.txt file
     OUT_DIR="releases/${VERSION}/${BUILD_SYSTEM}"
 
     mkdir -p "${OUT_DIR}"
     echo "Creating release under ${OUT_DIR}"
 
     # copy README
-    cp README.txt "${OUT_DIR}"
+    cp README.md "${OUT_DIR}"
+    cp CHANGELOG.md "${OUT_DIR}"
 
     # copy the executable and version config
     cp "${BUILD_DIR}/${PRG_FILE}" "${OUT_DIR}"
@@ -113,7 +117,7 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
         libs+=( "${winlibs[@]}" )
         libs+=( "libssp-0" "libwinpthread-1" )
     elif [[ "${BUILD_SYSTEM}" == "mac" ]]; then
-        LIB_DIR="/usr/local/lib"
+        LIB_DIR="/opt/homebrew/lib"
         LIB_EXT="dylib"
     fi
 

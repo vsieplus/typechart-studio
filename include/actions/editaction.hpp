@@ -1,17 +1,15 @@
 #ifndef EDITACTION_HPP
 #define EDITACTION_HPP
 
-class EditWindowData;
+class EditWindow;
 
 class EditAction {
-    public:
-        EditAction(bool & unsaved) : unsaved(unsaved), wasUnsaved(unsaved) {}
+public:
+    EditAction() = default;
+    virtual ~EditAction() = default;
 
-        virtual void undoAction(EditWindowData * editWindow);
-        virtual void redoAction(EditWindowData * editWindow) = 0;
-    private:
-        bool & unsaved;
-        bool wasUnsaved;
+    virtual void undoAction(EditWindow * editWindow) = 0;
+    virtual void redoAction(EditWindow * editWindow) = 0;
 };
 
 #endif // EDITACTION_HPP

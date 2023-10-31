@@ -41,8 +41,8 @@ void AudioSystem::initAudioSystem(SDL_Window * window) {
     alListener3f(AL_VELOCITY, 0, 0, 0);
 
     // listener look direction, up direction
-    ALfloat listenerOrientation[] = { 0.f, 0.f, -1.f, 0.f, 1.f, 0.f };
-    alListenerfv(AL_ORIENTATION, listenerOrientation);
+    std::array<ALfloat, 6> listenerOrientation { 0.f, 0.f, -1.f, 0.f, 1.f, 0.f };
+    alListenerfv(AL_ORIENTATION, &listenerOrientation[0]);
 
     // Setup default sound sources
     for(int i = 0; i < NUM_SOUND_SOURCES; i++) {
@@ -55,25 +55,24 @@ void AudioSystem::initAudioSystem(SDL_Window * window) {
     // Setup music sources
     for(int i = 0; i < NUM_MUSIC_SOURCES; i++) {
         alGenSources(1, &musicSources[i]);
-        alGenBuffers(NUM_BUFFERS, musicBuffers[i]);
+        alGenBuffers(NUM_BUFFERS, &musicBuffers[i][0]);
         initSoundSource(musicSources[i], 1.f, 1.f, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, false);
-
-        sndfiles[i] = nullptr;
-        membufs[i] = nullptr;
 
         stopMusicsEarly[i] = false;
         musicStops[i] = 0.f;
         lastBufferPositions[i] = 0.f;
+        sfInfos[i] = SF_INFO{};
 
-        memset(&sfInfos[i], 0, sizeof(SF_INFO));
+        musicSourcesActive.try_emplace(i, false);
+    }
 
-        musicSourcesActive.insert({ i, false });
+    for(int i = 0; i < NUM_MUSIC_SOURCES; i++) {
+        sndfiles[i] = nullptr;
+        membufs[i] = nullptr;
     }
 }
 
-void AudioSystem::initSoundSource(ALuint source, float pitch, float gain, std::array<float, 3> position,
-                                  std::array<float, 3> velocity, bool looping)
-{
+void AudioSystem::initSoundSource(ALuint source, float pitch, float gain, std::array<float, 3> position, std::array<float, 3> velocity, bool looping) const {
     alSourcef(source, AL_PITCH, pitch);
     alSourcef(source, AL_GAIN, gain);
     alSource3f(source, AL_POSITION, position[0], position[1], position[2]);
@@ -102,17 +101,17 @@ void AudioSystem::quitAudioSystem() {
         }
     }
     
-    alDeleteSources(NUM_SOUND_SOURCES, soundSources);
-    for(auto & [soundID, soundBuffer] : soundBufferIDs) {
+    alDeleteSources(NUM_SOUND_SOURCES, &soundSources[0]);
+    for(const auto & [soundID, soundBuffer] : soundBufferIDs) {
         if(soundBuffer && alIsBuffer(soundBuffer)) {
             alDeleteBuffers(1, &soundBuffer);
         }
     }
 
-    alDeleteSources(NUM_MUSIC_SOURCES, musicSources);
+    alDeleteSources(NUM_MUSIC_SOURCES, &musicSources[0]);
 
     for(int i = 0; i < NUM_MUSIC_SOURCES; i++)
-        alDeleteBuffers(NUM_BUFFERS, musicBuffers[i]);
+        alDeleteBuffers(NUM_BUFFERS, &musicBuffers[i][0]);
 
     if(!alcMakeContextCurrent(nullptr)) {
         printf("Failed to reset context to null");
@@ -129,7 +128,7 @@ void AudioSystem::quitAudioSystem() {
 }
 
 void AudioSystem::update(SDL_Window * window) {
-    for(auto & [sourceIdx, active] : musicSourcesActive) {
+    for(const auto & [sourceIdx, active] : musicSourcesActive) {
         if(active && isMusicPlaying(sourceIdx)) {
             updateBufferStream(window, sourceIdx);
 
@@ -141,9 +140,10 @@ void AudioSystem::update(SDL_Window * window) {
     }
 }
 
-bool AudioSystem::loadSound(std::string soundID, std::string path) {
+bool AudioSystem::loadSound(std::string_view soundID, const fs::path & path) {
     // adapted from https://github.com/kcat/openal-soft/blob/master/examples/alplay.c
-    ALenum err, format;
+    ALenum err;
+    ALenum format;
     ALuint buffer;
     SNDFILE * soundSndfile;
     SF_INFO soundSfinfo;
@@ -152,7 +152,7 @@ bool AudioSystem::loadSound(std::string soundID, std::string path) {
     ALsizei num_bytes;
 
     // Open the audio file and check that it's usable
-    soundSndfile = sf_open(path.c_str(), SFM_READ, &soundSfinfo);
+    soundSndfile = sf_open(path.string().c_str(), SFM_READ, &soundSfinfo);
     if(!soundSndfile) {
         return false;
     }
@@ -167,12 +167,14 @@ bool AudioSystem::loadSound(std::string soundID, std::string path) {
         format = AL_FORMAT_MONO16;
     } else if(soundSfinfo.channels == 2) {
         format = AL_FORMAT_STEREO16;
+#ifndef __APPLE__
     } else if(soundSfinfo.channels == 3) {
-        if(sf_command(soundSndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
+        if(sf_command(soundSndfile, SFC_WAVEX_GET_AMBISONIC, nullptr, 0) == SF_AMBISONIC_B_FORMAT)
             format = AL_FORMAT_BFORMAT2D_16;
     } else if(soundSfinfo.channels == 4) {
-        if(sf_command(soundSndfile, SFC_WAVEX_GET_AMBISONIC, NULL, 0) == SF_AMBISONIC_B_FORMAT)
+        if(sf_command(soundSndfile, SFC_WAVEX_GET_AMBISONIC, nullptr, 0) == SF_AMBISONIC_B_FORMAT)
             format = AL_FORMAT_BFORMAT3D_16;
+#endif
     }
 
     if(!format) {
@@ -212,7 +214,7 @@ bool AudioSystem::loadSound(std::string soundID, std::string path) {
     }
 
     if(soundBufferIDs.find(soundID) == soundBufferIDs.end()) {
-        soundBufferIDs.insert({ soundID, buffer });
+        soundBufferIDs.try_emplace(soundID, buffer);
     } else {
         alDeleteBuffers(1, &buffer);
     }
@@ -220,9 +222,9 @@ bool AudioSystem::loadSound(std::string soundID, std::string path) {
     return true;
 }
 
-int AudioSystem::loadMusic(std::string path) {
+int AudioSystem::loadMusic(const fs::path & path) {
     int nextIdx = -1;
-    for(auto & [sourceIdx, active] : musicSourcesActive) {
+    for(const auto & [sourceIdx, active] : musicSourcesActive) {
         if(!active) {
             nextIdx = sourceIdx;
             break;
@@ -235,8 +237,8 @@ int AudioSystem::loadMusic(std::string path) {
             sf_close(sndfiles[nextIdx]);
         }
 
-        memset(&sfInfos[nextIdx], 0, sizeof(SF_INFO));
-        sndfiles[nextIdx] = sf_open(path.c_str(), SFM_READ, &sfInfos[nextIdx]);
+        sfInfos[nextIdx] = SF_INFO{};
+        sndfiles[nextIdx] = sf_open(path.string().c_str(), SFM_READ, &sfInfos[nextIdx]);
         
         if(!sndfiles[nextIdx]) {
             return -1;
@@ -260,7 +262,7 @@ void AudioSystem::deactivateMusicSource(int sourceIdx) {
         sf_close(sndfiles[sourceIdx]);
         free(membufs[sourceIdx]);
 
-        memset(&sfInfos[sourceIdx], 0, sizeof(SF_INFO));
+        sfInfos[sourceIdx] = SF_INFO{};
 
         musicStops[sourceIdx] = 0.f;
         stopMusicsEarly[sourceIdx] = false;
@@ -271,28 +273,29 @@ void AudioSystem::deactivateMusicSource(int sourceIdx) {
     }
 }
 
-void AudioSystem::playSound(std::string soundID) {
-    if(soundBufferIDs.find(soundID) != soundBufferIDs.end()) {
-        auto bufferID = soundBufferIDs.at(soundID);
+void AudioSystem::playSound(std::string_view soundID) {
+    if(soundBufferIDs.find(soundID) == soundBufferIDs.end()) {
+        return;
+    }
 
-        if(!(bufferID && alIsBuffer(bufferID))) {
-            return;
-        }
+    auto bufferID = soundBufferIDs.at(soundID);
+    if(!(bufferID && alIsBuffer(bufferID))) {
+        return;
+    }
 
-        // find the next available sound buffer, and set it
-        for(int i = 0; i < NUM_SOUND_SOURCES; i++) {
-            ALint state;
-            alGetSourcei(soundSources[i], AL_SOURCE_STATE, &state);
+    // find the next available sound buffer, and set it
+    for(int i = 0; i < NUM_SOUND_SOURCES; i++) {
+        ALint state;
+        alGetSourcei(soundSources[i], AL_SOURCE_STATE, &state);
 
-            if(state != AL_PLAYING) {
-                if(bufferID != soundBuffers[i]) {
-                    soundBuffers[i] = bufferID;
-                    alSourcei(soundSources[i], AL_BUFFER, (ALint) soundBuffers[i]);
-                }
-
-                alSourcePlay(soundSources[i]);
-                return;
+        if(state != AL_PLAYING) {
+            if(bufferID != soundBuffers[i]) {
+                soundBuffers[i] = bufferID;
+                alSourcei(soundSources[i], AL_BUFFER, (ALint) soundBuffers[i]);
             }
+
+            alSourcePlay(soundSources[i]);
+            return;
         }
     }
 }
@@ -312,7 +315,7 @@ void AudioSystem::setMusicPosition(int sourceIdx, float position) {
     alSourceRewind(musicSources[sourceIdx]);
     alSourcei(musicSources[sourceIdx], AL_BUFFER, 0);
 
-    sf_count_t numFramesToSeek = (sf_count_t)((position / getMusicLength(sourceIdx)) * sfInfos[sourceIdx].frames);
+    auto numFramesToSeek = (sf_count_t)((position / getMusicLength(sourceIdx)) * sfInfos[sourceIdx].frames);
     sf_seek(sndfiles[sourceIdx], numFramesToSeek, SEEK_SET);
 
     lastBufferPositions[sourceIdx] = position;
@@ -326,23 +329,34 @@ void AudioSystem::setMusicPosition(int sourceIdx, float position) {
         alBufferData(musicBuffers[sourceIdx][b], musicFormat, membufs[sourceIdx], (ALsizei)sndLen, sfInfos[sourceIdx].samplerate);
     }
 
-    alSourceQueueBuffers(musicSources[sourceIdx], b, musicBuffers[sourceIdx]);
+    alSourceQueueBuffers(musicSources[sourceIdx], b, &musicBuffers[sourceIdx][0]);
     
     alSourcePlay(musicSources[sourceIdx]);
     alSourcePause(musicSources[sourceIdx]);
 }
 
-float AudioSystem::getMusicLength(int sourceIdx) {
-    return sourceIdx < NUM_MUSIC_SOURCES ? (float) sfInfos[sourceIdx].frames / (float) sfInfos[sourceIdx].samplerate : 0.f;
+float AudioSystem::getMusicLength(int sourceIdx) const {
+    return sourceIdx < NUM_MUSIC_SOURCES ? static_cast<float>(sfInfos[sourceIdx].frames) / static_cast<float>(sfInfos[sourceIdx].samplerate) : 0.0;
 }
 
-void AudioSystem::resumeMusic(int sourceIdx) {
+float AudioSystem::getSongPosition(int sourceIdx) const {
+    if(sourceIdx < NUM_MUSIC_SOURCES)
+        return 0.f;
+
+    // calculate position from the current buffer
+    float songPosSec;
+    alGetSourcef(musicSources[sourceIdx], AL_SEC_OFFSET, &songPosSec);
+
+    return lastBufferPositions[sourceIdx] + songPosSec;
+}
+
+void AudioSystem::resumeMusic(int sourceIdx) const {
     if(isMusicPaused(sourceIdx)) {
         alSourcePlay(musicSources[sourceIdx]);
     }
 }
 
-void AudioSystem::pauseMusic(int sourceIdx) {
+void AudioSystem::pauseMusic(int sourceIdx) const {
     if(isMusicPlaying(sourceIdx)) {
         alSourcePause(musicSources[sourceIdx]);
     }
@@ -379,54 +393,54 @@ void AudioSystem::updateBufferStream(SDL_Window * window, int sourceIdx) {
     if(!(sourceIdx < NUM_MUSIC_SOURCES))
         return;
 
-    ALint processed, state;
+    ALint processed;
+    ALint state;
 
-	/* Get source info */
-	alGetSourcei(musicSources[sourceIdx], AL_SOURCE_STATE, &state);
-	alGetSourcei(musicSources[sourceIdx], AL_BUFFERS_PROCESSED, &processed);
+    /* Get source info */
+    alGetSourcei(musicSources[sourceIdx], AL_SOURCE_STATE, &state);
+    alGetSourcei(musicSources[sourceIdx], AL_BUFFERS_PROCESSED, &processed);
 
-	/* Unqueue and handle each processed buffer */
-	while(processed > 0) {
-		ALuint bufid;
-		sf_count_t slen;
+    /* Unqueue and handle each processed buffer */
+    while(processed > 0) {
+    ALuint bufid;
+    sf_count_t slen;
 
-		alSourceUnqueueBuffers(musicSources[sourceIdx], 1, &bufid);
-		processed--;
+        alSourceUnqueueBuffers(musicSources[sourceIdx], 1, &bufid);
+        processed--;
 
         lastBufferPositions[sourceIdx] += getBufferLength(bufid);
-        //printf("Unqueued buffer(s), lastBufferPosition: %.4f\n", lastBufferPosition);
 
-		/* Read the next chunk of data, refill the buffer, and queue it
-		 * back on the source */
-		slen = sf_readf_float(sndfiles[sourceIdx], membufs[sourceIdx], BUFFER_FRAMES);
-		if(slen > 0) {
-			slen *= sfInfos[sourceIdx].channels * (sf_count_t)sizeof(float);
-			alBufferData(bufid, musicFormat, membufs[sourceIdx], (ALsizei)slen, sfInfos[sourceIdx].samplerate);
-			alSourceQueueBuffers(musicSources[sourceIdx], 1, &bufid);
+        /* Read the next chunk of data, refill the buffer, and queue it
+         * back on the source */
+        slen = sf_readf_float(sndfiles[sourceIdx], membufs[sourceIdx], BUFFER_FRAMES);
+        if(slen > 0) {
+            slen *= sfInfos[sourceIdx].channels * (sf_count_t)sizeof(float);
+            alBufferData(bufid, musicFormat, membufs[sourceIdx], (ALsizei)slen, sfInfos[sourceIdx].samplerate);
+            alSourceQueueBuffers(musicSources[sourceIdx], 1, &bufid);
+        }
 
-            //printf("slen: %.4ld\n", slen);
-		}
-
-		if(alGetError() != AL_NO_ERROR) {
+        if(alGetError() != AL_NO_ERROR) {
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Music playback error", "Error buffering music data", window);
-		}
-	}
+        }
+    }
 
-	/* Make sure the source hasn't underrun */
-	if(state != AL_PLAYING && state != AL_PAUSED) {
-		ALint queued;
+    /* Make sure the source hasn't underrun */
+    if(state != AL_PLAYING && state != AL_PAUSED) {
+        ALint queued;
 
-		/* If no buffers are queued, playback is finished */
-		alGetSourcei(musicSources[sourceIdx], AL_BUFFERS_QUEUED, &queued);
-		if (queued == 0)
-			return;
+        /* If no buffers are queued, playback is finished */
+        alGetSourcei(musicSources[sourceIdx], AL_BUFFERS_QUEUED, &queued);
+        if (queued == 0)
+            return;
 
-		alSourcePlay(musicSources[sourceIdx]);
-	}
+        alSourcePlay(musicSources[sourceIdx]);
+    }
 }
 
 float AudioSystem::getBufferLength(ALuint bufid) const {
-    ALint bytesize, channels, bits;
+    ALint bytesize;
+    ALint channels;
+    ALint bits;
 
     alGetBufferi(bufid, AL_SIZE, &bytesize);
     alGetBufferi(bufid, AL_CHANNELS, &channels);
@@ -440,17 +454,6 @@ float AudioSystem::getBufferLength(ALuint bufid) const {
     float secLength = (float) sampleLength / (float) frequency;
 
     return secLength;
-}
-
-float AudioSystem::getSongPosition(int sourceIdx) {
-    if(sourceIdx < NUM_MUSIC_SOURCES)
-        return 0.f;
-
-    // calculate position from the current buffer
-    float songPosSec;
-    alGetSourcef(musicSources[sourceIdx], AL_SEC_OFFSET, &songPosSec);
-
-    return lastBufferPositions[sourceIdx] + songPosSec;
 }
 
 void AudioSystem::setStopMusicEarly(int sourceIdx, bool stopMusicEarly) {

@@ -1,6 +1,9 @@
 #include "config/beatpos.hpp"
+#include "config/timeinfo.hpp"
 
 #include <numeric>
+
+BeatPos::BeatPos(int measure, int measureSplit, int split) : measure(measure), measureSplit(measureSplit), split(split) {}
 
 BeatPos operator+(const BeatPos & lhs, const BeatPos & rhs) {
     // make sure lhs / rhs measuresplit have the same denominator
@@ -68,5 +71,5 @@ bool operator!=(const BeatPos & lhs, const BeatPos & rhs) {
 
 bool operator<(const BeatPos & lhs, const BeatPos & rhs) {
     return (lhs.measure < rhs.measure) ||
-           ((lhs.measure == rhs.measure) && ((float)lhs.split / lhs.measureSplit < (float)rhs.split / rhs.measureSplit));
+           ((lhs.measure == rhs.measure) && ((double)lhs.split / lhs.measureSplit < (double)rhs.split / rhs.measureSplit));
 }

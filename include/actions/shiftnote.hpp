@@ -9,36 +9,9 @@
 #include "actions/editaction.hpp"
 #include "config/notesequenceitem.hpp"
 
-const std::unordered_map<std::string, std::vector<std::vector<std::string>>> KEYBOARD_LAYOUTS = {
-    { "QWERTY", {
-        { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" },
-        { "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P" },
-        { "A", "S", "D", "F", "G", "H", "J", "K", "L", ";" },
-        { "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/" },
-    }},
-    { "DVORAK", {
-        { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" },
-        { "'", ",", ".", "P", "Y", "F", "G", "C", "R", "L" },
-        { "A", "O", "E", "U", "I", "D", "H", "T", "N", "S" },
-        { ";", "Q", "J", "K", "X", "B", "M", "W", "V", "Z" },
-    }},
-    { "COLEMAK", {
-        { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" },
-        { "Q", "W", "F", "P", "G", "J", "L", "U", "Y", ";" },
-        { "A", "R", "S", "T", "D", "H", "N", "E", "I", "O" },
-        { "Z", "X", "C", "V", "B", "K", "M", ",", ".", "/" },
-    }},
-    { "AZERTY", {
-        { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" },
-        { "A", "Z", "E", "R", "T", "Y", "U", "I", "O", "P" },
-        { "Q", "S", "D", "F", "G", "H", "J", "K", "L", "M" },
-        { "W", "X", "C", "V", "B", "N", ",", ";", ":", "!" },
-    }}
-};
-
 class ShiftNoteAction : public EditAction {
     public:
-        enum ShiftDirection {
+        enum class ShiftDirection {
             ShiftUp,
             ShiftDown,
             ShiftLeft,
@@ -46,13 +19,16 @@ class ShiftNoteAction : public EditAction {
             ShiftNone
         };
 
-        ShiftNoteAction(bool unsaved, int minItemType, int maxItemType, float startBeat, float endBeat, std::string keyboardLayout,
-            ShiftDirection shiftDirection, std::list<std::shared_ptr<NoteSequenceItem>> items);
-        virtual void undoAction(EditWindowData * editWindow) override;
-        virtual void redoAction(EditWindowData * editWindow) override;
+        ShiftNoteAction(int minItemType, int maxItemType, double startBeat, double endBeat, std::string_view keyboardLayout,
+            ShiftDirection shiftDirection, const std::list<std::shared_ptr<NoteSequenceItem>> & items);
+
+        void undoAction(EditWindow * editWindow) override;
+        void redoAction(EditWindow * editWindow) override;
     private:
-        int minItemType, maxItemType;
-        float startBeat, endBeat;
+        int minItemType;
+        int maxItemType;
+        double startBeat;
+        double endBeat;
 
         std::string keyboardLayout;
 
@@ -60,7 +36,7 @@ class ShiftNoteAction : public EditAction {
 
         std::list<std::shared_ptr<NoteSequenceItem>> items;
 
-        void reconcileDeletedItems(EditWindowData * editWindow);
+        void reconcileDeletedItems(const EditWindow * editWindow);
 };
 
 #endif // SHIFTNOTE_HPP

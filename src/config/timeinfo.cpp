@@ -1,28 +1,32 @@
 #include "config/timeinfo.hpp"
 
-Timeinfo::Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure, float bpm, float interpolateBeatDuration) :
-        beatpos(beatpos), beatsPerMeasure(beatsPerMeasure), bpm(bpm), absBeatStart(calculateBeatStart(prevTimeinfo)),
-        absTimeStart(calculateTimeStart(prevTimeinfo)), interpolateBeatDuration(interpolateBeatDuration) {}
+Timeinfo::Timeinfo(BeatPos beatpos, const Timeinfo * prevTimeinfo, int beatsPerMeasure, double bpm, double interpolateBeatDuration)
+    : beatpos(beatpos)
+    , beatsPerMeasure(beatsPerMeasure)
+    , bpm(bpm)
+    , absBeatStart(calculateBeatStart(prevTimeinfo))
+    , absTimeStart(calculateTimeStart(prevTimeinfo))
+    , interpolateBeatDuration(interpolateBeatDuration) {}
 
-float Timeinfo::calculateBeatStart(Timeinfo * prevTimeinfo) {
-    auto absMeasure = beatpos.measure + (beatpos.split / (float)beatpos.measureSplit);
+double Timeinfo::calculateBeatStart(const Timeinfo * prevTimeinfo) const {
+    auto absMeasure = beatpos.measure + (beatpos.split / (double)beatpos.measureSplit);
 
     if(!prevTimeinfo) {
         return absMeasure * beatsPerMeasure;
     } else {
-        auto prevAbsMeasure = prevTimeinfo->beatpos.measure + ((float)prevTimeinfo->beatpos.split / prevTimeinfo->beatpos.measureSplit);
+        auto prevAbsMeasure = prevTimeinfo->beatpos.measure + ((double)prevTimeinfo->beatpos.split / prevTimeinfo->beatpos.measureSplit);
         auto absMeasureDiff = absMeasure - prevAbsMeasure;
 
         return prevTimeinfo->absBeatStart + (absMeasureDiff * prevTimeinfo->beatsPerMeasure);
     }
 }
 
-float Timeinfo::calculateTimeStart(Timeinfo * prevTimeinfo) {
+double Timeinfo::calculateTimeStart(const Timeinfo * prevTimeinfo) const {
     if(!prevTimeinfo) {
-        return 0.f;
+        return 0.0;
     } else {
         auto prevSectionBeatLength = absBeatStart - prevTimeinfo->absBeatStart;
-        return prevTimeinfo->absTimeStart + prevSectionBeatLength * (60.f / prevTimeinfo->bpm); 
+        return prevTimeinfo->absTimeStart + prevSectionBeatLength * (60.0 / prevTimeinfo->bpm); 
     }
 }
 

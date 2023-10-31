@@ -1,100 +1,80 @@
 #ifndef EDITWINDOW_HPP
 #define EDITWINDOW_HPP
 
+#include <filesystem>
 #include <memory>
-#include <queue>
 #include <stack>
 #include <string>
+#include <string_view>
 #include <vector>
 
-#include <filesystem>
-namespace fs = std::filesystem;
-
-#include "actions/editaction.hpp"
 #include "config/chartinfo.hpp"
 #include "config/songinfo.hpp"
 #include "config/songposition.hpp"
 #include "resources/texture.hpp"
+#include "ui/timeline.hpp"
+
+namespace fs = std::filesystem;
 
 class AudioSystem;
 
-struct EditWindowData {
-    EditWindowData(bool open, int ID, int musicSourceIdx, std::string name, std::shared_ptr<SDL_Texture> artTexture, ChartInfo chartinfo, SongInfo songinfo) : 
-        open(open), ID(ID), musicSourceIdx(musicSourceIdx), name(name), artTexture(artTexture), chartinfo(chartinfo), songinfo(songinfo), 
-        currTopNotes(chartinfo.notes.keyFreqsSorted.size()) {
-    }
+struct EditWindow {
+    EditWindow(bool open, int ID, int musicSourceIdx, std::string_view name, std::shared_ptr<SDL_Texture> artTexture,
+        const ChartInfo & chartinfo, const SongInfo & songinfo);
 
-    bool open;
-    bool unsaved = true;
-    bool initialSaved = false;
-    bool focused = false;
-    bool newSection = false;
-    bool newSectionEdit = false;
+    bool open { true };
+    bool unsaved { true };
+    bool initialSaved { false };
+    bool focused { false };
+    bool resetInfoDisplay { false };
 
-    bool editingUItitle = false;
-    bool editingUIartist = false;
-    bool editingUIgenre = false;
-    bool editingUIbpmtext = false;
-    bool editingUItypist = false;
-    bool editingSomething = false;
+    bool editingSomething { false };
 
-    int ID;
-    int musicSourceIdx;
-    int lastSavedActionIndex = 0;
-
-    int UIlevel = 1;
-    int UIkeyboardLayout = 0;
-    int UIdifficulty = 0;
-
-    char UItitle[64] = "";
-    char UIartist[64] = "";
-    char UIgenre[64] = "";
-    char UIbpmtext[16] = "";
-    char UItypist[64] = "";
+    int ID { 0 };
+    int musicSourceIdx { 0 };
+    int lastSavedActionIndex { 0 };
+    int currTopNotes { 0 };
 
     std::string name;
 
     std::shared_ptr<SDL_Texture> artTexture;
 
-    std::stack<std::shared_ptr<EditAction>> editActionsUndo;
-    std::stack<std::shared_ptr<EditAction>> editActionsRedo;
-
-    SongPosition songpos;
-
     ChartInfo chartinfo;
     SongInfo songinfo;
+    SongPosition songpos;
 
-    int currTopNotes;
+    Timeline timeline;
 
-    void showEditWindowMetadata();
+    void saveCurrentChartFiles();
+    void saveCurrentChartFiles(std::string_view chartSaveFilename, const fs::path & chartSavePath, const fs::path & saveDir);
+
+    void undoLastAction();
+    void redoLastAction();
+
+    void showContents(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
+
+    void showMetadata();
+    bool showSongConfig();
+    bool showChartConfig();
+
+    void showChartData(AudioSystem * audioSystem);
+
+    void showChartSections(AudioSystem * audioSystem);
+    bool showAddSection() const;
+    bool showEditSection() const;
+    void showRemoveSection();
+    void showSectionDataWindow(bool & newSection, bool newSectionEdit, bool initSectionData);
+    void showChartSectionList(AudioSystem * audioSystem);
+
+    void showChartStatistics();
+
+    void showToolbar(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
+    void showMusicPosition(float musicLengthSecs) const;
+    void showMusicControls(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
+    void showMusicPreview(AudioSystem * audioSystem, float musicLengthSecs);
+    void showMusicPreviewSliders(float musicLengthSecs);
+    void showMusicPreviewButton(AudioSystem * audioSystem);
+    void showMusicOffset();
 };
-
-static std::queue<int> availableWindowIDs;
-static std::vector<EditWindowData> editWindows;
-
-static std::string lastOpenResourceDir;
-static std::string lastChartOpenDir;
-static std::string lastChartSaveDir;
-
-void setCopy();
-void setPaste();
-void setCut();
-void setUndo();
-void setRedo();
-void setFlip();
-
-void initLastDirPaths();
-
-void startOpenChart();
-std::string loadEditWindow(SDL_Renderer * renderer, AudioSystem * audioSystem, fs::path chartPath);
-void showOpenChartWindow(SDL_Renderer * renderer, AudioSystem * audioSystem);
-
-void startNewEditWindow();
-void startSaveCurrentChart(bool saveAs = false);
-
-BeatPos calculateBeatpos(float absBeat, int currentBeatsplit, const std::vector<Timeinfo> & timeinfo);
-
-void showInitEditWindow(AudioSystem * audioSystem, SDL_Renderer * renderer);
-void showEditWindows(AudioSystem * audioSystem, std::vector<bool> & keysPressed);
 
 #endif // EDITWINDOW_HPP

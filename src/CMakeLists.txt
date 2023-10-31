@@ -1,7 +1,6 @@
 add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/editor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/actions/editaction.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/deleteitems.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/deletenote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/editnote.cpp
@@ -14,13 +13,18 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/actions/shiftnote.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/beatpos.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/chartinfo.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/init.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/notesequenceitem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/notesequence.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/songinfo.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/songposition.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/config/timeinfo.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/config/utils.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/resources/texture.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/editwindow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui/editwindowmanager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/menubar.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui/preferences.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ui/timeline.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/systems/audiosystem.cpp
 )

@@ -1,19 +1,22 @@
 #ifndef EDITNOTE_HPP
 #define EDITNOTE_HPP
 
+#include <string>
+#include <string_view>
+
 #include "actions/editaction.hpp"
 #include "config/notesequence.hpp"
 
 class EditNoteAction : public EditAction {
     public:
-        EditNoteAction(bool unsaved, float absBeat, SequencerItemType itemType, std::string oldDisplayText, std::string newDisplayText);
+        EditNoteAction(double absBeat, NoteSequenceItem::SequencerItemType itemType, std::string_view oldDisplayText, std::string_view newDisplayText);
 
-        virtual void undoAction(EditWindowData * editWindow) override;
-        virtual void redoAction(EditWindowData * editWindow) override;
+        void undoAction(EditWindow * editWindow) override;
+        void redoAction(EditWindow * editWindow) override;
 
     private:
-        float absBeat;
-        SequencerItemType itemType;
+        double absBeat;
+        NoteSequenceItem::SequencerItemType itemType;
 
         std::string oldDisplayText;
         std::string newDisplayText;

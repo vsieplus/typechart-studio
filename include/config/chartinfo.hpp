@@ -1,33 +1,60 @@
 #ifndef CHARTINFO_HPP
 #define CHARTINFO_HPP
 
-#include <string>
-
 #include <filesystem>
-namespace fs = std::filesystem;
+#include <string>
+#include <string_view>
+
+#include <json.hpp>
 
 #include "config/note.hpp"
 #include "config/notesequence.hpp"
+#include "config/notesequenceitem.hpp"
 #include "config/stop.hpp"
 #include "config/skip.hpp"
+
+using json = nlohmann::json;
+using ordered_json = nlohmann::ordered_json;
+namespace fs = std::filesystem;
 
 class SongPosition;
 
 struct ChartInfo {
-    ChartInfo();
-    ChartInfo(int level, std::string typist, std::string keyboardLayout, std::string difficulty);
+    ChartInfo() = default;
+    ChartInfo(int level, std::string_view typist, std::string_view keyboardLayout, std::string_view difficulty);
 
-    bool loadChart(fs::path chartPath, SongPosition & songpos);
-    void saveChart(fs::path chartPath, SongPosition & songpos);
+    // load chart data from the given path
+    bool loadChart(const fs::path & chartPath, SongPosition & songpos);
 
-    int level;
+    // load chart metadata from the given json
+    void loadChartMetadata(ordered_json chartinfoJSON, SongPosition & songpos);
 
-    std::string typist;
-    std::string keyboardLayout;
+    // load chart data
+    void loadChartTimeInfo(ordered_json chartinfoJSON, SongPosition & songpos) const;
+    void loadChartStops(ordered_json chartinfoJSON, SongPosition & songpos);
+    void loadChartSkips(ordered_json chartinfoJSON, SongPosition & songpos);
+    void loadChartNotes(ordered_json chartinfoJSON, SongPosition & songpos);
 
-    std::string difficulty;
+    BeatPos findMatchingReleaseNote(std::string_view keyText, std::vector<ordered_json>::iterator iter, std::vector<ordered_json> notesJSON) const;
+    NoteSequenceItem::SequencerItemType determineItemType(const std::string & keyText) const;
 
-    fs::path savePath = "";
+    // save chart data to the given path
+    void saveChart(const fs::path & chartPath, SongPosition & songpos);
+
+    // save chart metadata
+    ordered_json saveChartMetadata() const;
+
+    // save chart data
+    ordered_json saveChartTimeInfo(SongPosition & songpos) const;
+
+    int level { 0 };
+    int offsetMS { 0 };
+
+    std::string typist {};
+    std::string keyboardLayout {};
+    std::string difficulty {};
+
+    fs::path savePath {};
 
     NoteSequence notes;
 };

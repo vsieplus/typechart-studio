@@ -3,25 +3,28 @@
 
 #include "config/beatpos.hpp"
 
-struct Timeinfo {
-    Timeinfo(BeatPos beatpos, Timeinfo * prevTimeinfo, int beatsPerMeasure, float bpm, float interpolateBeatDuration);
+namespace constants {
+    const int DEFAULT_BEATS_PER_MEASURE = 4;
+}
 
-    float calculateBeatStart(Timeinfo * prevTimeinfo);
-    float calculateTimeStart(Timeinfo * prevTimeinfo);
+struct Timeinfo {
+    Timeinfo() = default;
+    Timeinfo(BeatPos beatpos, const Timeinfo * prevTimeinfo, int beatsPerMeasure, double bpm, double interpolateBeatDuration);
+
+    double calculateBeatStart(const Timeinfo * prevTimeinfo) const;
+    double calculateTimeStart(const Timeinfo * prevTimeinfo) const;
 
     BeatPos beatpos;
-    int beatsPerMeasure;
 
-    float bpm;
+    int beatsPerMeasure { constants::DEFAULT_BEATS_PER_MEASURE };
 
-    float absBeatStart;
-    float absTimeStart;
+    double bpm { 100.0 };
 
-    float interpolateBeatDuration;
+    double absBeatStart { 0.0 };
+    double absTimeStart { 0.0 };
+    double interpolateBeatDuration { 0.0 };
 };
 
-
 bool operator<(const Timeinfo & lhs, const Timeinfo & rhs);
-
 
 #endif // TIMEINFO_HPP

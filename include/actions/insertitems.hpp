@@ -8,17 +8,17 @@
 
 class InsertItemsAction : public EditAction {
     public:
-        InsertItemsAction(bool unsaved, int itemTypeStart, int itemTypeEnd, float startBeat,
-            std::list<std::shared_ptr<NoteSequenceItem>> & itemsInserted,
-            std::list<std::shared_ptr<NoteSequenceItem>> & itemsDeleted);
+        InsertItemsAction(int itemTypeStart, int itemTypeEnd, double startBeat,
+            const std::list<std::shared_ptr<NoteSequenceItem>> & itemsInserted,
+            const std::list<std::shared_ptr<NoteSequenceItem>> & itemsDeleted);
 
-        virtual void undoAction(EditWindowData * editWindow) override;
-        virtual void redoAction(EditWindowData * editWindow) override;
+        void undoAction(EditWindow * editWindow) override;
+        void redoAction(EditWindow * editWindow) override;
     private:
         int itemTypeStart;
         int itemTypeEnd;
 
-        float startBeat;
+        double startBeat;
 
         std::list<std::shared_ptr<NoteSequenceItem>> itemsInserted;
         std::list<std::shared_ptr<NoteSequenceItem>> itemsDeleted;

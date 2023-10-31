@@ -56,7 +56,7 @@ namespace ImSequencer
       virtual const char* GetItemLabel(int /*index*/) const { return ""; }
       virtual const char* GetCollapseFmt() const { return "%d Frames / %d entries"; }
 
-      virtual void Get(int index, float** start, float** end, int* type, unsigned int* color, const char ** displayText) = 0;
+      virtual void Get(int index, double** start, double** end, int* type, unsigned int* color, const char ** displayText) = 0;
       virtual void Add(int /*type*/) {}
       virtual void Del(int /*index*/) {}
       virtual void Duplicate(int /*index*/) {}
@@ -72,8 +72,8 @@ namespace ImSequencer
 
 
    // return true if selection is made
-   bool Sequencer(SequenceInterface* sequence, float zoom, int currentBeatsplit, int beatsPerMeasure, bool darkTheme, bool haveSelection, bool windowFocused, bool* expanded, bool* updatedBeat, bool* leftClickedEntity,
-                  bool* leftClickReleased, bool* leftClickShift, bool* rightClickedEntity, float* clickedBeat, float* hoveredBeat, int* clickedItemType, int* releasedItemType,
-                  int* selectedEntry, float* firstFrame, int sequenceOptions);
+   bool Sequencer(SequenceInterface* sequence, double zoom, int currentBeatsplit, int beatsPerMeasure, bool darkTheme, bool haveSelection, bool windowFocused,
+      bool* expanded, bool* updatedBeat, bool* leftClickedEntity, bool* leftClickReleased, bool* leftClickShift, bool* rightClickedEntity, double* clickedBeat,
+      double* hoveredBeat, int* clickedItemType, int* releasedItemType, int* selectedEntry, double* firstFrame, int sequenceOptions);
 
 }

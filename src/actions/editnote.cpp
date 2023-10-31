@@ -1,14 +1,16 @@
 #include "actions/editnote.hpp"
 #include "ui/editwindow.hpp"
 
-EditNoteAction::EditNoteAction(bool unsaved, float absBeat, SequencerItemType itemType, std::string oldDisplayText, std::string newDisplayText) :
-    EditAction(unsaved), absBeat(absBeat), itemType(itemType), oldDisplayText(oldDisplayText), newDisplayText(newDisplayText) {}
+EditNoteAction::EditNoteAction(double absBeat, NoteSequenceItem::SequencerItemType itemType, std::string_view oldDisplayText, std::string_view newDisplayText)
+    : absBeat(absBeat)
+    , itemType(itemType)
+    , oldDisplayText(oldDisplayText)
+    , newDisplayText(newDisplayText) {}
 
-void EditNoteAction::undoAction(EditWindowData * editWindow) {
-    EditAction::undoAction(editWindow);
+void EditNoteAction::undoAction(EditWindow * editWindow) {
     editWindow->chartinfo.notes.editNote(absBeat, itemType, oldDisplayText);
 }
 
-void EditNoteAction::redoAction(EditWindowData * editWindow) {
+void EditNoteAction::redoAction(EditWindow * editWindow) {
     editWindow->chartinfo.notes.editNote(absBeat, itemType, newDisplayText);
 }

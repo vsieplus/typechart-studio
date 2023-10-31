@@ -1,13 +1,16 @@
 #ifndef MENUBAR_HPP
 #define MENUBAR_HPP
 
-class ImFont;
-class SDL_Renderer;
+class EditWindowManager;
+
+namespace menubar {
 
 // all the imgui menubar functions
-void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audioSystem);
-std::string showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem);
-void showEditMenu();
+void showMenuBar(ImFont * menuFont, SDL_Renderer * renderer, AudioSystem * audioSystem, EditWindowManager & editWindowManager);
+std::string showFileMenu(SDL_Renderer * renderer, AudioSystem * audioSystem, EditWindowManager & editWindowManager);
+void showEditMenu(EditWindowManager & editWindowManager);
 void showOptionMenu();
+
+}
 
 #endif // MENUBAR_HPP

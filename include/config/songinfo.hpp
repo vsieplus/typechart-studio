@@ -1,23 +1,21 @@
 #ifndef SONGINFO_HPP
 #define SONGINFO_HPP
 
+#include <filesystem>
 #include <string>
+#include <string_view>
+
+namespace fs = std::filesystem;
 
 struct SongInfo {
-    SongInfo(std::string title, std::string artist, std::string genre, std::string bpmtext, std::string musicFilename, 
-        std::string coverartFilename, std::string musicFilepath, std::string coverartFilepath, float musicPreviewStart, float musicPreviewStop)
-        : title(title),
-          artist(artist),
-          genre(genre),
-          bpmtext(bpmtext),
-          musicFilename(musicFilename),
-          coverartFilename(coverartFilename),
-          musicFilepath(musicFilepath),
-          coverartFilepath(coverartFilepath),
-          musicPreviewStart(musicPreviewStart),
-          musicPreviewStop(musicPreviewStop) {}
+    SongInfo() = default;
+    SongInfo(std::string_view title, std::string_view artist, std::string_view genre, std::string_view bpmtext, std::string_view musicFilename,
+        std::string_view coverartFilename, const fs::path & musicFilepath, const fs::path & coverartFilepath, float musicPreviewStart, float musicPreviewStop);
 
-    void saveSonginfo(std::string saveDir, bool initialSaved);
+    bool loadSongInfo(const fs::path & songinfoPath, const fs::path & songinfoDir);
+    void saveSongInfo(const fs::path & saveDir, bool initialSaved);
+
+    std::string getSongID() const;
 
     std::string title;
     std::string artist;
@@ -29,13 +27,13 @@ struct SongInfo {
     std::string coverartFilename;
 
     // if user wishes to copy files when saving config
-    std::string musicFilepath;
-    std::string coverartFilepath;
+    fs::path musicFilepath;
+    fs::path coverartFilepath;
 
-    std::string saveDir = "";
+    fs::path saveDir;
 
-    float musicPreviewStart = 0.f;
-    float musicPreviewStop = 0.f;
+    float musicPreviewStart { 0.0 };
+    float musicPreviewStop { 0.0 };
 };
 
 #endif // SONGINFO_HPP
