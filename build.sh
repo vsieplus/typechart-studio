@@ -76,7 +76,8 @@ if [[ "${BUILD_TYPE}" == "Release" ]]; then
     echo "Creating release under ${OUT_DIR}"
 
     # copy README
-    cp README.txt "${OUT_DIR}"
+    cp README.md "${OUT_DIR}"
+    cp CHANGELOG.md "${OUT_DIR}"
 
     # copy the executable and version config
     cp "${BUILD_DIR}/${PRG_FILE}" "${OUT_DIR}"
