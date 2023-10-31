@@ -18,10 +18,10 @@ If you purchase [Typing Tempo](https://store.steampowered.com/app/2332930/Typing
 Typechart Studio uses several external dependencies, including [Dear ImGUI](https://github.com/ocornut/imgui) and [json](https://github.com/nlohmann/json).
 The following dependencies should be installed locally:
 
-* [SDL2](https://github.com/libsdl-org/SDL) (> 2.0.18 for ImGui compatibility)
-* [SDL2 Image](https://github.com/libsdl-org/SDL_image) (> 2.0.5)
-* [OpenAL Soft](https://github.com/kcat/openal-soft) (> 1.21.0)
-* [libsndfile](https://github.com/libsndfile/libsndfile) (> 1.1.0beta2 for mp3 support)
+* [SDL2](https://github.com/libsdl-org/SDL) (>= 2.0.18 for ImGui compatibility)
+* [SDL2 Image](https://github.com/libsdl-org/SDL_image) (>= 2.0.5)
+* [OpenAL Soft](https://github.com/kcat/openal-soft) (>= 1.21.0)
+* [libsndfile](https://github.com/libsndfile/libsndfile) (>= 1.1.0beta2 for mp3 support)
 
 Once the above have been installed, you can create a Debug build using [CMake](https://cmake.org/):
 
