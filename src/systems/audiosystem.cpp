@@ -335,7 +335,18 @@ void AudioSystem::setMusicPosition(int sourceIdx, float position) {
 }
 
 float AudioSystem::getMusicLength(int sourceIdx) const {
-    return sourceIdx < NUM_MUSIC_SOURCES ? (float) sfInfos[sourceIdx].frames / (float) sfInfos[sourceIdx].samplerate : 0.f;
+    return sourceIdx < NUM_MUSIC_SOURCES ? static_cast<float>(sfInfos[sourceIdx].frames) / static_cast<float>(sfInfos[sourceIdx].samplerate) : 0.0;
+}
+
+float AudioSystem::getSongPosition(int sourceIdx) const {
+    if(sourceIdx < NUM_MUSIC_SOURCES)
+        return 0.f;
+
+    // calculate position from the current buffer
+    float songPosSec;
+    alGetSourcef(musicSources[sourceIdx], AL_SEC_OFFSET, &songPosSec);
+
+    return lastBufferPositions[sourceIdx] + songPosSec;
 }
 
 void AudioSystem::resumeMusic(int sourceIdx) const {
@@ -442,17 +453,6 @@ float AudioSystem::getBufferLength(ALuint bufid) const {
     float secLength = (float) sampleLength / (float) frequency;
 
     return secLength;
-}
-
-float AudioSystem::getSongPosition(int sourceIdx) const {
-    if(sourceIdx < NUM_MUSIC_SOURCES)
-        return 0.f;
-
-    // calculate position from the current buffer
-    float songPosSec;
-    alGetSourcef(musicSources[sourceIdx], AL_SEC_OFFSET, &songPosSec);
-
-    return lastBufferPositions[sourceIdx] + songPosSec;
 }
 
 void AudioSystem::setStopMusicEarly(int sourceIdx, bool stopMusicEarly) {
