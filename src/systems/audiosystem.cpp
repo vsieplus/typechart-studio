@@ -58,16 +58,17 @@ void AudioSystem::initAudioSystem(SDL_Window * window) {
         alGenBuffers(NUM_BUFFERS, &musicBuffers[i][0]);
         initSoundSource(musicSources[i], 1.f, 1.f, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, false);
 
-        sndfiles[i] = nullptr;
-        membufs[i] = nullptr;
-
         stopMusicsEarly[i] = false;
         musicStops[i] = 0.f;
         lastBufferPositions[i] = 0.f;
+        sfInfos[i] = SF_INFO{};
 
-        memset(&sfInfos[i], 0, sizeof(SF_INFO));
+        musicSourcesActive.try_emplace(i, false);
+    }
 
-        musicSourcesActive.insert({ i, false });
+    for(int i = 0; i < NUM_MUSIC_SOURCES; i++) {
+        sndfiles[i] = nullptr;
+        membufs[i] = nullptr;
     }
 }
 
@@ -236,7 +237,7 @@ int AudioSystem::loadMusic(const fs::path & path) {
             sf_close(sndfiles[nextIdx]);
         }
 
-        memset(&sfInfos[nextIdx], 0, sizeof(SF_INFO));
+        sfInfos[nextIdx] = SF_INFO{};
         sndfiles[nextIdx] = sf_open(path.c_str(), SFM_READ, &sfInfos[nextIdx]);
         
         if(!sndfiles[nextIdx]) {
@@ -261,7 +262,7 @@ void AudioSystem::deactivateMusicSource(int sourceIdx) {
         sf_close(sndfiles[sourceIdx]);
         free(membufs[sourceIdx]);
 
-        memset(&sfInfos[sourceIdx], 0, sizeof(SF_INFO));
+        sfInfos[sourceIdx] = SF_INFO{};
 
         musicStops[sourceIdx] = 0.f;
         stopMusicsEarly[sourceIdx] = false;

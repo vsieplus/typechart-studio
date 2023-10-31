@@ -51,11 +51,11 @@ void ChartInfo::loadChartMetadata(ordered_json chartinfoJSON) {
 }
 
 void ChartInfo::loadChartTimeInfo(ordered_json chartinfoJSON, SongPosition & songpos) const {
-    std::vector<ordered_json> timeinfo { chartinfoJSON[constants::TIMEINFO_KEY] };
+    std::vector<ordered_json> timeinfo = chartinfoJSON[constants::TIMEINFO_KEY];
     const Timeinfo * prevTimeinfo { nullptr };
 
     for(auto & sectionJSON : timeinfo) {
-        std::vector<int> pos { sectionJSON[constants::POS_KEY] };
+        std::vector<int> pos = sectionJSON[constants::POS_KEY];
 
         double bpm { sectionJSON.value(constants::BPM_KEY, constants::BPM_VALUE_DEFAULT) };
         double interpolateBeatDuration { sectionJSON.value(constants::INTERPOLATE_BEAT_DURATION_KEY, constants::INTERPOLATE_BEAT_DURATION_VALUE_DEFAULT) };
@@ -73,7 +73,7 @@ void ChartInfo::loadChartTimeInfo(ordered_json chartinfoJSON, SongPosition & son
 }
 
 void ChartInfo::loadChartStops(ordered_json chartinfoJSON, SongPosition & songpos) {
-    std::vector<ordered_json> stopsJSON { chartinfoJSON[constants::STOPS_KEY] };
+    std::vector<ordered_json> stopsJSON = chartinfoJSON[constants::STOPS_KEY];
     for(auto & stopJSON : stopsJSON) {
         std::vector<int> pos { stopJSON[constants::POS_KEY] };
         double beatDuration { stopJSON.value(constants::DURATION_KEY, constants::DURATION_VALUE_DEFAULT) };
@@ -89,7 +89,7 @@ void ChartInfo::loadChartStops(ordered_json chartinfoJSON, SongPosition & songpo
 }
 
 void ChartInfo::loadChartSkips(ordered_json chartinfoJSON, SongPosition & songpos) {
-    std::vector<ordered_json> skipsJSON { chartinfoJSON[constants::SKIPS_KEY] };
+    std::vector<ordered_json> skipsJSON = chartinfoJSON[constants::SKIPS_KEY];
     for(auto & skipJSON : skipsJSON) {
         std::vector<int> pos { skipJSON[constants::POS_KEY] };
         double beatDuration { skipJSON.value(constants::DURATION_KEY, constants::DURATION_VALUE_DEFAULT) };
