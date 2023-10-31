@@ -54,14 +54,14 @@ void SongPosition::update() {
 
 void SongPosition::updateBPM() {
     if(bpmInterpolating && currentSection < timeinfo.size() - 1) {
-        int nextSection = currentSection + 1;
+        unsigned int nextSection { currentSection + 1 };
 
-        float timeUntilNextSection = timeinfo.at(nextSection).absTimeStart - absTime;
-        float bpmInterplationProgress = 1 - (timeUntilNextSection / ((timeinfo.at(nextSection).interpolateBeatDuration) * currSpb));
-        bpmInterplationProgress = std::min(1.f, bpmInterplationProgress);
+        double timeUntilNextSection { timeinfo.at(nextSection).absTimeStart - absTime };
+        double bpmInterplationProgress { 1.0 - (timeUntilNextSection / ((timeinfo.at(nextSection).interpolateBeatDuration) * currSpb)) };
+        bpmInterplationProgress = std::min(1.0, bpmInterplationProgress);
         bpmInterplationProgress = std::max(0.0, bpmInterplationProgress);
 
-        float currBpm = bpmInterpolateStart + bpmInterplationProgress * (bpmInterpolateEnd - bpmInterpolateStart);
+        double currBpm { bpmInterpolateStart + bpmInterplationProgress * (bpmInterpolateEnd - bpmInterpolateStart) };
         currSpb = 60.0 / currBpm;
         prevSectionTime = absTime;
         prevSectionBeats = absBeat;
@@ -70,7 +70,7 @@ void SongPosition::updateBPM() {
 
 void SongPosition::updateBeatPos() {
     if(beatSkipped) {
-        auto timeSinceSkip = (now - currSkipBegin) / (double)SDL_GetPerformanceFrequency();
+        auto timeSinceSkip { static_cast<double>(now - currSkipBegin) / static_cast<double>(SDL_GetPerformanceFrequency()) };
 
         // check if full skip passed, or if still 'skipping'
         if(timeSinceSkip > currSkipDuration) {
@@ -92,9 +92,8 @@ void SongPosition::updateBeatPos() {
 
 void SongPosition::updateSection() {
     if(currentSection < timeinfo.size() - 1) {
-        int nextSection = currentSection + 1;
-
-        auto & nextTimeinfo = timeinfo.at(nextSection);
+        unsigned int nextSection { currentSection + 1 };
+        const auto & nextTimeinfo { timeinfo.at(nextSection) };
 
         if(!bpmInterpolating && nextTimeinfo.interpolateBeatDuration > FLT_EPSILON) {
             if(absTime >= nextTimeinfo.absTimeStart - (nextTimeinfo.interpolateBeatDuration * currSpb)) {
@@ -116,15 +115,15 @@ void SongPosition::updateSection() {
 }
 
 void SongPosition::updateSkips() {
-    if(!beatSkipped && currentSkip <= (int)(skips.size() - 1)) {
-        float currSkipBeat = skips.at(currentSkip)->absBeat;
+    if(!beatSkipped && currentSkip <= static_cast<int>(skips.size() - 1)) {
+        double currSkipBeat { skips.at(currentSkip)->absBeat };
 
         if(absBeat > currSkipBeat) {
             beatSkipped = true;
 
             currSkipDuration = skips.at(currentSkip)->beatDuration * currSpb;
             currSkipBegin = SDL_GetPerformanceCounter();
-            currSkipStartTimePosition = ((currSkipBegin - songStart) / (double)SDL_GetPerformanceFrequency()) - (offsetMS / 1000.0);
+            currSkipStartTimePosition = (static_cast<double>(currSkipBegin - songStart) / static_cast<double>(SDL_GetPerformanceFrequency())) - (offsetMS / 1000.0);
 
             currSkipTime = skips.at(currentSkip)->skipTime;
             currSkipSpb = currSpb * (currSkipTime / currSkipDuration);
@@ -146,10 +145,10 @@ void SongPosition::addSkip(std::shared_ptr<Skip> skip) {
     resetCurrskip();
 }
 
-void SongPosition::removeSkip(double absBeat) {
+void SongPosition::removeSkip(double skipBeat) {
     for(auto skipIter = skips.begin(); skipIter != skips.end();) {
         auto currSkip = *skipIter;
-        if(currSkip->absBeat <= absBeat && absBeat <= currSkip->absBeat + currSkip->beatDuration) {
+        if(currSkip->absBeat <= skipBeat && skipBeat <= currSkip->absBeat + currSkip->beatDuration) {
             skipIter = skips.erase(skipIter);
             resetCurrskip();
             break;
@@ -160,7 +159,7 @@ void SongPosition::removeSkip(double absBeat) {
 }
 
 void SongPosition::resetCurrskip() {
-    currentSkip = skips.size();
+    currentSkip = static_cast<int>(skips.size());
     for(unsigned int i = 0; i < skips.size(); i++) {
         if(absBeat <= skips.at(i)->absBeat) {
             currentSkip = i;
@@ -170,7 +169,7 @@ void SongPosition::resetCurrskip() {
 }
 
 bool SongPosition::addSection(int newBeatsPerMeasure, double newBPM, double newInterpolateDuration, BeatPos newBeatpos) {
-    Timeinfo * prevSection = nullptr;
+    Timeinfo * prevSection { nullptr };
 
     for(auto & section : timeinfo) {
         if(newBeatpos == section.beatpos) {
@@ -181,7 +180,7 @@ bool SongPosition::addSection(int newBeatsPerMeasure, double newBPM, double newI
         }
     }
 
-    Timeinfo newSection { newBeatpos, prevSection, newBeatsPerMeasure, newBPM, newInterpolateDuration }''
+    Timeinfo newSection { newBeatpos, prevSection, newBeatsPerMeasure, newBPM, newInterpolateDuration };
     timeinfo.push_back(newSection);
 
     std::sort(timeinfo.begin(), timeinfo.end());

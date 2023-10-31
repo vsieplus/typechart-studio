@@ -21,7 +21,7 @@ struct SongPosition {
     void updateSkips();
 
     void addSkip(std::shared_ptr<Skip> skip);
-    void removeSkip(double absBeat);
+    void removeSkip(double skipBeat);
     void resetCurrskip();
 
     bool addSection(int newBeatsPerMeasure, double newBPM, double newInterpolateDuration, BeatPos newBeatpos);
