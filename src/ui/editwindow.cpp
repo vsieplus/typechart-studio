@@ -535,7 +535,7 @@ void EditWindow::showMusicPreviewButton(AudioSystem * audioSystem) {
 void EditWindow::showMusicOffset() {
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x / 2.f);
     if(ImGui::SliderInt("Offset (ms)", &songpos.offsetMS, -1000, 1000)) {
-        songinfo.offsetMS = songpos.offsetMS;
+        chartinfo.offsetMS = songpos.offsetMS;
         unsaved = true;
     }
 

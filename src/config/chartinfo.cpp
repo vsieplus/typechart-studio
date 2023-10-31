@@ -24,7 +24,7 @@ bool ChartInfo::loadChart(const fs::path & chartPath, SongPosition & songpos) {
         std::ifstream in(chartPath);
         in >> chartinfoJSON;
 
-        loadChartMetadata(chartinfoJSON);
+        loadChartMetadata(chartinfoJSON, songpos);
         loadChartTimeInfo(chartinfoJSON, songpos);
         loadChartStops(chartinfoJSON, songpos);
         loadChartSkips(chartinfoJSON, songpos);
@@ -43,11 +43,14 @@ bool ChartInfo::loadChart(const fs::path & chartPath, SongPosition & songpos) {
     return true;
 }
 
-void ChartInfo::loadChartMetadata(ordered_json chartinfoJSON) {
+void ChartInfo::loadChartMetadata(ordered_json chartinfoJSON, SongPosition & songpos) {
     typist = chartinfoJSON.value(constants::TYPIST_KEY, constants::TYPIST_VALUE_DEFAULT);
     keyboardLayout = chartinfoJSON.value(constants::KEYBOARD_KEY, constants::KEYBOARD_VALUE_DEFAULT);
     difficulty = chartinfoJSON.value(constants::DIFFICULTY_KEY, constants::DIFFICULTY_VALUE_DEFAULT);
     level = chartinfoJSON.value(constants::LEVEL_KEY, constants::LEVEL_VALUE_DEFAULT);
+    offsetMS = chartinfoJSON.value(constants::OFFSET_KEY, constants::OFFSET_VALUE_DEFAULT);
+
+    songpos.offsetMS = offsetMS;
 }
 
 void ChartInfo::loadChartTimeInfo(ordered_json chartinfoJSON, SongPosition & songpos) const {
@@ -186,13 +189,14 @@ NoteSequenceItem::SequencerItemType ChartInfo::determineItemType(const std::stri
     return itemType;
 }
 
-ordered_json ChartInfo::saveChartMetadata(const SongPosition & songpos) const {
+ordered_json ChartInfo::saveChartMetadata() const {
     ordered_json chartinfo;
 
     chartinfo[constants::TYPIST_KEY] = typist;
     chartinfo[constants::KEYBOARD_KEY] = keyboardLayout;
     chartinfo[constants::DIFFICULTY_KEY] = difficulty;
     chartinfo[constants::LEVEL_KEY] = level;
+    chartinfo[constants::OFFSET_KEY] = offsetMS;
 
     return chartinfo;
 }
@@ -218,7 +222,7 @@ ordered_json ChartInfo::saveChartTimeInfo(SongPosition & songpos) const {
 void ChartInfo::saveChart(const fs::path & chartPath, SongPosition & songpos) {
     savePath = chartPath;
 
-    auto chartinfoJSON = saveChartMetadata(songpos);
+    auto chartinfoJSON = saveChartMetadata();
     chartinfoJSON[constants::TIMEINFO_KEY] = saveChartTimeInfo(songpos);
 
     ordered_json stopsJSON = ordered_json::array();

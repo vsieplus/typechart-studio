@@ -18,7 +18,6 @@ namespace constants {
     const std::string COVERART_KEY = "coverart";
     const std::string MUSIC_KEY = "music";
     const std::string BPMTEXT_KEY = "bpmtext";
-    const std::string OFFSET_KEY = "offsetMS";
     const std::string MUSIC_PREVIEW_START_KEY = "musicPreviewStart";
     const std::string MUSIC_PREVIEW_STOP_KEY = "musicPreviewStop";
 
@@ -27,6 +26,7 @@ namespace constants {
     const std::string KEYBOARD_KEY = "keyboard";
     const std::string DIFFICULTY_KEY = "difficulty";
     const std::string LEVEL_KEY = "level";
+    const std::string OFFSET_KEY = "offsetMS";
 
     const std::string TYPIST_VALUE_DEFAULT = "Unknown";
     const std::string KEYBOARD_VALUE_DEFAULT = "QWERTY";

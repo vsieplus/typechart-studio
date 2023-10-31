@@ -27,7 +27,7 @@ struct ChartInfo {
     bool loadChart(const fs::path & chartPath, SongPosition & songpos);
 
     // load chart metadata from the given json
-    void loadChartMetadata(ordered_json chartinfoJSON);
+    void loadChartMetadata(ordered_json chartinfoJSON, SongPosition & songpos);
 
     // load chart data
     void loadChartTimeInfo(ordered_json chartinfoJSON, SongPosition & songpos) const;
@@ -42,12 +42,13 @@ struct ChartInfo {
     void saveChart(const fs::path & chartPath, SongPosition & songpos);
 
     // save chart metadata
-    ordered_json saveChartMetadata(const SongPosition & songpos) const;
+    ordered_json saveChartMetadata() const;
 
     // save chart data
     ordered_json saveChartTimeInfo(SongPosition & songpos) const;
 
     int level { 0 };
+    int offsetMS { 0 };
 
     std::string typist {};
     std::string keyboardLayout {};

@@ -45,7 +45,6 @@ bool SongInfo::loadSongInfo(const fs::path & songinfoPath, const fs::path & song
 
     musicPreviewStart = songinfoJSON.value(constants::MUSIC_PREVIEW_START_KEY, 0.f);
     musicPreviewStop = songinfoJSON.value(constants::MUSIC_PREVIEW_STOP_KEY, 0.f);
-    offsetMS = songinfoJSON.value(constants::OFFSET_KEY, constants::OFFSET_VALUE_DEFAULT);
 
     return true;
 }
@@ -65,7 +64,6 @@ void SongInfo::saveSongInfo(const fs::path & saveDir, bool initialSaved) {
     songinfo[constants::BPMTEXT_KEY] = bpmtext;
     songinfo[constants::MUSIC_PREVIEW_START_KEY] = musicPreviewStart;
     songinfo[constants::MUSIC_PREVIEW_STOP_KEY] = musicPreviewStop;
-    songinfo[constants::OFFSET_KEY] = offsetMS;
 
     std::ofstream file(songinfoSavePath.c_str());
     file << std::setw(4) << songinfo << std::endl;

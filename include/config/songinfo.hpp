@@ -32,8 +32,6 @@ struct SongInfo {
 
     fs::path saveDir;
 
-    int offsetMS { 0 };
-
     float musicPreviewStart { 0.0 };
     float musicPreviewStop { 0.0 };
 };
