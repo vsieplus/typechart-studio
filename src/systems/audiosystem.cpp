@@ -152,7 +152,7 @@ bool AudioSystem::loadSound(std::string_view soundID, const fs::path & path) {
     ALsizei num_bytes;
 
     // Open the audio file and check that it's usable
-    soundSndfile = sf_open(path.c_str(), SFM_READ, &soundSfinfo);
+    soundSndfile = sf_open(path.string().c_str(), SFM_READ, &soundSfinfo);
     if(!soundSndfile) {
         return false;
     }
@@ -238,7 +238,7 @@ int AudioSystem::loadMusic(const fs::path & path) {
         }
 
         sfInfos[nextIdx] = SF_INFO{};
-        sndfiles[nextIdx] = sf_open(path.c_str(), SFM_READ, &sfInfos[nextIdx]);
+        sndfiles[nextIdx] = sf_open(path.string().c_str(), SFM_READ, &sfInfos[nextIdx]);
         
         if(!sndfiles[nextIdx]) {
             return -1;
