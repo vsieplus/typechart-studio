@@ -6,7 +6,7 @@ Typechart Studio is a chart editor for [Typing Tempo](https://store.steampowered
 * 📝 **Efficient and intuitive charting tools** for note and gimmick placement, such as copy-paste, note shifting, mirroring, undo/redo, and more
 * 📂 **Loading and saving of chart files**, directly for use by Typing Tempo
 
-Check out the [wiki]() for an introduction on how to use the tool.
+Check out the [wiki](https://github.com/vsieplus/typechart-studio/wiki) for an introduction on how to use the tool.
 
 ## Download
 
