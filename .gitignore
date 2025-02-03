@@ -1,10 +1,15 @@
 build/*
 charts/*
+out/*
 releases/*
+.vs/*
 .vscode/*
 
 imgui.ini
 *.o
+*.obj
+*.cmake
+*.exe
 
 todo.txt
 preferences.json
