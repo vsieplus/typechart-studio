@@ -45,14 +45,6 @@ bash build.sh linux Release
 bash build.sh windows64 Release
 ```
 
-## Contributing
-
-- 🐛 To report a bug, please check the [issues](https://github.com/vsieplus/typechart-studio/issues) tab, and create a new issue if one does not already exist
-  - Please fill out the issue template with sufficient detail, so that the bug may be accurately reproduced
-- 🖋️ If you would like to contribute changes to this project, please refer to [CONTRIBUTING.md](CONTRIBUTING.md).
-
-Thanks to everyone who has contributed to this project!
-
 ## License
 
 Typechart Studio is licensed under the [zlib license](LICENSE.txt). See [licenses/](licenses/) for a full list of licenses of the dependencies used by Typechart Studio.
